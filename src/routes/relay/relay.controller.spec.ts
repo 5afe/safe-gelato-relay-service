@@ -34,7 +34,6 @@ describe('RelayController', () => {
       .expect(200)
       .expect('Hello from the safe-gelato-relay-service!');
   });
-
   describe('/relay (POST)', () => {
     it('should return a 201 when the body is valid', async () => {
       const body = {
