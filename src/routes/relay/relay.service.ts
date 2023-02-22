@@ -4,6 +4,22 @@ import { ConfigService } from '@nestjs/config';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 
+/**
+ * If you are using your own custom gas limit, please add a 150k gas buffer on top of the expected
+ * gas usage for the transaction. This is for the Gelato Relay execution overhead, and adding this
+ * buffer reduces your chance of the task cancelling before it is executed on-chain.
+ * @see https://docs.gelato.network/developer-services/relay/quick-start/optional-parameters
+ */
+const getRelayGasLimit = (gasLimit?: string): bigint | undefined => {
+  const GAS_LIMIT_BUFFER = 150_000;
+
+  if (!gasLimit) {
+    return undefined;
+  }
+
+  return BigInt(gasLimit) + BigInt(GAS_LIMIT_BUFFER);
+};
+
 @Injectable()
 export class RelayService {
   private readonly relayer: GelatoRelay;
@@ -35,7 +51,7 @@ export class RelayService {
       },
       apiKey,
       {
-        gasLimit,
+        gasLimit: getRelayGasLimit(gasLimit),
       },
     );
   }
