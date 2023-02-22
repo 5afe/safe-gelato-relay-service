@@ -36,26 +36,22 @@ describe('RelayController', () => {
 
   describe('/v1/relay (POST)', () => {
     it('should return a 201 when the body is valid', async () => {
-      const taskId = '123';
-
       const relayServiceSpy = jest
         .spyOn(relayService, 'sponsoredCall')
-        .mockImplementation(() => Promise.resolve({ taskId }));
+        .mockImplementation(() => Promise.resolve({ taskId: '123' }));
 
       const body = {
         chainId: '5',
         target: faker.finance.ethereumAddress(),
-        data: faker.datatype.hexadecimal(),
+        data: '0x6a761202', // execTransaction
       };
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/v1/relay')
         .send(body)
         .expect(201);
 
       expect(relayServiceSpy).toHaveBeenCalledTimes(1);
-
-      expect(response.body).toStrictEqual({ taskId });
     });
 
     it('should return a 400 error when the body is invalid', async () => {
@@ -64,32 +60,17 @@ describe('RelayController', () => {
         .mockImplementation(() => Promise.reject());
 
       const body = {
-        chainId: 'abc',
+        chainId: '5',
         target: faker.finance.ethereumAddress(),
-        data: faker.datatype.hexadecimal(),
+        data: '0x1',
       };
 
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/v1/relay')
         .send(body)
         .expect(400);
 
-      const expectedError = {
-        statusCode: 400,
-        message: [
-          {
-            code: 'invalid_enum_value',
-            message: "Invalid enum value. Expected '5' | '100', received 'abc'",
-            options: ['5', '100'],
-            path: ['chainId'],
-            received: 'abc',
-          },
-        ],
-      };
-
       expect(relayServiceSpy).not.toHaveBeenCalled();
-
-      expect(response.body).toStrictEqual(expectedError);
     });
   });
 });

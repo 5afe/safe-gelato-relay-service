@@ -2,12 +2,14 @@ import { faker } from '@faker-js/faker';
 
 import { SponsoredCallSchema } from './sponsored-call.schema';
 
+const EXEC_TX_CALL_DATA = '0x6a761202';
+
 describe('sponsoredCall schema', () => {
   it('should validate a valid sponsoredCall', () => {
     const result = SponsoredCallSchema.safeParse({
       chainId: '5',
       target: faker.finance.ethereumAddress(),
-      data: faker.datatype.hexadecimal(),
+      data: EXEC_TX_CALL_DATA,
       gasLimit: faker.random.numeric(),
     });
 
@@ -19,7 +21,7 @@ describe('sponsoredCall schema', () => {
       const result = SponsoredCallSchema.safeParse({
         chainId,
         target: faker.finance.ethereumAddress(),
-        data: faker.datatype.hexadecimal(),
+        data: EXEC_TX_CALL_DATA,
       });
 
       expect(result.success).toBe(false);
@@ -31,7 +33,7 @@ describe('sponsoredCall schema', () => {
       const result = SponsoredCallSchema.safeParse({
         chainId: faker.random.numeric(),
         target,
-        data: faker.datatype.hexadecimal(),
+        data: EXEC_TX_CALL_DATA,
       });
 
       expect(result.success).toBe(false);
@@ -55,7 +57,7 @@ describe('sponsoredCall schema', () => {
       const result = SponsoredCallSchema.safeParse({
         chainId: faker.random.numeric(),
         target: faker.finance.ethereumAddress(),
-        data: faker.datatype.hexadecimal(),
+        data: EXEC_TX_CALL_DATA,
         gasLimit,
       });
 

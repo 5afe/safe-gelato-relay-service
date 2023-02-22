@@ -1,7 +1,8 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { SafeInfoHelper } from '../common/safe/safe-info.helper';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 
 /**
@@ -24,7 +25,10 @@ export const _getRelayGasLimit = (gasLimit?: string): bigint | undefined => {
 export class RelayService {
   private readonly relayer: GelatoRelay;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly safeInfoHelper: SafeInfoHelper,
+  ) {
     this.relayer = new GelatoRelay();
   }
 
@@ -32,13 +36,19 @@ export class RelayService {
    * Relays transaction data via Gelato `sponsoredCall`
    * Validation takes place through ZodValidationPipe in controller
    */
-  sponsoredCall({
+  async sponsoredCall({
     chainId,
     data,
     target,
     gasLimit,
   }: SponsoredCallDto): Promise<RelayResponse> {
-    // TODO: Check that `target` is a Safe
+    // Avoid relaying of non-Safe contracts with the same ABI
+    if (!(await this.safeInfoHelper.isSafe(chainId, target))) {
+      throw {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: `${target} is not a Safe on chain ${chainId}`,
+      };
+    }
 
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 

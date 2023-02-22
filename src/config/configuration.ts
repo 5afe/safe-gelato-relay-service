@@ -11,4 +11,5 @@ export default () => ({
       [SupportedChainId.GNOSIS_CHAIN]: process.env.GELATO_GNOSIS_CHAIN_API_KEY,
     },
   },
+  gatewayUrl: process.env.GATEWAY_URL || 'https://safe-client.safe.global',
 });
