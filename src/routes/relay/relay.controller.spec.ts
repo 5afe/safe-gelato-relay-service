@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
+import * as request from 'supertest';
 
-describe('AppController', () => {
+import { RelayModule } from './relay.module';
+import configuration from '../../config/configuration';
+
+describe('RelayController', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         // Features
-        AppModule,
+        RelayModule,
         // Common
         // TODO: Create test config module that provides mock environment variables
         ConfigModule.forRoot({
@@ -26,9 +27,9 @@ describe('AppController', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/relay (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/relay')
       .expect(200)
       .expect('Hello from the safe-gelato-relay-service!');
   });
