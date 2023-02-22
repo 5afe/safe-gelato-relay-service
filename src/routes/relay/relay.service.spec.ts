@@ -1,13 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
-import * as request from 'supertest';
 
-import { SafeInfoHelper } from '../common/safe/safe-info.helper';
+import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
-import configuration from '../../config/configuration';
-import { RelayModule } from './relay.module';
+import { HttpService } from '@nestjs/axios';
+import { SupportedChainId } from 'src/config/constants';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -23,42 +20,28 @@ describe('getRelayGasLimit', () => {
   });
 });
 
+const mockIsSafe = jest.fn();
+jest.mock('../common/safe/safe-info.helper', () => ({
+  SafeInfoHelper: jest.fn().mockImplementation(() => ({
+    isSafe: mockIsSafe,
+  })),
+}));
+
 describe('RelayService', () => {
-  let app: INestApplication;
-  let relayService: RelayService;
-  let safeInfoHelper: SafeInfoHelper;
+  const configService = new ConfigService();
+  const safeInfoHelper = new helper.SafeInfoHelper(
+    configService,
+    new HttpService(),
+  );
 
-  beforeEach(async () => {
-    // TODO: Create test module that provides mock environment variables and versioning to mirror `main.ts`
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        // Features
-        RelayModule,
-        // Common
-        ConfigModule.forRoot({
-          isGlobal: true,
-          load: [configuration],
-        }),
-      ],
-    }).compile();
-
-    relayService = moduleFixture.get<RelayService>(RelayService);
-    safeInfoHelper = moduleFixture.get<SafeInfoHelper>(SafeInfoHelper);
-
-    app = moduleFixture.createNestApplication();
-    app.enableVersioning();
-
-    await app.init();
-  });
+  const relayService = new RelayService(configService, safeInfoHelper);
 
   describe('sponsoredCall', () => {
     it('should throw if the target is not a Safe address', async () => {
       const relayServiceSpy = jest.spyOn(relayService, 'sponsoredCall');
-      const safeInfoHelperSpy = jest
-        .spyOn(safeInfoHelper, 'isSafe')
-        .mockImplementation(() => Promise.resolve(false));
+      mockIsSafe.mockImplementation(() => Promise.resolve(false));
 
-      const chainId = '5';
+      const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
 
       const body = {
@@ -67,18 +50,20 @@ describe('RelayService', () => {
         data: '0x6a761202', // execTransaction
       };
 
-      const response = await request(app.getHttpServer())
-        .post('/v1/relay')
-        .send(body)
-        .expect(400);
+      try {
+        await relayService.sponsoredCall(body);
 
-      expect(safeInfoHelperSpy).toHaveBeenCalledTimes(1);
+        // Break test if the above call does not throw
+        expect(true).toBe(false);
+      } catch (err) {
+        expect(err).toEqual({
+          statusCode: 400,
+          message: `${target} is not a Safe on chain ${chainId}`,
+        });
+      }
+
       expect(relayServiceSpy).toHaveBeenCalledTimes(1);
-
-      expect(response.body).toStrictEqual({
-        statusCode: 400,
-        message: `${target} is not a Safe on chain ${chainId}`,
-      });
+      expect(mockIsSafe).toHaveBeenCalledTimes(1);
     });
   });
 });
