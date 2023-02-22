@@ -10,7 +10,7 @@ import { SponsoredCallDto } from './entities/sponsored-call.entity';
  * buffer reduces your chance of the task cancelling before it is executed on-chain.
  * @see https://docs.gelato.network/developer-services/relay/quick-start/optional-parameters
  */
-const getRelayGasLimit = (gasLimit?: string): bigint | undefined => {
+export const _getRelayGasLimit = (gasLimit?: string): bigint | undefined => {
   const GAS_LIMIT_BUFFER = 150_000;
 
   if (!gasLimit) {
@@ -51,7 +51,7 @@ export class RelayService {
       },
       apiKey,
       {
-        gasLimit: getRelayGasLimit(gasLimit),
+        gasLimit: _getRelayGasLimit(gasLimit),
       },
     );
   }
