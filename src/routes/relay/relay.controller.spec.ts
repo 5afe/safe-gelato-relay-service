@@ -43,6 +43,10 @@ describe('RelayController', () => {
     await app.init();
   });
 
+  afterEach(async () => {
+    await app.close();
+  });
+
   describe('/relay (GET)', () => {
     it('should return 200', () => {
       return request(app.getHttpServer())
@@ -54,11 +58,11 @@ describe('RelayController', () => {
     it('should return a 429 when breaching rate limit', async () => {
       await Promise.all(
         Array.from({ length: 5 }, () =>
-          request(app.getHttpServer()).get('/relay'),
+          request(app.getHttpServer()).get('/relay').expect(200),
         ),
       );
 
-      await request(app.getHttpServer()).get('/relay').expect(429);
+      return request(app.getHttpServer()).get('/relay').expect(429);
     });
   });
 });
