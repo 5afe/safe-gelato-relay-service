@@ -4,8 +4,7 @@ import { HttpService } from '@nestjs/axios';
 
 import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
-import { SupportedChainId } from 'src/config/constants';
-import configuration from '../../config/configuration';
+import { SupportedChainId } from '../../config/constants';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -36,7 +35,9 @@ jest.mock('../common/safe/safe-info.helper', () => ({
 }));
 
 describe('RelayService', () => {
-  const configService = new ConfigService(configuration);
+  const configService = new ConfigService({
+    gelato: { apiKey: { '5': 'fakeApiKey' } },
+  });
   const safeInfoHelper = new helper.SafeInfoHelper(
     configService,
     new HttpService(),
@@ -51,7 +52,7 @@ describe('RelayService', () => {
   describe('sponsoredCall', () => {
     const EXEC_TX_CALL_DATA = '0x6a761202';
 
-    it('call the relayer', async () => {
+    it('should call the relayer', async () => {
       mockIsSafe.mockImplementation(() => Promise.resolve(true));
 
       const body = {
