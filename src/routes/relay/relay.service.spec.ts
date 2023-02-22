@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
+import { HttpService } from '@nestjs/axios';
 
 import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
-import { HttpService } from '@nestjs/axios';
 import { SupportedChainId } from 'src/config/constants';
+import configuration from '../../config/configuration';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -20,6 +21,13 @@ describe('getRelayGasLimit', () => {
   });
 });
 
+const mockSponsoredCall = jest.fn();
+jest.mock('@gelatonetwork/relay-sdk', () => ({
+  GelatoRelay: jest.fn().mockImplementation(() => ({
+    sponsoredCall: mockSponsoredCall,
+  })),
+}));
+
 const mockIsSafe = jest.fn();
 jest.mock('../common/safe/safe-info.helper', () => ({
   SafeInfoHelper: jest.fn().mockImplementation(() => ({
@@ -28,7 +36,7 @@ jest.mock('../common/safe/safe-info.helper', () => ({
 }));
 
 describe('RelayService', () => {
-  const configService = new ConfigService();
+  const configService = new ConfigService(configuration);
   const safeInfoHelper = new helper.SafeInfoHelper(
     configService,
     new HttpService(),
@@ -36,9 +44,30 @@ describe('RelayService', () => {
 
   const relayService = new RelayService(configService, safeInfoHelper);
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('sponsoredCall', () => {
+    const EXEC_TX_CALL_DATA = '0x6a761202';
+
+    it('call the relayer', async () => {
+      mockIsSafe.mockImplementation(() => Promise.resolve(true));
+
+      const body = {
+        chainId: '5' as SupportedChainId,
+        target: faker.finance.ethereumAddress(),
+        data: EXEC_TX_CALL_DATA,
+      };
+
+      await relayService.sponsoredCall(body);
+
+      expect(mockSponsoredCall).toHaveBeenCalledWith(body, expect.any(String), {
+        gasLimit: undefined,
+      });
+    });
+
     it('should throw if the target is not a Safe address', async () => {
-      const relayServiceSpy = jest.spyOn(relayService, 'sponsoredCall');
       mockIsSafe.mockImplementation(() => Promise.resolve(false));
 
       const chainId = '5' as SupportedChainId;
@@ -47,7 +76,7 @@ describe('RelayService', () => {
       const body = {
         chainId,
         target,
-        data: '0x6a761202', // execTransaction
+        data: EXEC_TX_CALL_DATA,
       };
 
       try {
@@ -62,8 +91,7 @@ describe('RelayService', () => {
         });
       }
 
-      expect(relayServiceSpy).toHaveBeenCalledTimes(1);
-      expect(mockIsSafe).toHaveBeenCalledTimes(1);
+      expect(mockSponsoredCall).not.toHaveBeenCalled();
     });
   });
 });
