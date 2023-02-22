@@ -1,10 +1,11 @@
 import { isAddress, isHexString } from 'ethers';
 import { z } from 'zod';
 
-const NUMERIC_REGEX = /^\d+$/;
+import { SupportedChainId } from '../../../../config/constants';
 
 export const SponsoredCallSchema = z.object({
-  chainId: z.string().regex(NUMERIC_REGEX),
+  chainId: z.nativeEnum(SupportedChainId),
   target: z.string().refine(isAddress),
   data: z.string().refine(isHexString),
+  gasLimit: z.optional(z.string().regex(/^\d+$/)),
 });
