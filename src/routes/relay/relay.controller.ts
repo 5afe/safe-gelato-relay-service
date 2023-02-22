@@ -11,6 +11,7 @@ import { RelayService } from './relay.service';
 })
 export class RelayController {
   constructor(private readonly relayService: RelayService) {}
+
   @Post('relay')
   @UsePipes(new ZodValidationPipe(SponsoredCallSchema))
   sponsoredCall(
