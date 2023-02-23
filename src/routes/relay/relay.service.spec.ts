@@ -4,6 +4,7 @@ import { faker } from '@faker-js/faker';
 import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
+import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -35,11 +36,24 @@ jest.mock('../common/safe/safe-info.helper', () => ({
 
 describe('RelayService', () => {
   const configService = new ConfigService({
-    gelato: { apiKey: { '5': 'fakeApiKey' } },
+    gelato: {
+      apiKey: {
+        '5': 'fakeApiKey',
+      },
+    },
+    throttle: {
+      ttl: 60 * 60,
+      limit: 5,
+    },
   });
   const safeInfoHelper = new helper.SafeInfoHelper(configService);
+  const mockThrottlerStorageService = new MockThrottlerStorage();
 
-  const relayService = new RelayService(configService, safeInfoHelper);
+  const relayService = new RelayService(
+    configService,
+    safeInfoHelper,
+    mockThrottlerStorageService,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -89,6 +103,42 @@ describe('RelayService', () => {
       }
 
       expect(mockSponsoredCall).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getRelayLimit', () => {
+    it('should return the pre-defined limit if no there are no total hits', () => {
+      const target = faker.finance.ethereumAddress();
+
+      expect(relayService.getRelayLimit(target)).toEqual({
+        remainingRelays: 5,
+      });
+    });
+
+    it('should return the remaining relays left', () => {
+      const target = faker.finance.ethereumAddress();
+
+      mockThrottlerStorageService.increment(target, 1);
+
+      expect(relayService.getRelayLimit(target)).toEqual({
+        remainingRelays: 4,
+        expiresAt: expect.any(Number),
+      });
+    });
+
+    it('should return 0 if there are no relays left if there are more higher hits', () => {
+      const target = faker.finance.ethereumAddress();
+
+      const limit = configService.getOrThrow<number>('throttle.limit');
+
+      Array.from({ length: limit + 1 }, () => {
+        mockThrottlerStorageService.increment(target, 1);
+      });
+
+      expect(relayService.getRelayLimit(target)).toEqual({
+        remainingRelays: 0,
+        expiresAt: expect.any(Number),
+      });
     });
   });
 });

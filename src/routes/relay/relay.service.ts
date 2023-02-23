@@ -1,6 +1,7 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectThrottlerStorage, ThrottlerStorage } from '@nestjs/throttler';
 
 import { SafeInfoHelper } from '../common/safe/safe-info.helper';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
@@ -28,6 +29,8 @@ export class RelayService {
   constructor(
     private readonly configService: ConfigService,
     private readonly safeInfoHelper: SafeInfoHelper,
+    @InjectThrottlerStorage()
+    private readonly storageService: ThrottlerStorage,
   ) {
     this.relayer = new GelatoRelay();
   }
@@ -64,5 +67,22 @@ export class RelayService {
         gasLimit: _getRelayGasLimit(gasLimit),
       },
     );
+  }
+
+  /**
+   * Current rate limit for a target address
+   */
+  getRelayLimit(target: string): {
+    remainingRelays: number;
+    expiresAt?: number;
+  } {
+    const limit = this.configService.getOrThrow<number>('throttle.limit');
+
+    const { totalHits, expiresAt } = this.storageService.storage[target] || {};
+
+    return {
+      remainingRelays: totalHits ? Math.max(limit - totalHits, 0) : limit,
+      expiresAt,
+    };
   }
 }
