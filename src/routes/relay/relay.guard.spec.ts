@@ -1,5 +1,5 @@
 import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
-import { RelayThrottlerGuard } from './relay.throttler';
+import { RelayThrottlerGuard } from './relay.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
