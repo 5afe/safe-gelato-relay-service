@@ -128,15 +128,52 @@ describe('RelayController', () => {
       // 6th call will have been rate limited
       expect(relayServiceSpy).toBeCalledTimes(5);
     });
-  });
 
-  describe('/v1/relay/:target (GET)', () => {
-    it('should return a 200 when the body is valid', async () => {
-      const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
+    it('should not rate limit the same address on a different chain', async () => {
+      const relayServiceSpy = jest
+        .spyOn(relayService, 'sponsoredCall')
+        .mockImplementation(() => Promise.resolve({ taskId: '123' }));
 
       const target = faker.finance.ethereumAddress();
 
-      await request(app.getHttpServer()).get(`/v1/relay/${target}`).expect(200);
+      const body = {
+        chainId: '5',
+        target,
+        data: '0x6a761202', // execTransaction
+      };
+
+      await Promise.all(
+        Array.from({ length: 5 }, () =>
+          request(app.getHttpServer()).post('/v1/relay').send(body).expect(201),
+        ),
+      );
+
+      await request(app.getHttpServer())
+        .post('/v1/relay')
+        .send(body)
+        .expect(429);
+
+      // 6th call will have been rate limited
+      expect(relayServiceSpy).toBeCalledTimes(5);
+
+      // Same address, different chain
+      await request(app.getHttpServer())
+        .post('/v1/relay')
+        .send({ ...body, chainId: '100' })
+        .expect(201);
+    });
+  });
+
+  describe('/v1/relay/:chainId/:target (GET)', () => {
+    it('should return a 200 when the body is valid', async () => {
+      const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
+
+      const chainId = '5';
+      const target = faker.finance.ethereumAddress();
+
+      await request(app.getHttpServer())
+        .get(`/v1/relay/${chainId}/${target}`)
+        .expect(200);
 
       expect(relayServiceSpy).toHaveBeenCalledTimes(1);
     });
@@ -144,9 +181,12 @@ describe('RelayController', () => {
     it('should return a 400 error when the target is invalid', async () => {
       const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
 
+      const chainId = '5';
       const target = '0x123';
 
-      await request(app.getHttpServer()).get(`/v1/relay/${target}`).expect(400);
+      await request(app.getHttpServer())
+        .get(`/v1/relay/${chainId}/${target}`)
+        .expect(400);
 
       expect(relayServiceSpy).not.toHaveBeenCalled();
     });
