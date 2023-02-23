@@ -2,6 +2,13 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { isAddress } from 'ethers';
 
+export const getRelayThrottlerGuardStorageKey = (
+  chainId: string,
+  address: string,
+) => {
+  return `${chainId}:${address}`;
+};
+
 @Injectable()
 export class RelayThrottlerGuard extends ThrottlerGuard {
   /**
@@ -12,10 +19,11 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
   }
 
   /**
-   * We only use the Safe address as target because we want to read throttle storage.
+   * This is the key used to store the rate limit in the storage service
    */
-  generateKey(_: ExecutionContext, target: string): string {
-    return target;
+  generateKey(context: ExecutionContext): string {
+    const { body } = context.switchToHttp().getRequest();
+    return getRelayThrottlerGuardStorageKey(body.chainId, body.target);
   }
 
   /**
@@ -31,6 +39,7 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
     const { req } = this.getRequestResponse(context);
     const tracker = this.getTracker(req);
 
+    // TODO: Add rate limit bypass on staging
     if (isAddress(tracker)) {
       return super.handleRequest(context, limit, ttl);
     } else {

@@ -5,6 +5,7 @@ import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
+import { getRelayThrottlerGuardStorageKey } from './relay.guard';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -108,34 +109,42 @@ describe('RelayService', () => {
 
   describe('getRelayLimit', () => {
     it('should return the pre-defined limit if no there are no total hits', () => {
+      const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
 
-      expect(relayService.getRelayLimit(target)).toEqual({
+      expect(relayService.getRelayLimit(chainId, target)).toEqual({
         remaining: 5,
       });
     });
 
     it('should return the remaining relays left', () => {
+      const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
 
-      mockThrottlerStorageService.increment(target, 1);
+      const key = getRelayThrottlerGuardStorageKey(chainId, target);
 
-      expect(relayService.getRelayLimit(target)).toEqual({
+      mockThrottlerStorageService.increment(key, 1);
+
+      expect(relayService.getRelayLimit(chainId, target)).toEqual({
         remaining: 4,
         expiresAt: expect.any(Number),
       });
     });
 
     it('should return 0 if there are no relays left if there are more higher hits', () => {
+      const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
+
+      const key = getRelayThrottlerGuardStorageKey(chainId, target);
 
       const limit = configService.getOrThrow<number>('throttle.limit');
 
+      // One request more than the limit
       Array.from({ length: limit + 1 }, () => {
-        mockThrottlerStorageService.increment(target, 1);
+        mockThrottlerStorageService.increment(key, 1);
       });
 
-      expect(relayService.getRelayLimit(target)).toEqual({
+      expect(relayService.getRelayLimit(chainId, target)).toEqual({
         remaining: 0,
         expiresAt: expect.any(Number),
       });
