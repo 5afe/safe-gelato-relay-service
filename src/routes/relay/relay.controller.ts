@@ -14,7 +14,7 @@ import { AddressSchema } from '../common/schema/address.schema';
 import { SponsoredCallSchema } from './entities/schema/sponsored-call.schema';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayService } from './relay.service';
-import { RelayThrottlerGuard } from './relay.throttler';
+import { RelayThrottlerGuard } from './relay.guard';
 
 @Controller({
   version: '1',
