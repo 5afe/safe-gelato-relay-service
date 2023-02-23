@@ -73,7 +73,7 @@ export class RelayService {
    * Current rate limit for a target address
    */
   getRelayLimit(target: string): {
-    remainingRelays: number;
+    remaining: number;
     expiresAt?: number;
   } {
     const limit = this.configService.getOrThrow<number>('throttle.limit');
@@ -81,7 +81,7 @@ export class RelayService {
     const { totalHits, expiresAt } = this.storageService.storage[target] || {};
 
     return {
-      remainingRelays: totalHits ? Math.max(limit - totalHits, 0) : limit,
+      remaining: totalHits ? Math.max(limit - totalHits, 0) : limit,
       expiresAt,
     };
   }

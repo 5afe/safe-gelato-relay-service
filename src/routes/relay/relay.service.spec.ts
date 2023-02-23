@@ -111,7 +111,7 @@ describe('RelayService', () => {
       const target = faker.finance.ethereumAddress();
 
       expect(relayService.getRelayLimit(target)).toEqual({
-        remainingRelays: 5,
+        remaining: 5,
       });
     });
 
@@ -121,7 +121,7 @@ describe('RelayService', () => {
       mockThrottlerStorageService.increment(target, 1);
 
       expect(relayService.getRelayLimit(target)).toEqual({
-        remainingRelays: 4,
+        remaining: 4,
         expiresAt: expect.any(Number),
       });
     });
@@ -136,7 +136,7 @@ describe('RelayService', () => {
       });
 
       expect(relayService.getRelayLimit(target)).toEqual({
-        remainingRelays: 0,
+        remaining: 0,
         expiresAt: expect.any(Number),
       });
     });
