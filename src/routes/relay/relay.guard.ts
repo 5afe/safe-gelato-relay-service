@@ -12,18 +12,18 @@ export const getRelayThrottlerGuardStorageKey = (
 @Injectable()
 export class RelayThrottlerGuard extends ThrottlerGuard {
   /**
-   * Overwrite tracker to rate limit based on the (Safe) target address
+   * Override reference value in order to rate limit based on chain ID and address
    */
-  getTracker(req: Record<string, any>) {
-    return req.body.target;
+  getTracker({ body }: Record<string, any>) {
+    return getRelayThrottlerGuardStorageKey(body.chainId, body.target);
   }
 
   /**
-   * This is the key used to store the rate limit in the storage service
+   * Key used to store the rate limit details under in ThrottlerStorage
    */
   generateKey(context: ExecutionContext): string {
-    const { body } = context.switchToHttp().getRequest();
-    return getRelayThrottlerGuardStorageKey(body.chainId, body.target);
+    const req = context.switchToHttp().getRequest();
+    return this.getTracker(req);
   }
 
   /**
@@ -37,10 +37,9 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
     ttl: number,
   ): Promise<boolean> {
     const { req } = this.getRequestResponse(context);
-    const tracker = this.getTracker(req);
 
     // TODO: Add rate limit bypass on staging
-    if (isAddress(tracker)) {
+    if (isAddress(req.body.target)) {
       return super.handleRequest(context, limit, ttl);
     } else {
       // Skip rate limiting
