@@ -79,9 +79,10 @@ export class RelayService {
     const limit = this.configService.getOrThrow<number>('throttle.limit');
 
     const { totalHits, expiresAt } = this.storageService.storage[target] || {};
+    const remaining = totalHits ? Math.max(limit - totalHits, 0) : limit;
 
     return {
-      remaining: totalHits ? Math.max(limit - totalHits, 0) : limit,
+      remaining,
       expiresAt,
     };
   }
