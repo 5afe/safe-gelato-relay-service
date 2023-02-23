@@ -19,11 +19,11 @@ describe('RelayThrottlerGuard', () => {
     jest.clearAllMocks();
   });
 
-  const getContext = () => {
+  const getContext = (address = faker.finance.ethereumAddress()) => {
     const req = {
       body: {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        target: address,
       },
     };
 
@@ -38,11 +38,15 @@ describe('RelayThrottlerGuard', () => {
     } as unknown as ExecutionContext;
   };
 
-  it('should return the target address as the tracker', () => {
-    const context = getContext();
-    const req = context.switchToHttp().getRequest();
+  it('should return the chain ID and target address as the tracker', () => {
+    const req = {
+      body: {
+        chainId: '5',
+        target: faker.finance.ethereumAddress(),
+      },
+    };
 
-    expect(relayThrottlerGuard.getTracker(req)).toEqual(req.body.target);
+    expect(relayThrottlerGuard.getTracker(req)).toEqual(`5:${req.body.target}`);
   });
 
   it('should use the chain ID and target address as the key', () => {
@@ -67,13 +71,16 @@ describe('RelayThrottlerGuard', () => {
     expect(superHandleRequestSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should skip rate limiting if the target is not a valid address', () => {
+  it('should skip rate limiting if the target is not a valid address', async () => {
     const handleRequestSpy = jest.spyOn(relayThrottlerGuard, 'handleRequest');
+    const superHandleRequestSpy = jest.spyOn(
+      ThrottlerGuard.prototype as any, // handleRequest is a protected method
+      'handleRequest',
+    );
 
-    expect(
-      relayThrottlerGuard.handleRequest(getContext(), 1, 1),
-    ).resolves.toEqual(true);
+    await relayThrottlerGuard.handleRequest(getContext('0x123'), 1, 1);
 
     expect(handleRequestSpy).toHaveBeenCalledTimes(1);
+    expect(superHandleRequestSpy).not.toHaveBeenCalled();
   });
 });
