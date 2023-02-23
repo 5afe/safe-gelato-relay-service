@@ -34,7 +34,7 @@ export class RelayController {
   @Get('relay/:target')
   @UsePipes(new ZodValidationPipe(AddressSchema))
   getRelayLimit(@Param('target') target: string): {
-    remainingRelays: number;
+    remaining: number;
     expiresAt?: number;
   } {
     return this.relayService.getRelayLimit(target);
