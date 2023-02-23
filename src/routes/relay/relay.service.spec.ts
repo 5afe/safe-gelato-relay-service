@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
-import { HttpService } from '@nestjs/axios';
 
 import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
@@ -38,10 +37,7 @@ describe('RelayService', () => {
   const configService = new ConfigService({
     gelato: { apiKey: { '5': 'fakeApiKey' } },
   });
-  const safeInfoHelper = new helper.SafeInfoHelper(
-    configService,
-    new HttpService(),
-  );
+  const safeInfoHelper = new helper.SafeInfoHelper(configService);
 
   const relayService = new RelayService(configService, safeInfoHelper);
 
