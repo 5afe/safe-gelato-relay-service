@@ -1,6 +1,7 @@
-import { id, isAddress } from 'ethers';
+import { id } from 'ethers';
 import { z } from 'zod';
 
+import { AddressSchema } from '../../../common/schema/address.schema';
 import { SupportedChainId } from '../../../../config/constants';
 
 /**
@@ -18,7 +19,7 @@ const isExecTransactionCall = (data: string): boolean => {
 
 export const SponsoredCallSchema = z.object({
   chainId: z.nativeEnum(SupportedChainId),
-  target: z.string().refine(isAddress),
+  target: AddressSchema,
   data: z.string().refine(isExecTransactionCall),
   gasLimit: z.optional(z.string().regex(/^\d+$/)),
 });
