@@ -1,7 +1,8 @@
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
-import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../pipes/zod/zod-validation.pipe';
+import { ZodAsyncValidationPipe } from '../../pipes/zod/zod-async-validation.pipe';
 import { AddressSchema } from '../common/schema/address.schema';
 import { SponsoredCallSchema } from './entities/schema/sponsored-call.schema';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
@@ -18,7 +19,8 @@ export class RelayController {
   @Post('relay')
   @UseGuards(RelayThrottlerGuard)
   sponsoredCall(
-    @Body(new ZodValidationPipe(SponsoredCallSchema))
+    // async as we validate that the address is a Safe via the gateway
+    @Body(new ZodAsyncValidationPipe(SponsoredCallSchema))
     sponsoredCallDto: SponsoredCallDto,
   ): Promise<RelayResponse> {
     return this.relayService.sponsoredCall(sponsoredCallDto);

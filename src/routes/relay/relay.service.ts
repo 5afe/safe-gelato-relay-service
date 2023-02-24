@@ -1,9 +1,8 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectThrottlerStorage, ThrottlerStorage } from '@nestjs/throttler';
 
-import { SafeInfoHelper } from '../common/safe/safe-info.helper';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { getRelayThrottlerGuardKey } from './relay.guard';
 
@@ -29,7 +28,6 @@ export class RelayService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly safeInfoHelper: SafeInfoHelper,
     @InjectThrottlerStorage()
     private readonly storageService: ThrottlerStorage,
   ) {
@@ -46,14 +44,6 @@ export class RelayService {
     target,
     gasLimit,
   }: SponsoredCallDto): Promise<RelayResponse> {
-    // Avoid relaying of non-Safe contracts with the same ABI
-    if (!(await this.safeInfoHelper.isSafe(chainId, target))) {
-      throw {
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: `${target} is not a Safe on chain ${chainId}`,
-      };
-    }
-
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 
     // Relay

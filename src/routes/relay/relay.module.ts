@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 
-import { SafeInfoHelper } from '../common/safe/safe-info.helper';
 import { RelayController } from './relay.controller';
 import { RelayService } from './relay.service';
 
@@ -18,6 +17,6 @@ import { RelayService } from './relay.service';
       }),
     }),
   ],
-  providers: [RelayService, SafeInfoHelper],
+  providers: [RelayService],
 })
 export class RelayModule {}
