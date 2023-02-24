@@ -53,7 +53,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
       };
 
@@ -74,7 +74,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '1337',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
       };
 
@@ -86,7 +86,7 @@ describe('RelayController', () => {
       expect(relayServiceSpy).not.toHaveBeenCalled();
     });
 
-    it('should return a 400 error when the target is invalid', async () => {
+    it('should return a 400 error when the to address is invalid', async () => {
       axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
 
       const relayServiceSpy = jest
@@ -95,7 +95,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '5',
-        target: '0xinvalid',
+        to: '0xinvalid',
         data: EXEC_TX_CALL_DATA,
       };
 
@@ -116,7 +116,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: '0x1',
       };
 
@@ -137,7 +137,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
         gasLimit: '1.23',
       };
@@ -150,14 +150,14 @@ describe('RelayController', () => {
       expect(relayServiceSpy).not.toHaveBeenCalled();
     });
 
-    it('should not rate limit invalid target addresses', async () => {
+    it('should not rate limit invalid to addresses', async () => {
       axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
 
       const relayServiceSpy = jest.spyOn(relayService, 'sponsoredCall');
 
       const invalidBody = {
         chainId: '5',
-        target: '0xinvalid',
+        to: '0xinvalid',
         data: EXEC_TX_CALL_DATA,
       };
       await Promise.all(
@@ -187,7 +187,7 @@ describe('RelayController', () => {
 
       const body = {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
       };
 
@@ -213,11 +213,9 @@ describe('RelayController', () => {
         .spyOn(relayService, 'sponsoredCall')
         .mockImplementation(() => Promise.resolve({ taskId: '123' }));
 
-      const target = faker.finance.ethereumAddress();
-
       const body = {
         chainId: '5',
-        target,
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
       };
 
@@ -245,15 +243,15 @@ describe('RelayController', () => {
     });
   });
 
-  describe('/v1/relay/:chainId/:target (GET)', () => {
+  describe('/v1/relay/:chainId/:address (GET)', () => {
     it('should return a 200 when the body is valid', async () => {
       const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
 
       const chainId = '5';
-      const target = faker.finance.ethereumAddress();
+      const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${target}`)
+        .get(`/v1/relay/${chainId}/${address}`)
         .expect(200);
 
       expect(relayServiceSpy).toHaveBeenCalledTimes(1);
@@ -263,23 +261,23 @@ describe('RelayController', () => {
       const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
 
       const chainId = '1337';
-      const target = faker.finance.ethereumAddress();
+      const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${target}`)
+        .get(`/v1/relay/${chainId}/${address}`)
         .expect(400);
 
       expect(relayServiceSpy).not.toHaveBeenCalled();
     });
 
-    it('should return a 400 error when the target is invalid', async () => {
+    it('should return a 400 error when the address is invalid', async () => {
       const relayServiceSpy = jest.spyOn(relayService, 'getRelayLimit');
 
       const chainId = '5';
-      const target = '0x123';
+      const address = '0x123';
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${target}`)
+        .get(`/v1/relay/${chainId}/${address}`)
         .expect(400);
 
       expect(relayServiceSpy).not.toHaveBeenCalled();

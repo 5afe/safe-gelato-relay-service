@@ -12,7 +12,7 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
    * Override reference value in order to rate limit based on chain ID and address
    */
   getTracker({ body }: Record<string, any>) {
-    return getRelayThrottlerGuardKey(body.chainId, body.target);
+    return getRelayThrottlerGuardKey(body.chainId, body.to);
   }
 
   /**
@@ -24,7 +24,7 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
   }
 
   /**
-   * If the request contains a valid target, we rate limit based on that address.
+   * If the request contains a valid to address, we rate limit based on that address.
    * Otherwise we allow the request, because it will otherwise throw during validation.
    * @see https://github.com/nestjs/throttler/blob/master/src/throttler.guard.ts#L62
    */
@@ -36,7 +36,7 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
     const { req } = this.getRequestResponse(context);
 
     // TODO: Add rate limit bypass on staging
-    if (isAddress(req.body.target)) {
+    if (isAddress(req.body.to)) {
       return super.handleRequest(context, limit, ttl);
     } else {
       // Skip rate limiting
