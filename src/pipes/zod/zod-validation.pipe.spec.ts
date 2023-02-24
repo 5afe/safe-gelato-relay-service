@@ -28,7 +28,7 @@ describe('ZodValidationPipe', () => {
 
   it('should throw an error for invalid data', async () => {
     const invalid = {
-      firstName: MIN_LENGTH + 1,
+      firstName: MIN_LENGTH - 1,
       lastName: faker.datatype.string(),
       age: false,
     };
