@@ -1,7 +1,7 @@
 import { PipeTransform, Injectable } from '@nestjs/common';
 import { Schema } from 'zod';
 
-import { createZodException } from './zod-validation.pipe';
+import { createZodValidationException } from './zod-validation.exception';
 
 @Injectable()
 export class ZodAsyncValidationPipe implements PipeTransform {
@@ -11,7 +11,7 @@ export class ZodAsyncValidationPipe implements PipeTransform {
     const result = await this.schema.safeParseAsync(value);
 
     if (!result.success) {
-      throw createZodException(result);
+      throw createZodValidationException(result.error);
     }
 
     return result.data;
