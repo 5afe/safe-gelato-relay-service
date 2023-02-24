@@ -1,7 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
 
-import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
@@ -28,13 +27,6 @@ jest.mock('@gelatonetwork/relay-sdk', () => ({
   })),
 }));
 
-const mockIsSafe = jest.fn();
-jest.mock('../common/safe/safe-info.helper', () => ({
-  SafeInfoHelper: jest.fn().mockImplementation(() => ({
-    isSafe: mockIsSafe,
-  })),
-}));
-
 describe('RelayService', () => {
   const configService = new ConfigService({
     gelato: {
@@ -47,12 +39,10 @@ describe('RelayService', () => {
       limit: 5,
     },
   });
-  const safeInfoHelper = new helper.SafeInfoHelper(configService);
   const mockThrottlerStorageService = new MockThrottlerStorage();
 
   const relayService = new RelayService(
     configService,
-    safeInfoHelper,
     mockThrottlerStorageService,
   );
 
@@ -64,8 +54,6 @@ describe('RelayService', () => {
     const EXEC_TX_CALL_DATA = '0x6a761202';
 
     it('should call the relayer', async () => {
-      mockIsSafe.mockImplementation(() => Promise.resolve(true));
-
       const body = {
         chainId: '5' as SupportedChainId,
         target: faker.finance.ethereumAddress(),
@@ -77,33 +65,6 @@ describe('RelayService', () => {
       expect(mockSponsoredCall).toHaveBeenCalledWith(body, expect.any(String), {
         gasLimit: undefined,
       });
-    });
-
-    it('should throw if the target is not a Safe address', async () => {
-      mockIsSafe.mockImplementation(() => Promise.resolve(false));
-
-      const chainId = '5' as SupportedChainId;
-      const target = faker.finance.ethereumAddress();
-
-      const body = {
-        chainId,
-        target,
-        data: EXEC_TX_CALL_DATA,
-      };
-
-      try {
-        await relayService.sponsoredCall(body);
-
-        // Break test if the above call does not throw
-        expect(true).toBe(false);
-      } catch (err) {
-        expect(err).toEqual({
-          statusCode: 400,
-          message: `${target} is not a Safe on chain ${chainId}`,
-        });
-      }
-
-      expect(mockSponsoredCall).not.toHaveBeenCalled();
     });
   });
 
