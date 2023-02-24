@@ -5,7 +5,7 @@ import { InjectThrottlerStorage, ThrottlerStorage } from '@nestjs/throttler';
 
 import { SafeInfoHelper } from '../common/safe/safe-info.helper';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
-import { getRelayThrottlerGuardStorageKey } from './relay.guard';
+import { getRelayThrottlerGuardKey } from './relay.guard';
 
 /**
  * If you are using your own custom gas limit, please add a 150k gas buffer on top of the expected
@@ -82,7 +82,7 @@ export class RelayService {
   } {
     const limit = this.configService.getOrThrow<number>('throttle.limit');
 
-    const key = getRelayThrottlerGuardStorageKey(chainId, target);
+    const key = getRelayThrottlerGuardKey(chainId, target);
 
     const { totalHits, expiresAt } = this.storageService.storage[key] || {};
     const remaining = totalHits ? Math.max(limit - totalHits, 0) : limit;

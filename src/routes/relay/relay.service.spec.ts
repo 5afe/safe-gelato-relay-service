@@ -5,7 +5,7 @@ import * as helper from '../common/safe/safe-info.helper';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
-import { getRelayThrottlerGuardStorageKey } from './relay.guard';
+import { getRelayThrottlerGuardKey } from './relay.guard';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -121,7 +121,7 @@ describe('RelayService', () => {
       const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
 
-      const key = getRelayThrottlerGuardStorageKey(chainId, target);
+      const key = getRelayThrottlerGuardKey(chainId, target);
 
       mockThrottlerStorageService.increment(key, 1);
 
@@ -135,7 +135,7 @@ describe('RelayService', () => {
       const chainId = '5' as SupportedChainId;
       const target = faker.finance.ethereumAddress();
 
-      const key = getRelayThrottlerGuardStorageKey(chainId, target);
+      const key = getRelayThrottlerGuardKey(chainId, target);
 
       const limit = configService.getOrThrow<number>('throttle.limit');
 

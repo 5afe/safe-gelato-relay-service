@@ -2,10 +2,7 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { isAddress } from 'ethers';
 
-export const getRelayThrottlerGuardStorageKey = (
-  chainId: string,
-  address: string,
-) => {
+export const getRelayThrottlerGuardKey = (chainId: string, address: string) => {
   return `${chainId}:${address}`;
 };
 
@@ -15,7 +12,7 @@ export class RelayThrottlerGuard extends ThrottlerGuard {
    * Override reference value in order to rate limit based on chain ID and address
    */
   getTracker({ body }: Record<string, any>) {
-    return getRelayThrottlerGuardStorageKey(body.chainId, body.target);
+    return getRelayThrottlerGuardKey(body.chainId, body.target);
   }
 
   /**
