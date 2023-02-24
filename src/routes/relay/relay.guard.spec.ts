@@ -23,7 +23,7 @@ describe('RelayThrottlerGuard', () => {
     const req = {
       body: {
         chainId: '5',
-        target: address,
+        to: address,
       },
     };
 
@@ -38,27 +38,27 @@ describe('RelayThrottlerGuard', () => {
     } as unknown as ExecutionContext;
   };
 
-  it('should return the chain ID and target address as the tracker', () => {
+  it('should return the chain ID and to address as the tracker', () => {
     const req = {
       body: {
         chainId: '5',
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
       },
     };
 
-    expect(relayThrottlerGuard.getTracker(req)).toEqual(`5:${req.body.target}`);
+    expect(relayThrottlerGuard.getTracker(req)).toEqual(`5:${req.body.to}`);
   });
 
-  it('should use the chain ID and target address as the key', () => {
+  it('should use the chain ID and address as the key', () => {
     const context = getContext();
     const req = context.switchToHttp().getRequest();
 
     expect(relayThrottlerGuard.generateKey(context)).toEqual(
-      `5:${req.body.target}`,
+      `5:${req.body.to}`,
     );
   });
 
-  it('should rate limit if the target is a valid address', async () => {
+  it('should rate limit if the to address is valid', async () => {
     const handleRequestSpy = jest.spyOn(relayThrottlerGuard, 'handleRequest');
     const superHandleRequestSpy = jest.spyOn(
       ThrottlerGuard.prototype as any, // handleRequest is a protected method
@@ -71,7 +71,7 @@ describe('RelayThrottlerGuard', () => {
     expect(superHandleRequestSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should skip rate limiting if the target is not a valid address', async () => {
+  it('should skip rate limiting if the to address is not valid', async () => {
     const handleRequestSpy = jest.spyOn(relayThrottlerGuard, 'handleRequest');
     const superHandleRequestSpy = jest.spyOn(
       ThrottlerGuard.prototype as any, // handleRequest is a protected method

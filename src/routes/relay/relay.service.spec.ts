@@ -56,37 +56,41 @@ describe('RelayService', () => {
     it('should call the relayer', async () => {
       const body = {
         chainId: '5' as SupportedChainId,
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
       };
 
       await relayService.sponsoredCall(body);
 
-      expect(mockSponsoredCall).toHaveBeenCalledWith(body, expect.any(String), {
-        gasLimit: undefined,
-      });
+      expect(mockSponsoredCall).toHaveBeenCalledWith(
+        { chainId: body.chainId, target: body.to, data: body.data },
+        expect.any(String),
+        {
+          gasLimit: undefined,
+        },
+      );
     });
   });
 
   describe('getRelayLimit', () => {
     it('should return the pre-defined limit if no there are no total hits', () => {
       const chainId = '5' as SupportedChainId;
-      const target = faker.finance.ethereumAddress();
+      const address = faker.finance.ethereumAddress();
 
-      expect(relayService.getRelayLimit(chainId, target)).toEqual({
+      expect(relayService.getRelayLimit(chainId, address)).toEqual({
         remaining: 5,
       });
     });
 
     it('should return the remaining relays left', () => {
       const chainId = '5' as SupportedChainId;
-      const target = faker.finance.ethereumAddress();
+      const address = faker.finance.ethereumAddress();
 
-      const key = getRelayThrottlerGuardKey(chainId, target);
+      const key = getRelayThrottlerGuardKey(chainId, address);
 
       mockThrottlerStorageService.increment(key, 1);
 
-      expect(relayService.getRelayLimit(chainId, target)).toEqual({
+      expect(relayService.getRelayLimit(chainId, address)).toEqual({
         remaining: 4,
         expiresAt: expect.any(Number),
       });
@@ -94,9 +98,9 @@ describe('RelayService', () => {
 
     it('should return 0 if there are no relays left if there are more higher hits', () => {
       const chainId = '5' as SupportedChainId;
-      const target = faker.finance.ethereumAddress();
+      const address = faker.finance.ethereumAddress();
 
-      const key = getRelayThrottlerGuardKey(chainId, target);
+      const key = getRelayThrottlerGuardKey(chainId, address);
 
       const limit = configService.getOrThrow<number>('throttle.limit');
 
@@ -105,7 +109,7 @@ describe('RelayService', () => {
         mockThrottlerStorageService.increment(key, 1);
       });
 
-      expect(relayService.getRelayLimit(chainId, target)).toEqual({
+      expect(relayService.getRelayLimit(chainId, address)).toEqual({
         remaining: 0,
         expiresAt: expect.any(Number),
       });

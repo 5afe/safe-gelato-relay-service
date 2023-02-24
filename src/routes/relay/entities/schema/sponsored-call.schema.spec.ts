@@ -13,14 +13,14 @@ describe('sponsoredCall schema', () => {
   });
 
   // chainId validation test coverage in chain-id.schema.spec.ts
-  // target address validation test coverage in address.schema.spec.ts
+  // to address validation test coverage in address.schema.spec.ts
 
   it('should validate a valid sponsoredCall', async () => {
     axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
     const result = await SponsoredCallSchema.safeParseAsync({
       chainId: '5',
-      target: faker.finance.ethereumAddress(),
+      to: faker.finance.ethereumAddress(),
       data: EXEC_TX_CALL_DATA,
       gasLimit: faker.random.numeric(),
     });
@@ -34,7 +34,7 @@ describe('sponsoredCall schema', () => {
     for await (const data of [true, '', 'abc', '1.23', '123', 123]) {
       const result = await SponsoredCallSchema.safeParseAsync({
         chainId: faker.random.numeric(),
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data,
       });
 
@@ -48,7 +48,7 @@ describe('sponsoredCall schema', () => {
     for await (const gasLimit of [true, '', 'abc', '1.23', 123]) {
       const result = await SponsoredCallSchema.safeParseAsync({
         chainId: faker.random.numeric(),
-        target: faker.finance.ethereumAddress(),
+        to: faker.finance.ethereumAddress(),
         data: EXEC_TX_CALL_DATA,
         gasLimit,
       });

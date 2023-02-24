@@ -41,7 +41,7 @@ export class RelayService {
   async sponsoredCall({
     chainId,
     data,
-    target,
+    to,
     gasLimit,
   }: SponsoredCallDto): Promise<RelayResponse> {
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
@@ -51,7 +51,7 @@ export class RelayService {
       {
         chainId,
         data,
-        target,
+        target: to,
       },
       apiKey,
       {
@@ -61,18 +61,18 @@ export class RelayService {
   }
 
   /**
-   * Current rate limit for a target address
+   * Current rate limit for an address
    */
   getRelayLimit(
     chainId: string,
-    target: string,
+    address: string,
   ): {
     remaining: number;
     expiresAt?: number;
   } {
     const limit = this.configService.getOrThrow<number>('throttle.limit');
 
-    const key = getRelayThrottlerGuardKey(chainId, target);
+    const key = getRelayThrottlerGuardKey(chainId, address);
 
     const { totalHits, expiresAt } = this.storageService.storage[key] || {};
     const remaining = totalHits ? Math.max(limit - totalHits, 0) : limit;

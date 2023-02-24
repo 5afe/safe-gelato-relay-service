@@ -39,10 +39,10 @@ const isSafe = async (chainId: string, address: string): Promise<boolean> => {
 export const SponsoredCallSchema = z
   .object({
     chainId: ChainIdSchema,
-    target: AddressSchema,
+    to: AddressSchema,
     data: z.string().refine(isExecTransactionCall),
     gasLimit: z.optional(z.string().regex(/^\d+$/)),
   })
-  .refine(({ chainId, target }) => isSafe(chainId, target), {
-    path: ['target'],
+  .refine(({ chainId, to }) => isSafe(chainId, to), {
+    path: ['to'],
   });

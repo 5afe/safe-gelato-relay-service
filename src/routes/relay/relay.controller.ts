@@ -26,16 +26,16 @@ export class RelayController {
     return this.relayService.sponsoredCall(sponsoredCallDto);
   }
 
-  @Get('relay/:chainId/:target')
+  @Get('relay/:chainId/:address')
   getRelayLimit(
     @Param('chainId', new ZodValidationPipe(ChainIdSchema))
     chainId: string,
-    @Param('target', new ZodValidationPipe(AddressSchema))
-    target: string,
+    @Param('address', new ZodValidationPipe(AddressSchema))
+    address: string,
   ): {
     remaining: number;
     expiresAt?: number;
   } {
-    return this.relayService.getRelayLimit(chainId, target);
+    return this.relayService.getRelayLimit(chainId, address);
   }
 }
