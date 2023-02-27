@@ -7,8 +7,8 @@ import { createZodValidationException } from './zod-validation.exception';
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: Schema) {}
 
-  transform<T>(value: T): T {
-    const result = this.schema.safeParse(value);
+  async transform<T>(value: T): Promise<T> {
+    const result = await this.schema.safeParseAsync(value);
 
     if (!result.success) {
       throw createZodValidationException(result.error);
