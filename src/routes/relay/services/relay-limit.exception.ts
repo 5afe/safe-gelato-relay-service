@@ -9,7 +9,3 @@ export class RelayLimitException extends BadRequestException {
     });
   }
 }
-
-export const createRelayLimitException = (error?: Error): Error => {
-  return new RelayLimitException(error);
-};

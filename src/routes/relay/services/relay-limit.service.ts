@@ -4,25 +4,30 @@ import { ThrottlerStorageService } from '@nestjs/throttler';
 import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
 
 @Injectable()
-export class RelayLimitService {
-  /** Time to limit in seconds */
+export class RelayLimitService extends ThrottlerStorageService {
+  // Time to limit in seconds
   private readonly ttl: number;
 
-  /** Number of relay requests per ttl */
+  // Number of relay requests per ttl
   private readonly limit: number;
 
-  constructor(
-    private readonly throttlerService: ThrottlerStorageService,
-    private readonly configService: ConfigService,
-  ) {
-    this.ttl = configService.getOrThrow('relay.ttl');
-    this.limit = configService.getOrThrow('relay.limit');
+  constructor(private readonly configService: ConfigService) {
+    super();
+
+    this.ttl = this.configService.getOrThrow<number>('relay.ttl');
+    this.limit = this.configService.getOrThrow<number>('relay.limit');
   }
 
+  /**
+   * Generate key for caching number of relays
+   */
   private generateKey(chainId: string, address: string) {
     return `${chainId}:${address}`;
   }
 
+  /**
+   * Get the current relay limit for an address
+   */
   public getRelayLimit(
     chainId: string,
     address: string,
@@ -31,7 +36,7 @@ export class RelayLimitService {
     expiresAt?: number;
   } {
     const key = this.generateKey(chainId, address);
-    const throttlerEntry = this.throttlerService.storage[key] || {
+    const throttlerEntry = this.storage[key] || {
       totalHits: 0,
     };
 
@@ -41,17 +46,23 @@ export class RelayLimitService {
     };
   }
 
+  /**
+   * Check if an address can relay
+   */
   public canRelay(chainId: string, address: string): boolean {
-    const { remaining } = this.getRelayLimit(chainId, address);
-
-    return remaining !== 0;
+    const limit = this.getRelayLimit(chainId, address);
+    // TODO: Add relay bypass for staging
+    return limit.remaining > 0;
   }
 
-  public async increment(
+  /**
+   * Increment the number of relays for an address
+   */
+  public async incrementRelays(
     chainId: string,
     address: string,
   ): Promise<ThrottlerStorageRecord> {
     const key = this.generateKey(chainId, address);
-    return this.throttlerService.increment(key, this.ttl);
+    return await this.increment(key, this.ttl);
   }
 }

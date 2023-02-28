@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
-import { createRelayLimitException } from './services/relay-limit.exception';
+import { RelayLimitException } from './services/relay-limit.exception';
 import { RelayLimitService } from './services/relay-limit.service';
 
 /**
@@ -47,7 +47,7 @@ export class RelayService {
 
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, to)) {
-      throw createRelayLimitException();
+      throw new RelayLimitException();
     }
 
     let response: RelayResponse;
@@ -55,25 +55,18 @@ export class RelayService {
     try {
       // Relay
       response = await this.relayer.sponsoredCall(
-        {
-          chainId,
-          data,
-          target: to,
-        },
+        { chainId, data, target: to },
         apiKey,
-        {
-          gasLimit: _getRelayGasLimit(gasLimit),
-        },
+        { gasLimit: _getRelayGasLimit(gasLimit) },
       );
     } catch (err) {
-      throw createRelayLimitException(err);
+      throw new RelayLimitException(err);
     }
 
     // Increase the counter
-    await this.relayLimitService.increment(chainId, to);
+    await this.relayLimitService.incrementRelays(chainId, to);
 
     // TODO: Add rate limit headers
-
     return response;
   }
 }

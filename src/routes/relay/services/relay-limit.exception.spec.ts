@@ -1,47 +1,35 @@
-import { faker } from '@faker-js/faker';
 import { BadRequestException, HttpStatus } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodValidationException } from '../../../pipes/zod/zod-validation.exception';
 
-describe('createZodValidationException', () => {
-  const UserSchema = z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-  });
+import { RelayLimitException } from './relay-limit.exception';
 
-  it('should correctly create exception', () => {
-    const invalid = {
-      firstName: faker.datatype.string(),
-      lastName: false,
-    };
-
-    const result = UserSchema.safeParse(invalid);
-
-    expect(result.success).toBe(false);
-
-    if (result.success) {
-      return;
-    }
-
-    const error = new ZodValidationException(result.error);
+describe('RelayLimitException', () => {
+  it('should create a basic exception', () => {
+    const error = new RelayLimitException(new Error());
 
     expect(error).toBeInstanceOf(BadRequestException);
 
-    expect(error.message).toBe('Validation failed');
+    expect(error.message).toBe('Relay limit reached');
     expect(error.getStatus()).toBe(HttpStatus.BAD_REQUEST);
 
     expect(error.getResponse()).toStrictEqual({
-      statusCode: 400,
-      message: 'Validation failed',
-      cause: [
-        {
-          code: 'invalid_type',
-          expected: 'string',
-          received: 'boolean',
-          path: ['lastName'],
-          message: 'Expected string, received boolean',
-        },
-      ],
+      statusCode: 429,
+      message: 'Relay limit reached',
+      cause: '',
+    });
+  });
+
+  it('should add the exception cause', () => {
+    const error = new RelayLimitException(new Error('Error message'));
+
+    expect(error).toBeInstanceOf(BadRequestException);
+
+    expect(error.message).toBe('Relay limit reached');
+    expect(error.getStatus()).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(error.getResponse()).toStrictEqual({
+      statusCode: 429,
+      message: 'Relay limit reached',
+      cause: 'Error message',
     });
   });
 });

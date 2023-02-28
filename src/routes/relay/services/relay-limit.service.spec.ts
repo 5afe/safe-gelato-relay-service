@@ -1,39 +1,39 @@
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
-import { ThrottlerStorageService } from '@nestjs/throttler';
+
 import { RelayLimitService } from './relay-limit.service';
 
 describe('RelayLimitService', () => {
   const THROTTLE_LIMIT = 5;
 
-  let relayLimitService: RelayLimitService;
-  beforeEach(() => {
-    const mockConfigService = new ConfigService({
-      gelato: {
-        apiKey: {
-          '5': 'fakeApiKey',
-        },
+  const mockConfigService = new ConfigService({
+    gelato: {
+      apiKey: {
+        '5': 'fakeApiKey',
       },
-      throttle: {
-        ttl: 60 * 60,
-        limit: THROTTLE_LIMIT,
-      },
-    });
-
-    const throttlerStorageService = new ThrottlerStorageService();
-
-    relayLimitService = new RelayLimitService(
-      throttlerStorageService,
-      mockConfigService,
-    );
+    },
+    relay: {
+      ttl: 60 * 60,
+      limit: THROTTLE_LIMIT,
+    },
   });
 
-  describe('increment', () => {
-    it('should increment the current Safe', async () => {
+  let relayLimitService: RelayLimitService;
+
+  beforeEach(() => {
+    relayLimitService = new RelayLimitService(mockConfigService);
+  });
+
+  afterEach(() => {
+    relayLimitService.onApplicationShutdown();
+  });
+
+  describe('incrementRelays', () => {
+    it('should increment the current relay attempts', async () => {
       const chainId = '5';
       const address = faker.finance.ethereumAddress();
 
-      const result = await relayLimitService.increment(chainId, address);
+      const result = await relayLimitService.incrementRelays(chainId, address);
 
       expect(result).toStrictEqual({
         totalHits: 1,
@@ -44,8 +44,10 @@ describe('RelayLimitService', () => {
 
   describe('getRelayLimit', () => {
     it('should return the default remaining number of relays', () => {
-      const address = faker.finance.ethereumAddress();
-      const result = relayLimitService.getRelayLimit('5', address);
+      const result = relayLimitService.getRelayLimit(
+        '5',
+        faker.finance.ethereumAddress(),
+      );
 
       expect(result).toStrictEqual({
         remaining: THROTTLE_LIMIT,
@@ -57,7 +59,7 @@ describe('RelayLimitService', () => {
       const chainId = '5';
       const address = faker.finance.ethereumAddress();
 
-      await relayLimitService.increment(chainId, address);
+      await relayLimitService.incrementRelays(chainId, address);
 
       const result = relayLimitService.getRelayLimit(chainId, address);
 
@@ -72,8 +74,8 @@ describe('RelayLimitService', () => {
       const address = faker.finance.ethereumAddress();
 
       await Promise.all(
-        Array.from({ length: THROTTLE_LIMIT + 1 }, async () => {
-          relayLimitService.increment(chainId, address);
+        Array.from({ length: THROTTLE_LIMIT + 1 }, () => {
+          relayLimitService.incrementRelays(chainId, address);
         }),
       );
 
@@ -100,8 +102,8 @@ describe('RelayLimitService', () => {
       const address = faker.finance.ethereumAddress();
 
       await Promise.all(
-        Array.from({ length: THROTTLE_LIMIT }, async () => {
-          await relayLimitService.increment(chainId, address);
+        Array.from({ length: THROTTLE_LIMIT }, () => {
+          relayLimitService.incrementRelays(chainId, address);
         }),
       );
 

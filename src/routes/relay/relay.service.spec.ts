@@ -4,7 +4,6 @@ import { faker } from '@faker-js/faker';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { RelayLimitService } from './services/relay-limit.service';
-import { ThrottlerStorageService } from '@nestjs/throttler';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -28,7 +27,7 @@ jest.mock('@gelatonetwork/relay-sdk', () => ({
 }));
 
 describe('RelayService', () => {
-  const configService = new ConfigService({
+  const mockConfigService = new ConfigService({
     gelato: {
       apiKey: {
         '5': 'fakeApiKey',
@@ -40,15 +39,19 @@ describe('RelayService', () => {
     },
   });
 
-  const relayLimitService: RelayLimitService = new RelayLimitService(
-    new ThrottlerStorageService(),
-    configService,
-  );
-
-  const relayService = new RelayService(configService, relayLimitService);
+  let relayLimitService: RelayLimitService;
+  let relayService: RelayService;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    relayLimitService = new RelayLimitService(mockConfigService);
+
+    relayService = new RelayService(mockConfigService, relayLimitService);
+  });
+
+  afterEach(() => {
+    relayLimitService.onApplicationShutdown();
   });
 
   describe('sponsoredCall', () => {
@@ -102,7 +105,14 @@ describe('RelayService', () => {
         data: EXEC_TX_CALL_DATA,
       };
 
-      expect(relayService.sponsoredCall(body)).toThrowError();
+      try {
+        await relayService.sponsoredCall(body);
+
+        // This should not be reached
+        expect(true).toBe(false);
+      } catch (err) {
+        expect(err.message).toBe('Relay limit reached');
+      }
 
       expect(canRelaySpy).toHaveBeenCalledTimes(1);
       expect(incrementSpy).not.toHaveBeenCalled();
