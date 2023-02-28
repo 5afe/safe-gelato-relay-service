@@ -3,8 +3,8 @@ import { faker } from '@faker-js/faker';
 
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
-import { MockThrottlerStorage } from '../../mocks/throttler-storage.mock';
-import { getRelayThrottlerGuardKey } from './relay.guard';
+import { RelayLimitService } from './services/relay-limit.service';
+import { ThrottlerStorageService } from '@nestjs/throttler';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -34,17 +34,18 @@ describe('RelayService', () => {
         '5': 'fakeApiKey',
       },
     },
-    throttle: {
+    relay: {
       ttl: 60 * 60,
       limit: 5,
     },
   });
-  const mockThrottlerStorageService = new MockThrottlerStorage();
 
-  const relayService = new RelayService(
+  const relayLimitService: RelayLimitService = new RelayLimitService(
+    new ThrottlerStorageService(),
     configService,
-    mockThrottlerStorageService,
   );
+
+  const relayService = new RelayService(configService, relayLimitService);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -70,49 +71,41 @@ describe('RelayService', () => {
         },
       );
     });
-  });
 
-  describe('getRelayLimit', () => {
-    it('should return the pre-defined limit if no there are no total hits', () => {
-      const chainId = '5' as SupportedChainId;
-      const address = faker.finance.ethereumAddress();
+    it('should increment the relay limit if limit has not been reached', async () => {
+      const canRelaySpy = jest
+        .spyOn(relayLimitService, 'canRelay')
+        .mockReturnValue(true);
+      const incrementSpy = jest.spyOn(relayLimitService, 'increment');
 
-      expect(relayService.getRelayLimit(chainId, address)).toEqual({
-        remaining: 5,
-      });
+      const body = {
+        chainId: '5' as SupportedChainId,
+        to: faker.finance.ethereumAddress(),
+        data: EXEC_TX_CALL_DATA,
+      };
+
+      await relayService.sponsoredCall(body);
+
+      expect(canRelaySpy).toHaveBeenCalledTimes(1);
+      expect(incrementSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should return the remaining relays left', () => {
-      const chainId = '5' as SupportedChainId;
-      const address = faker.finance.ethereumAddress();
+    it('should not increment the relay limit if limit has been reached', async () => {
+      const canRelaySpy = jest
+        .spyOn(relayLimitService, 'canRelay')
+        .mockReturnValue(false);
+      const incrementSpy = jest.spyOn(relayLimitService, 'increment');
 
-      const key = getRelayThrottlerGuardKey(chainId, address);
+      const body = {
+        chainId: '5' as SupportedChainId,
+        to: faker.finance.ethereumAddress(),
+        data: EXEC_TX_CALL_DATA,
+      };
 
-      mockThrottlerStorageService.increment(key, 1);
+      expect(relayService.sponsoredCall(body)).toThrowError();
 
-      expect(relayService.getRelayLimit(chainId, address)).toEqual({
-        remaining: 4,
-        expiresAt: expect.any(Number),
-      });
-    });
-
-    it('should return 0 if there are no relays left if there are more higher hits', () => {
-      const chainId = '5' as SupportedChainId;
-      const address = faker.finance.ethereumAddress();
-
-      const key = getRelayThrottlerGuardKey(chainId, address);
-
-      const limit = configService.getOrThrow<number>('throttle.limit');
-
-      // One request more than the limit
-      Array.from({ length: limit + 1 }, () => {
-        mockThrottlerStorageService.increment(key, 1);
-      });
-
-      expect(relayService.getRelayLimit(chainId, address)).toEqual({
-        remaining: 0,
-        expiresAt: expect.any(Number),
-      });
+      expect(canRelaySpy).toHaveBeenCalledTimes(1);
+      expect(incrementSpy).not.toHaveBeenCalled();
     });
   });
 });
