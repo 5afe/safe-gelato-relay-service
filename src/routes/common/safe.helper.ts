@@ -8,7 +8,7 @@ import configuration from '../../config/configuration';
  * @param address address
  * @returns boolean
  */
-export const isSafe = async (
+export const isSafeContract = async (
   chainId: string,
   address: string,
 ): Promise<boolean> => {

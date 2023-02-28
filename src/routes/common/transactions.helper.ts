@@ -1,6 +1,6 @@
 import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 import { ethers } from 'ethers';
-import { isSafe } from './safe.helper';
+import { isSafeContract } from './safe.helper';
 
 // ======================== General ========================
 
@@ -145,7 +145,7 @@ export const getSafeAddressFromMultiSend = async (
     return;
   }
 
-  if (!(await isSafe(chainId, firstRecipient))) {
+  if (!(await isSafeContract(chainId, firstRecipient))) {
     return;
   }
 

@@ -8,7 +8,7 @@ import {
   isMultiSendCall,
   getSafeAddressFromMultiSend,
 } from '../../../../routes/common/transactions.helper';
-import { isSafe } from '../../../../routes/common/safe.helper';
+import { isSafeContract } from '../../../../routes/common/safe.helper';
 
 export const SponsoredCallSchema = z
   .object({
@@ -24,8 +24,10 @@ export const SponsoredCallSchema = z
     const code = z.ZodIssueCode.custom;
 
     if (isExecTransactionCall(data)) {
+      const isSafe = await isSafeContract(chainId, to);
+
       // Non-Safe smart contract mimicing `execTransaction`
-      if (!(await isSafe(chainId, to))) {
+      if (!isSafe) {
         ctx.addIssue({
           message: 'Only `execTransaction` from Safes can be relayed.',
           path,
