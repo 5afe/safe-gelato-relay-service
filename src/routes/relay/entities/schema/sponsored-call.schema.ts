@@ -68,5 +68,7 @@ export const SponsoredCallSchema = z
       };
     }
 
-    return setError('Only (batched) Safe transactions can be relayed.');
+    setError('Only (batched) Safe transactions can be relayed.');
+
+    return z.NEVER;
   });
