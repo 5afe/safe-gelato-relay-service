@@ -20,19 +20,20 @@ export const SponsoredCallSchema = z
   .transform(async (values, ctx) => {
     const { chainId, to, data } = values;
 
-    const path = ['data'];
-    const code = z.ZodIssueCode.custom;
+    const setError = (message: string) => {
+      ctx.addIssue({
+        message,
+        path: ['data'],
+        code: z.ZodIssueCode.custom,
+      });
+    };
 
     if (isExecTransactionCall(data)) {
       const isSafe = await isSafeContract(chainId, to);
 
       // Non-Safe smart contract mimicing `execTransaction`
       if (!isSafe) {
-        ctx.addIssue({
-          message: 'Only `execTransaction` from Safes can be relayed.',
-          path,
-          code,
-        });
+        setError('Only `execTransaction` from Safes can be relayed.');
 
         return z.NEVER;
       }
@@ -48,11 +49,7 @@ export const SponsoredCallSchema = z
 
       // MultiSend not containing only `execTransaction` calls from the same Safe
       if (!isValid) {
-        ctx.addIssue({
-          message: 'Invalid `multiSend` transaction.',
-          path,
-          code,
-        });
+        setError('Invalid `multiSend` transaction.');
 
         return z.NEVER;
       }
@@ -60,11 +57,7 @@ export const SponsoredCallSchema = z
       const safeAddress = await getSafeAddressFromMultiSend(chainId, data);
 
       if (!safeAddress) {
-        ctx.addIssue({
-          message: 'Cannot decode Safe address from `multiSend` transaction.',
-          path,
-          code,
-        });
+        setError('Cannot decode Safe address from `multiSend` transaction.');
 
         return z.NEVER;
       }
@@ -75,11 +68,5 @@ export const SponsoredCallSchema = z
       };
     }
 
-    ctx.addIssue({
-      message: 'Only (batched) Safe transactions can be relayed.',
-      path,
-      code,
-    });
-
-    return z.NEVER;
+    return setError('Only (batched) Safe transactions can be relayed.');
   });
