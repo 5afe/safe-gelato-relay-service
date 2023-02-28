@@ -1,9 +1,8 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
-import { RelayLimitException } from './services/relay-limit.exception';
 import { RelayLimitService } from './services/relay-limit.service';
 
 /**
@@ -47,7 +46,10 @@ export class RelayService {
 
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, to)) {
-      throw new RelayLimitException();
+      throw new BadRequestException({
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        message: 'Relay limit reached',
+      });
     }
 
     let response: RelayResponse;
@@ -60,7 +62,11 @@ export class RelayService {
         { gasLimit: _getRelayGasLimit(gasLimit) },
       );
     } catch (err) {
-      throw new RelayLimitException(err);
+      throw new BadRequestException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Relay failed',
+        cause: err,
+      });
     }
 
     // Increase the counter

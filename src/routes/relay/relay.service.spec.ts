@@ -93,7 +93,7 @@ describe('RelayService', () => {
       expect(incrementSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should not increment the relay limit if limit has been reached', async () => {
+    it('should not increment the relay limit if limit has been reached', () => {
       const canRelaySpy = jest
         .spyOn(relayLimitService, 'canRelay')
         .mockReturnValue(false);
@@ -105,14 +105,9 @@ describe('RelayService', () => {
         data: EXEC_TX_CALL_DATA,
       };
 
-      try {
-        await relayService.sponsoredCall(body);
-
-        // This should not be reached
-        expect(true).toBe(false);
-      } catch (err) {
-        expect(err.message).toBe('Relay limit reached');
-      }
+      expect(relayService.sponsoredCall(body)).rejects.toThrow(
+        'Relay limit reached',
+      );
 
       expect(canRelaySpy).toHaveBeenCalledTimes(1);
       expect(incrementSpy).not.toHaveBeenCalled();
