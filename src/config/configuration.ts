@@ -5,7 +5,7 @@ export default () => ({
     name: 'safe-gelato-relay-service',
   },
   applicationPort: process.env.APPLICATION_PORT || '3000',
-  throttle: {
+  relay: {
     ttl: process.env.THROTTLE_TTL || 60 * 60, // 1 hour
     limit: process.env.THROTTLE_LIMIT || 5,
   },

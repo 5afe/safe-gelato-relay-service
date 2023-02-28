@@ -10,7 +10,3 @@ export class ZodValidationException extends BadRequestException {
     });
   }
 }
-
-export const createZodValidationException = (error: ZodError): Error => {
-  return new ZodValidationException(error);
-};

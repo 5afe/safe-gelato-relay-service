@@ -1,22 +1,24 @@
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { ZodValidationPipe } from '../../pipes/zod/zod-validation.pipe';
 import { AddressSchema } from '../common/schema/address.schema';
 import { SponsoredCallSchema } from './entities/schema/sponsored-call.schema';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayService } from './relay.service';
-import { RelayThrottlerGuard } from './relay.guard';
 import { ChainIdSchema } from '../common/schema/chain-id.schema';
+import { RelayLimitService } from './services/relay-limit.service';
 
 @Controller({
   version: '1',
 })
 export class RelayController {
-  constructor(private readonly relayService: RelayService) {}
+  constructor(
+    private readonly relayService: RelayService,
+    private readonly relayLimitService: RelayLimitService,
+  ) {}
 
   @Post('relay')
-  @UseGuards(RelayThrottlerGuard)
   sponsoredCall(
     @Body(new ZodValidationPipe(SponsoredCallSchema))
     sponsoredCallDto: SponsoredCallDto,
@@ -34,6 +36,6 @@ export class RelayController {
     remaining: number;
     expiresAt?: number;
   } {
-    return this.relayService.getRelayLimit(chainId, address);
+    return this.relayLimitService.getRelayLimit(chainId, address);
   }
 }

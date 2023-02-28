@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { ZodValidationException } from './zod-validation.exception';
 
-describe('createZodValidationException', () => {
+describe('ZodValidationException', () => {
   const UserSchema = z.object({
     firstName: z.string(),
     lastName: z.string(),

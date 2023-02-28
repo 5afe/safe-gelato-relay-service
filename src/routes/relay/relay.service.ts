@@ -1,10 +1,9 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectThrottlerStorage, ThrottlerStorage } from '@nestjs/throttler';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
-import { getRelayThrottlerGuardKey } from './relay.guard';
+import { RelayLimitService } from './services/relay-limit.service';
 
 /**
  * If you are using your own custom gas limit, please add a 150k gas buffer on top of the expected
@@ -28,8 +27,7 @@ export class RelayService {
 
   constructor(
     private readonly configService: ConfigService,
-    @InjectThrottlerStorage()
-    private readonly storageService: ThrottlerStorage,
+    private readonly relayLimitService: RelayLimitService,
   ) {
     this.relayer = new GelatoRelay();
   }
@@ -46,40 +44,35 @@ export class RelayService {
   }: SponsoredCallDto): Promise<RelayResponse> {
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 
-    // Relay
-    return this.relayer.sponsoredCall(
-      {
-        chainId,
-        data,
-        target: to,
-      },
-      apiKey,
-      {
-        gasLimit: _getRelayGasLimit(gasLimit),
-      },
-    );
-  }
+    // Check rate limit is not reached
+    if (!this.relayLimitService.canRelay(chainId, to)) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        message: 'Relay limit reached',
+      });
+    }
 
-  /**
-   * Current rate limit for an address
-   */
-  getRelayLimit(
-    chainId: string,
-    address: string,
-  ): {
-    remaining: number;
-    expiresAt?: number;
-  } {
-    const limit = this.configService.getOrThrow<number>('throttle.limit');
+    let response: RelayResponse;
 
-    const key = getRelayThrottlerGuardKey(chainId, address);
+    try {
+      // Relay
+      response = await this.relayer.sponsoredCall(
+        { chainId, data, target: to },
+        apiKey,
+        { gasLimit: _getRelayGasLimit(gasLimit) },
+      );
+    } catch (err) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Relay failed',
+        cause: err,
+      });
+    }
 
-    const { totalHits, expiresAt } = this.storageService.storage[key] || {};
-    const remaining = totalHits ? Math.max(limit - totalHits, 0) : limit;
+    // Increase the counter
+    await this.relayLimitService.increment(chainId, to);
 
-    return {
-      remaining,
-      expiresAt,
-    };
+    // TODO: Add rate limit headers
+    return response;
   }
 }
