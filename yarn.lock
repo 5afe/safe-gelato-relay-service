@@ -1534,6 +1534,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@safe-global/safe-deployments@npm:^1.20.2":
+  version: 1.20.2
+  resolution: "@safe-global/safe-deployments@npm:1.20.2"
+  dependencies:
+    semver: ^7.3.7
+  checksum: 0614569012d6675ff8e58d6939a54343749b9349acb81b9af82a895a04e85a80729aa9550e0f158944386cf37df7443785c63f35f936995a69339b1d05030bb0
+  languageName: node
+  linkType: hard
+
 "@sinclair/typebox@npm:^0.24.1":
   version: 0.24.51
   resolution: "@sinclair/typebox@npm:0.24.51"
@@ -6538,6 +6547,7 @@ __metadata:
     "@nestjs/schematics": ^9.0.0
     "@nestjs/testing": ^9.0.0
     "@nestjs/throttler": ^4.0.0
+    "@safe-global/safe-deployments": ^1.20.2
     "@types/express": ^4.17.13
     "@types/jest": 28.1.4
     "@types/node": ^16.0.0

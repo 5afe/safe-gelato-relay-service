@@ -9,8 +9,7 @@ import { RelayModule } from './relay.module';
 import configuration from '../../config/configuration';
 import { RelayService } from './relay.service';
 import { RelayLimitService } from './services/relay-limit.service';
-
-const EXEC_TX_CALL_DATA = '0x6a761202';
+import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
 
 jest.mock('axios');
 
@@ -20,6 +19,9 @@ describe('RelayController', () => {
   let relayLimitService: RelayLimitService;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+
     // TODO: Create test module that provides mock environment variables and versioning to mirror `main.ts`
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -57,7 +59,7 @@ describe('RelayController', () => {
       const body = {
         chainId: '5',
         to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        data: MOCK_EXEC_TX_CALL_DATA,
       };
 
       await request(app.getHttpServer())
@@ -78,7 +80,7 @@ describe('RelayController', () => {
       const body = {
         chainId: '1337',
         to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        data: MOCK_EXEC_TX_CALL_DATA,
       };
 
       await request(app.getHttpServer())
@@ -99,7 +101,7 @@ describe('RelayController', () => {
       const body = {
         chainId: '5',
         to: '0xinvalid',
-        data: EXEC_TX_CALL_DATA,
+        data: MOCK_EXEC_TX_CALL_DATA,
       };
 
       await request(app.getHttpServer())
@@ -141,7 +143,7 @@ describe('RelayController', () => {
       const body = {
         chainId: '5',
         to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        data: MOCK_EXEC_TX_CALL_DATA,
         gasLimit: '1.23',
       };
 
