@@ -166,4 +166,31 @@ describe('sponsoredCall schema', () => {
       ]),
     );
   });
+
+  it('should not validate an multiSend calls not from Safes', async () => {
+    jest.spyOn(txHelpers, 'isValidMultiSendCall').mockResolvedValue(true);
+
+    axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
+
+    const result = await SponsoredCallSchema.safeParseAsync({
+      chainId: '5',
+      to: faker.finance.ethereumAddress(),
+      data: MOCK_MULTISEND_TX_CALL_DATA,
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      return;
+    }
+
+    expect(result.error).toStrictEqual(
+      new ZodError([
+        {
+          message: 'Cannot decode Safe address from `multiSend` transaction.',
+          path: ['data'],
+          code: 'custom',
+        },
+      ]),
+    );
+  });
 });

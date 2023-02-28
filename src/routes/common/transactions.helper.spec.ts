@@ -3,6 +3,7 @@ import * as deployments from '@safe-global/safe-deployments/dist/libs';
 import type { SingletonDeployment } from '@safe-global/safe-deployments/dist/types';
 
 import * as txHelpers from './transactions.helper';
+import * as safeHelpers from './safe.helper';
 import {
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_MULTISEND_TX_CALL_DATA,
@@ -75,14 +76,16 @@ describe('Transaction helpers', () => {
 
     describe('getSafeAddressFromMultiSend', () => {
       let isExecTransactionCallSpy: jest.SpyInstance;
+      let isSafeContractSpy: jest.SpyInstance;
 
       beforeEach(() => {
-        jest.clearAllMocks();
+        jest.restoreAllMocks();
 
         isExecTransactionCallSpy = jest.spyOn(
           txHelpers,
           'isExecTransactionCall',
         );
+        isSafeContractSpy = jest.spyOn(safeHelpers, 'isSafeContract');
       });
 
       it('should return the address of the Safe that the multisend is being sent to', async () => {
@@ -90,11 +93,14 @@ describe('Transaction helpers', () => {
           '5',
           MOCK_MULTISEND_TX_CALL_DATA,
         );
+        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
         expect(result).toBe('0xAecDFD3A19f777F0c03e6bf99AAfB59937d6467b');
 
         // Mock data contains 6 multisend transactions
         expect(isExecTransactionCallSpy).toHaveBeenCalledTimes(6);
+
+        expect(isSafeContractSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should return undefined if the multisend is empty', async () => {
@@ -107,6 +113,8 @@ describe('Transaction helpers', () => {
         expect(result).toBeUndefined();
 
         expect(isExecTransactionCallSpy).not.toHaveBeenCalled();
+
+        expect(isSafeContractSpy).not.toHaveBeenCalled();
       });
 
       it('should return undefined if the multisend contains non-execTransaction transactions', async () => {
@@ -124,6 +132,8 @@ describe('Transaction helpers', () => {
         expect(result).toBeUndefined();
 
         expect(isExecTransactionCallSpy).toHaveBeenCalledTimes(1);
+
+        expect(isSafeContractSpy).not.toHaveBeenCalled();
       });
 
       it('should return undefined if the multisend has varying recipients', async () => {
@@ -145,6 +155,25 @@ describe('Transaction helpers', () => {
         expect(result).toBeUndefined();
 
         expect(isExecTransactionCallSpy).toHaveBeenCalledTimes(2);
+
+        expect(isSafeContractSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return undefined if the addresss is not that of a Safe', async () => {
+        axios.default.get = jest
+          .fn()
+          .mockImplementation(() => Promise.reject());
+
+        const result = await txHelpers.getSafeAddressFromMultiSend(
+          '5',
+          MOCK_MULTISEND_TX_CALL_DATA,
+        );
+        expect(result).toBeUndefined();
+
+        // Mock data contains 6 multisend transactions
+        expect(isExecTransactionCallSpy).toHaveBeenCalledTimes(6);
+
+        expect(isSafeContractSpy).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -184,7 +213,9 @@ describe('Transaction helpers', () => {
       });
 
       it('should return false for a invalid multisend calldata', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+        axios.default.get = jest
+          .fn()
+          .mockImplementation(() => Promise.reject());
 
         const result = await txHelpers.isValidMultiSendCall(
           chainId,
