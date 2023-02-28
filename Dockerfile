@@ -1,10 +1,21 @@
-FROM node:19-alpine
-
+#
+# BUILD CONTAINER
+#
+FROM node:18 as base
+USER node
+ENV NODE_ENV production
 WORKDIR /app
+COPY --chown=node:node package.json yarn.lock .yarnrc.yml tsconfig*.json ./
+COPY --chown=node:node .yarn/releases ./.yarn/releases
+RUN yarn install --immutable 
+COPY --chown=node:node . .
+RUN yarn run build
 
-COPY package*.json yarn.lock ./
-RUN yarn install
-
-COPY . .
-
-RUN yarn run start:prod
+#
+# PRODUCTION CONTAINER
+#
+FROM node:18-alpine as production
+USER node
+COPY --chown=node:node --from=base /app/node_modules ./node_modules
+COPY --chown=node:node --from=base /app/dist ./dist
+CMD [ "node", "dist/main.js" ]
