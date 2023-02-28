@@ -4,16 +4,17 @@ import { ThrottlerStorageService } from '@nestjs/throttler';
 import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
 
 @Injectable()
-export class RelayLimitService extends ThrottlerStorageService {
+export class RelayLimitService {
   // Time to limit in seconds
   private readonly ttl: number;
 
   // Number of relay requests per ttl
   private readonly limit: number;
 
-  constructor(private readonly configService: ConfigService) {
-    super();
-
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly throttlerStorageService: ThrottlerStorageService,
+  ) {
     this.ttl = this.configService.getOrThrow<number>('relay.ttl');
     this.limit = this.configService.getOrThrow<number>('relay.limit');
   }
@@ -36,7 +37,7 @@ export class RelayLimitService extends ThrottlerStorageService {
     expiresAt?: number;
   } {
     const key = this.generateKey(chainId, address);
-    const throttlerEntry = this.storage[key] || {
+    const throttlerEntry = this.throttlerStorageService.storage[key] || {
       totalHits: 0,
     };
 
@@ -58,11 +59,11 @@ export class RelayLimitService extends ThrottlerStorageService {
   /**
    * Increment the number of relays for an address
    */
-  public async incrementRelays(
+  public async increment(
     chainId: string,
     address: string,
   ): Promise<ThrottlerStorageRecord> {
     const key = this.generateKey(chainId, address);
-    return await this.increment(key, this.ttl);
+    return await this.throttlerStorageService.increment(key, this.ttl);
   }
 }

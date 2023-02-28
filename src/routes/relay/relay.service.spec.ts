@@ -4,6 +4,7 @@ import { faker } from '@faker-js/faker';
 import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { RelayLimitService } from './services/relay-limit.service';
+import { ThrottlerStorageService } from '@nestjs/throttler';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -40,18 +41,23 @@ describe('RelayService', () => {
   });
 
   let relayLimitService: RelayLimitService;
+  let throttlerStorageService: ThrottlerStorageService;
   let relayService: RelayService;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    relayLimitService = new RelayLimitService(mockConfigService);
+    throttlerStorageService = new ThrottlerStorageService();
+    relayLimitService = new RelayLimitService(
+      mockConfigService,
+      throttlerStorageService,
+    );
 
     relayService = new RelayService(mockConfigService, relayLimitService);
   });
 
   afterEach(() => {
-    relayLimitService.onApplicationShutdown();
+    throttlerStorageService.onApplicationShutdown();
   });
 
   describe('sponsoredCall', () => {

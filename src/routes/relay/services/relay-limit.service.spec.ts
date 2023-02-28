@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerStorageService } from '@nestjs/throttler';
 
 import { RelayLimitService } from './relay-limit.service';
 
@@ -19,21 +20,26 @@ describe('RelayLimitService', () => {
   });
 
   let relayLimitService: RelayLimitService;
+  let throttlerStorageService: ThrottlerStorageService;
 
   beforeEach(() => {
-    relayLimitService = new RelayLimitService(mockConfigService);
+    throttlerStorageService = new ThrottlerStorageService();
+    relayLimitService = new RelayLimitService(
+      mockConfigService,
+      throttlerStorageService,
+    );
   });
 
   afterEach(() => {
-    relayLimitService.onApplicationShutdown();
+    throttlerStorageService.onApplicationShutdown();
   });
 
-  describe('incrementRelays', () => {
+  describe('increment', () => {
     it('should increment the current relay attempts', async () => {
       const chainId = '5';
       const address = faker.finance.ethereumAddress();
 
-      const result = await relayLimitService.incrementRelays(chainId, address);
+      const result = await relayLimitService.increment(chainId, address);
 
       expect(result).toStrictEqual({
         totalHits: 1,
@@ -59,7 +65,7 @@ describe('RelayLimitService', () => {
       const chainId = '5';
       const address = faker.finance.ethereumAddress();
 
-      await relayLimitService.incrementRelays(chainId, address);
+      await relayLimitService.increment(chainId, address);
 
       const result = relayLimitService.getRelayLimit(chainId, address);
 
@@ -75,7 +81,7 @@ describe('RelayLimitService', () => {
 
       await Promise.all(
         Array.from({ length: THROTTLE_LIMIT + 1 }, () => {
-          relayLimitService.incrementRelays(chainId, address);
+          relayLimitService.increment(chainId, address);
         }),
       );
 
@@ -103,7 +109,7 @@ describe('RelayLimitService', () => {
 
       await Promise.all(
         Array.from({ length: THROTTLE_LIMIT }, () => {
-          relayLimitService.incrementRelays(chainId, address);
+          relayLimitService.increment(chainId, address);
         }),
       );
 

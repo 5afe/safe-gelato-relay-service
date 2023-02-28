@@ -70,7 +70,7 @@ export class RelayService {
     }
 
     // Increase the counter
-    await this.relayLimitService.incrementRelays(chainId, to);
+    await this.relayLimitService.increment(chainId, to);
 
     // TODO: Add rate limit headers
     return response;
