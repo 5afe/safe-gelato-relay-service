@@ -10,6 +10,7 @@ import configuration from '../../config/configuration';
 import { RelayService } from './relay.service';
 import { RelayLimitService } from './services/relay-limit.service';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { API_VERSIONING } from '../../config/constants';
 
 jest.mock('axios');
 
@@ -39,7 +40,7 @@ describe('RelayController', () => {
     relayLimitService = moduleFixture.get<RelayLimitService>(RelayLimitService);
 
     app = moduleFixture.createNestApplication();
-    app.enableVersioning();
+    app.enableVersioning(API_VERSIONING);
 
     await app.init();
   });
@@ -48,7 +49,7 @@ describe('RelayController', () => {
     await app.close();
   });
 
-  describe('/v1/relay (POST)', () => {
+  describe('/api/v1/relay (POST)', () => {
     it('should return a 201 when the body is valid', async () => {
       axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
@@ -63,7 +64,7 @@ describe('RelayController', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/v1/relay')
+        .post('/api/v1/relay')
         .send(body)
         .expect(201);
 
@@ -84,7 +85,7 @@ describe('RelayController', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/v1/relay')
+        .post('/api/v1/relay')
         .send(body)
         .expect(400);
 
@@ -105,7 +106,7 @@ describe('RelayController', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/v1/relay')
+        .post('/api/v1/relay')
         .send(body)
         .expect(400);
 
@@ -126,7 +127,7 @@ describe('RelayController', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/v1/relay')
+        .post('/api/v1/relay')
         .send(body)
         .expect(400);
 
@@ -148,7 +149,7 @@ describe('RelayController', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/v1/relay')
+        .post('/api/v1/relay')
         .send(body)
         .expect(400);
 
@@ -156,7 +157,7 @@ describe('RelayController', () => {
     });
   });
 
-  describe('/v1/relay/:chainId/:address (GET)', () => {
+  describe('/api/v1/relay/:chainId/:address (GET)', () => {
     it('should return a 200 when the body is valid', async () => {
       const relayServiceSpy = jest.spyOn(relayLimitService, 'getRelayLimit');
 
