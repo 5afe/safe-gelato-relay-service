@@ -165,7 +165,7 @@ describe('RelayController', () => {
       const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${address}`)
+        .get(`/api/v1/relay/${chainId}/${address}`)
         .expect(200);
 
       expect(relayServiceSpy).toHaveBeenCalledTimes(1);
@@ -178,7 +178,7 @@ describe('RelayController', () => {
       const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${address}`)
+        .get(`/api/v1/relay/${chainId}/${address}`)
         .expect(400);
 
       expect(relayServiceSpy).not.toHaveBeenCalled();
@@ -191,7 +191,7 @@ describe('RelayController', () => {
       const address = '0x123';
 
       await request(app.getHttpServer())
-        .get(`/v1/relay/${chainId}/${address}`)
+        .get(`/api/v1/relay/${chainId}/${address}`)
         .expect(400);
 
       expect(relayServiceSpy).not.toHaveBeenCalled();
