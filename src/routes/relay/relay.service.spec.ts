@@ -5,6 +5,7 @@ import { RelayService, _getRelayGasLimit } from './relay.service';
 import { SupportedChainId } from '../../config/constants';
 import { RelayLimitService } from './services/relay-limit.service';
 import { ThrottlerStorageService } from '@nestjs/throttler';
+import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -61,13 +62,13 @@ describe('RelayService', () => {
   });
 
   describe('sponsoredCall', () => {
-    const EXEC_TX_CALL_DATA = '0x6a761202';
-
     it('should call the relayer', async () => {
+      const address = faker.finance.ethereumAddress();
       const body = {
         chainId: '5' as SupportedChainId,
-        to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        to: address,
+        data: MOCK_EXEC_TX_CALL_DATA,
+        safeAddress: address,
       };
 
       await relayService.sponsoredCall(body);
@@ -81,16 +82,32 @@ describe('RelayService', () => {
       );
     });
 
+    it('should throw if the relayer fails', async () => {
+      mockSponsoredCall.mockImplementationOnce(() => Promise.reject());
+
+      const address = faker.finance.ethereumAddress();
+      const body = {
+        chainId: '5' as SupportedChainId,
+        to: address,
+        data: MOCK_EXEC_TX_CALL_DATA,
+        safeAddress: address,
+      };
+
+      expect(relayService.sponsoredCall(body)).rejects.toThrow('Relay failed');
+    });
+
     it('should increment the relay limit if limit has not been reached', async () => {
       const canRelaySpy = jest
         .spyOn(relayLimitService, 'canRelay')
         .mockReturnValue(true);
       const incrementSpy = jest.spyOn(relayLimitService, 'increment');
 
+      const address = faker.finance.ethereumAddress();
       const body = {
         chainId: '5' as SupportedChainId,
-        to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        to: address,
+        data: MOCK_EXEC_TX_CALL_DATA,
+        safeAddress: address,
       };
 
       await relayService.sponsoredCall(body);
@@ -105,10 +122,12 @@ describe('RelayService', () => {
         .mockReturnValue(false);
       const incrementSpy = jest.spyOn(relayLimitService, 'increment');
 
+      const address = faker.finance.ethereumAddress();
       const body = {
         chainId: '5' as SupportedChainId,
-        to: faker.finance.ethereumAddress(),
-        data: EXEC_TX_CALL_DATA,
+        to: address,
+        data: MOCK_EXEC_TX_CALL_DATA,
+        safeAddress: address,
       };
 
       expect(relayService.sponsoredCall(body)).rejects.toThrow(

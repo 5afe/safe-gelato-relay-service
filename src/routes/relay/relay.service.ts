@@ -41,6 +41,7 @@ export class RelayService {
     data,
     to,
     gasLimit,
+    safeAddress,
   }: SponsoredCallDto): Promise<RelayResponse> {
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 
@@ -70,7 +71,7 @@ export class RelayService {
     }
 
     // Increase the counter
-    await this.relayLimitService.increment(chainId, to);
+    await this.relayLimitService.increment(chainId, safeAddress);
 
     // TODO: Add rate limit headers
     return response;

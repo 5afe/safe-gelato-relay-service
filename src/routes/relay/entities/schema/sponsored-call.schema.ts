@@ -1,48 +1,74 @@
-import { id } from 'ethers';
 import { z } from 'zod';
-import axios from 'axios';
 
 import { AddressSchema } from '../../../common/schema/address.schema';
 import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
-import configuration from '../../../../config/configuration';
-
-/**
- * Checks the method selector of the call data to determine if it is an execTransaction call
- * @param data call data
- * @returns boolean
- */
-const isExecTransactionCall = (data: string): boolean => {
-  const EXEC_TX_SIGNATURE =
-    'execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)';
-
-  const execTxSignatureId = id(EXEC_TX_SIGNATURE).slice(0, 10);
-  return data.startsWith(execTxSignatureId);
-};
-
-/**
- * Queries the gateway to determine if the given address is a Safe on the given chain
- * @param chainId chain ID
- * @param address address
- * @returns boolean
- */
-const isSafe = async (chainId: string, address: string): Promise<boolean> => {
-  try {
-    await axios.get(
-      `${configuration().gatewayUrl}/v1/chains/${chainId}/safes/${address}`,
-    );
-    return true;
-  } catch {
-    return false;
-  }
-};
+import {
+  isValidMultiSendCall,
+  isExecTransactionCall,
+  isMultiSendCall,
+  getSafeAddressFromMultiSend,
+} from '../../../../routes/common/transactions.helper';
+import { isSafeContract } from '../../../../routes/common/safe.helper';
 
 export const SponsoredCallSchema = z
   .object({
     chainId: ChainIdSchema,
     to: AddressSchema,
-    data: z.string().refine(isExecTransactionCall),
+    data: z.string(),
     gasLimit: z.optional(z.string().regex(/^\d+$/)),
   })
-  .refine(({ chainId, to }) => isSafe(chainId, to), {
-    path: ['to'],
+  .transform(async (values, ctx) => {
+    const { chainId, to, data } = values;
+
+    const setError = (message: string) => {
+      ctx.addIssue({
+        message,
+        path: ['data'],
+        code: z.ZodIssueCode.custom,
+      });
+    };
+
+    if (isExecTransactionCall(data)) {
+      const isSafe = await isSafeContract(chainId, to);
+
+      // Non-Safe smart contract mimicing `execTransaction`
+      if (!isSafe) {
+        setError('Only `execTransaction` from Safes can be relayed.');
+
+        return z.NEVER;
+      }
+
+      return {
+        ...values,
+        safeAddress: to,
+      };
+    }
+
+    if (isMultiSendCall(data)) {
+      const isValid = await isValidMultiSendCall(chainId, to, data);
+
+      // MultiSend not containing only `execTransaction` calls from the same Safe
+      if (!isValid) {
+        setError('Invalid `multiSend` transaction.');
+
+        return z.NEVER;
+      }
+
+      const safeAddress = await getSafeAddressFromMultiSend(chainId, data);
+
+      if (!safeAddress) {
+        setError('Cannot decode Safe address from `multiSend` transaction.');
+
+        return z.NEVER;
+      }
+
+      return {
+        ...values,
+        safeAddress,
+      };
+    }
+
+    setError('Only (batched) Safe transactions can be relayed.');
+
+    return z.NEVER;
   });
