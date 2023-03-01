@@ -82,13 +82,14 @@ export const decodeMultiSendTxs = (
     )}`;
 
     // Decode operation, to, value, dataLength
-    const [, txTo, , txDataLength] = ethers.AbiCoder.defaultAbiCoder().decode(
-      ['uint8', 'address', 'uint256', 'uint256'],
-      ethers.zeroPadValue(txDataEncoded, 32 * 4),
-    );
+    const [, txTo, , txDataBytesLength] =
+      ethers.AbiCoder.defaultAbiCoder().decode(
+        ['uint8', 'address', 'uint256', 'uint256'],
+        ethers.zeroPadValue(txDataEncoded, 32 * 4),
+      );
 
     // Each byte is represented by two characters
-    const dataLength = Number(txDataLength) * 2;
+    const dataLength = Number(txDataBytesLength) * 2;
 
     const txData = `0x${decodedMultiSendData.slice(
       index,
