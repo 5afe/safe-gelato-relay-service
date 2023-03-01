@@ -1,5 +1,6 @@
 import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 import { ethers } from 'ethers';
+
 import { isSafeContract } from './safe.helper';
 
 // ======================== General ========================
@@ -49,61 +50,54 @@ interface MultiSendTransactionData {
 
 /**
  * Decodes the transactions contained in a multiSend call
- * @param data multiSend call data
+ * @param encodedMultiSendData multiSend call data
  * @returns array of individual transaction data
  */
 export const decodeMultiSendTxs = (
-  data: string,
+  encodedMultiSendData: string,
 ): MultiSendTransactionData[] => {
-  const OPERATION_LENGTH = 2;
-  const ADDRESS_LENGTH = 40;
-  const UINT256_LENGTH = 64;
-
-  const INDIVIDUAL_TX_DATA_LENGTH =
-    OPERATION_LENGTH + // operation
-    ADDRESS_LENGTH + // to
-    UINT256_LENGTH + // value
-    UINT256_LENGTH; // dataLength
+  // uint8 operation, address to, uint256 value, uint256 dataLength
+  const INDIVIDUAL_TX_DATA_LENGTH = 2 + 40 + 64 + 64;
 
   const MULTISEND_FRAGMENT =
     'function multiSend(bytes memory transactions) public payable';
 
   const multiSendInterface = new ethers.Interface([MULTISEND_FRAGMENT]);
 
+  const [decodedMultiSendData] = multiSendInterface.decodeFunctionData(
+    MULTISEND_FRAGMENT,
+    encodedMultiSendData,
+  );
+
   const txs: MultiSendTransactionData[] = [];
 
-  // Decode multiSend and remove '0x'
-  let remainingData: string = multiSendInterface
-    .decodeFunctionData('multiSend', data)[0]
-    .slice(2);
+  // Decode after 0x
+  let index = 2;
 
-  while (remainingData.length > 0) {
-    const txDataEncoded = ethers.zeroPadValue(
-      // We remove the operation as MultiSendCallOnly only allows call operation
-      // @see https://github.com/safe-global/safe-contracts/blob/main/contracts/libraries/MultiSendCallOnly.sol#L51
-      `0x${remainingData.slice(OPERATION_LENGTH, INDIVIDUAL_TX_DATA_LENGTH)}`,
-      32 * 3,
+  while (index < decodedMultiSendData.length) {
+    const txDataEncoded = `0x${decodedMultiSendData.slice(
+      index,
+      // Traverse next transaction
+      (index += INDIVIDUAL_TX_DATA_LENGTH),
+    )}`;
+
+    // Decode operation, to, value, dataLength
+    const [, txTo, , txDataLength] = ethers.AbiCoder.defaultAbiCoder().decode(
+      ['uint8', 'address', 'uint256', 'uint256'],
+      ethers.zeroPadValue(txDataEncoded, 32 * 4),
     );
-
-    // Decode constant length data of next transaction
-    const [txTo, , txDataByteLength] = ethers.AbiCoder.defaultAbiCoder().decode(
-      ['address', 'uint256', 'uint256'],
-      txDataEncoded,
-    );
-
-    // Progress to dynamic length inner transaction `data`
-    remainingData = remainingData.slice(INDIVIDUAL_TX_DATA_LENGTH);
 
     // Each byte is represented by two characters
-    const dataLength = Number(BigInt(txDataByteLength) * BigInt(2));
+    const dataLength = Number(txDataLength) * 2;
 
-    const txData = `0x${remainingData.slice(0, dataLength)}`;
-
-    // Progress to next transaction
-    remainingData = remainingData.slice(dataLength);
+    const txData = `0x${decodedMultiSendData.slice(
+      index,
+      // Traverse data length
+      (index += dataLength),
+    )}`;
 
     txs.push({
-      to: txTo.toString(),
+      to: txTo,
       data: txData,
     });
   }
