@@ -117,7 +117,7 @@ describe('sponsoredCall schema', () => {
     }
   });
 
-  it('should not validate an invalid execTransaction call', async () => {
+  it('should not validate an execTransaction call to a non-Safe address', async () => {
     axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
 
     const result = await SponsoredCallSchema.safeParseAsync({

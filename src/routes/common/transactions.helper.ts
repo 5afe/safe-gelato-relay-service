@@ -148,7 +148,7 @@ export const getSafeAddressFromMultiSend = async (
 };
 
 /**
- * Validates if a multiSend call is valid for a given Safe address:
+ * Validates that the call `data` is `multiSend` and the `to` address is the MultiSendCallOnly deployment.
  *
  * @param chainId chainId
  * @param to multiSend address
