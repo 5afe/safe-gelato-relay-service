@@ -16,7 +16,7 @@ describe('getRelayGasLimit', () => {
     const GAS_LIMIT_BUFFER = 150_000;
 
     expect(_getRelayGasLimit('100000')).toBe(
-      BigInt(100000) + BigInt(GAS_LIMIT_BUFFER),
+      (BigInt(100000) + BigInt(GAS_LIMIT_BUFFER)).toString(),
     );
   });
 });
