@@ -1,15 +1,111 @@
+import { faker } from '@faker-js/faker';
 import * as axios from 'axios';
-import * as deployments from '@safe-global/safe-deployments/dist/libs';
+import * as deployments from '@safe-global/safe-deployments';
 import type { SingletonDeployment } from '@safe-global/safe-deployments/dist/types';
 
 import * as txHelpers from './transactions.helper';
 import * as safeHelpers from './safe.helper';
 import {
+  MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_MULTISEND_TX_CALL_DATA,
 } from '../../mocks/transaction-data.mock';
 
+jest.mock('@safe-global/safe-deployments', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('@safe-global/safe-deployments'),
+  };
+});
+
 describe('Transaction helpers', () => {
+  describe('createProxyWithNonce', () => {
+    describe('isCreateProxyWithNonceCall', () => {
+      it('should return true if the data starts with the method selector', () => {
+        const result = txHelpers.isCreateProxyWithNonceCall(
+          MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+        );
+        expect(result).toBe(true);
+      });
+      it('should return false if the data is not that of createProxyWithNonce', () => {
+        const result = txHelpers.isCreateProxyWithNonceCall(
+          MOCK_EXEC_TX_CALL_DATA,
+        );
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('decodeCreateProxyWithNonce', () => {
+      it('should return the decoded data', () => {
+        const result = txHelpers._decodeCreateProxyWithNonce(
+          MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+        );
+
+        expect(result).toStrictEqual({
+          singleton: '0x3E5c63644E683549055b9Be8653de26E0B4CD36E',
+          initializer:
+            '0xb63e800d0000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000f48f2b2d2a534e402487b3ee7c18c33aec0fe5e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bbeedb6d8e56e23f5812e59d1b6602f15957271f0000000000000000000000000000000000000000000000000000000000000000',
+          saltNonce: BigInt(4),
+        });
+      });
+    });
+
+    describe('predictSafeAddress', () => {
+      const chainId = '5';
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const proxyFactoryAddress = deployments.getProxyFactoryDeployment({
+        network: chainId,
+        version: '1.3.0',
+      })!.defaultAddress;
+
+      let getProxyFactoryDeploymentSpy: jest.SpyInstance;
+
+      beforeEach(() => {
+        jest.clearAllMocks();
+
+        getProxyFactoryDeploymentSpy = jest.spyOn(
+          deployments,
+          'getProxyFactoryDeployment',
+        );
+      });
+
+      it('should predict the Safe address from the data', () => {
+        const result = txHelpers.predictSafeAddress(
+          '5',
+          proxyFactoryAddress,
+          MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+        );
+
+        expect(result).toBe('0x8E1a7c91EF7CfE9356f2c654286e00E9ECBf5C3B');
+
+        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return undefined if no deployment exists for the given chainId', () => {
+        const result = txHelpers.predictSafeAddress(
+          'fakeChainId',
+          faker.finance.ethereumAddress(),
+          MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+        );
+
+        expect(result).toBeUndefined();
+
+        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return undefined if the to address is not an official proxyFactory', () => {
+        const result = txHelpers.predictSafeAddress(
+          '5',
+          faker.finance.ethereumAddress(),
+          MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+        );
+
+        expect(result).toBeUndefined();
+
+        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
   describe('execTransaction', () => {
     describe('isExecTransactionCall', () => {
       it('should return true if the call data starts with the method selector', () => {

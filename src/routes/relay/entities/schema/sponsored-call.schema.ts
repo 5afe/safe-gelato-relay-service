@@ -7,6 +7,8 @@ import {
   isExecTransactionCall,
   isMultiSendCall,
   getSafeAddressFromMultiSend,
+  predictSafeAddress,
+  isCreateProxyWithNonceCall,
 } from '../../../../routes/common/transactions.helper';
 import { isSafeContract } from '../../../../routes/common/safe.helper';
 
@@ -68,7 +70,24 @@ export const SponsoredCallSchema = z
       };
     }
 
-    setError('Only (batched) Safe transactions can be relayed.');
+    if (isCreateProxyWithNonceCall(data)) {
+      const predictedSafeAddress = predictSafeAddress(chainId, to, data);
+
+      if (!predictedSafeAddress) {
+        setError(
+          'Cannot predict Safe address from `createProxyWithNonce` transaction.',
+        );
+
+        return z.NEVER;
+      }
+
+      return {
+        ...values,
+        safeAddress: predictedSafeAddress,
+      };
+    }
+
+    setError('Invalid transaction data.');
 
     return z.NEVER;
   });

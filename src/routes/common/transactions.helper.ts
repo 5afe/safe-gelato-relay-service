@@ -1,5 +1,16 @@
-import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
-import { ethers } from 'ethers';
+import {
+  getMultiSendCallOnlyDeployment,
+  getProxyFactoryDeployment,
+} from '@safe-global/safe-deployments';
+import {
+  AbiCoder,
+  ethers,
+  getCreate2Address,
+  Interface,
+  keccak256,
+} from 'ethers';
+
+import { SupportedChainId } from '../../config/constants';
 
 import { isSafeContract } from './safe.helper';
 
@@ -14,6 +25,106 @@ const isCalldata = (data: string, signature: string): boolean => {
   const signatureId = ethers.id(signature).slice(0, 10);
 
   return data.startsWith(signatureId);
+};
+
+// ================= createProxyWithNonce ==================
+
+export const isCreateProxyWithNonceCall = (data: string): boolean => {
+  const CREATE_PROXY_WITH_NONCE_TX_SIGNATURE =
+    'createProxyWithNonce(address,bytes,uint256)';
+
+  return isCalldata(data, CREATE_PROXY_WITH_NONCE_TX_SIGNATURE);
+};
+
+interface CreateProxyWithNonceTransactionData {
+  readonly singleton: string;
+  readonly initializer: string;
+  readonly saltNonce: bigint;
+}
+
+/**
+ * Decodes the createProxyWith calldata
+ * @param encodedData createProxyWithNonce calldata
+ * @returns mastercopy singleton address, setup initializer data and salt nonce
+ */
+export const _decodeCreateProxyWithNonce = (
+  encodedData: string,
+): CreateProxyWithNonceTransactionData => {
+  const CREATE_PROXY_WITH_NONCE_FRAGMENT =
+    'function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce)';
+
+  const createProxyWithNonceInterface = new Interface([
+    CREATE_PROXY_WITH_NONCE_FRAGMENT,
+  ]);
+
+  const [singleton, initializer, saltNonce] =
+    createProxyWithNonceInterface.decodeFunctionData(
+      CREATE_PROXY_WITH_NONCE_FRAGMENT,
+      encodedData,
+    );
+
+  return {
+    singleton,
+    initializer,
+    saltNonce,
+  };
+};
+
+/**
+ * proxyCreationCode is hardcoded so that we don't have to query the blockchain for it
+ * Whenever a new version is deployed or we support relaying on more networks this will
+ * need to be updated or we revert to querying the blockchain for it.
+ *
+ * If we decide to query the blockchain, we should also consider using the core SDK instead.
+ *
+ * @see https://github.com/safe-global/safe-contracts/blob/main/contracts/proxies/SafeProxyFactory.sol#L15
+ */
+const PROXY_CREATION_CODE_VERSION = '1.3.0';
+const PROXY_CREATION_CODE: { [key in SupportedChainId]: string } = {
+  [SupportedChainId.GOERLI]:
+    '0x608060405234801561001057600080fd5b506040516101e63803806101e68339818101604052602081101561003357600080fd5b8101908080519060200190929190505050600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1614156100ca576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806101c46022913960400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505060ab806101196000396000f3fe608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033496e76616c69642073696e676c65746f6e20616464726573732070726f7669646564',
+  [SupportedChainId.GNOSIS_CHAIN]:
+    '0x608060405234801561001057600080fd5b506040516101e63803806101e68339818101604052602081101561003357600080fd5b8101908080519060200190929190505050600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff1614156100ca576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260228152602001806101c46022913960400191505060405180910390fd5b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505060ab806101196000396000f3fe608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033496e76616c69642073696e676c65746f6e20616464726573732070726f7669646564',
+};
+
+/**
+ * Predicts the Safe address from createProxyWithNonce calldata
+ * @param chainId chainId
+ * @param to proxyFactory address
+ * @param data createProxyWithNonce calldata
+ * @returns Safe address
+ */
+export const predictSafeAddress = (
+  chainId: string,
+  to: string,
+  data: string,
+): string | undefined => {
+  const proxyFactoryDeployment = getProxyFactoryDeployment({
+    network: chainId,
+    version: PROXY_CREATION_CODE_VERSION,
+  });
+
+  const isOfficialProxyFactory =
+    proxyFactoryDeployment && to === proxyFactoryDeployment.defaultAddress;
+
+  if (!isOfficialProxyFactory) {
+    return;
+  }
+
+  const abiCoder = AbiCoder.defaultAbiCoder();
+
+  const { saltNonce, initializer, singleton } =
+    _decodeCreateProxyWithNonce(data);
+
+  const encodedNonce = abiCoder.encode(['uint256'], [saltNonce]);
+  const salt = keccak256(keccak256(initializer) + encodedNonce.slice(2));
+
+  const constructorData = abiCoder.encode(['address'], [singleton]);
+  const initCode = keccak256(
+    PROXY_CREATION_CODE[chainId] + constructorData.slice(2),
+  );
+
+  return getCreate2Address(to, salt, initCode);
 };
 
 // ==================== execTransaction ====================

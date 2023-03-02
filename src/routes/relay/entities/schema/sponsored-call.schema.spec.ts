@@ -4,11 +4,13 @@ import * as axios from 'axios';
 import { ZodError } from 'zod';
 
 import {
+  MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_MULTISEND_TX_CALL_DATA,
 } from '../../../../mocks/transaction-data.mock';
 import { SponsoredCallSchema } from './sponsored-call.schema';
 import * as txHelpers from '../../../common/transactions.helper';
+import { getProxyFactoryDeployment } from '@safe-global/safe-deployments';
 
 jest.mock('axios');
 
@@ -75,6 +77,34 @@ describe('sponsoredCall schema', () => {
     });
   });
 
+  it('should validate and predict the Safe address from a valid creation call', async () => {
+    const chainId = '5';
+
+    const to = getProxyFactoryDeployment({
+      network: chainId,
+    })?.defaultAddress;
+
+    const data = {
+      chainId,
+      to,
+      data: MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+      gasLimit: faker.random.numeric(),
+    };
+
+    const result = await SponsoredCallSchema.safeParseAsync(data);
+
+    expect(result.success).toBe(true);
+
+    if (!result.success) {
+      return;
+    }
+
+    expect(result.data).toStrictEqual({
+      ...data,
+      safeAddress: '0x8E1a7c91EF7CfE9356f2c654286e00E9ECBf5C3B',
+    });
+  });
+
   it('should not validate an invalid gasLimit', async () => {
     axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
@@ -108,7 +138,7 @@ describe('sponsoredCall schema', () => {
       expect(result.error).toStrictEqual(
         new ZodError([
           {
-            message: 'Only (batched) Safe transactions can be relayed.',
+            message: 'Invalid transaction data.',
             path: ['data'],
             code: 'custom',
           },
@@ -187,6 +217,32 @@ describe('sponsoredCall schema', () => {
       new ZodError([
         {
           message: 'Cannot decode Safe address from `multiSend` transaction.',
+          path: ['data'],
+          code: 'custom',
+        },
+      ]),
+    );
+  });
+
+  it('should not validate Safe creations if the address cannot be predicted', async () => {
+    jest.spyOn(txHelpers, 'predictSafeAddress').mockReturnValue(undefined);
+
+    const result = await SponsoredCallSchema.safeParseAsync({
+      chainId: '5',
+      to: faker.finance.ethereumAddress(),
+      data: MOCK_CREATE_PROXY_WITH_NONCE_TX_CALL_DATA,
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) {
+      return;
+    }
+
+    expect(result.error).toStrictEqual(
+      new ZodError([
+        {
+          message:
+            'Cannot predict Safe address from `createProxyWithNonce` transaction.',
           path: ['data'],
           code: 'custom',
         },
