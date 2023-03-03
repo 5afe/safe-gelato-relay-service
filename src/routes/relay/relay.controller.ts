@@ -11,6 +11,7 @@ import { RelayLimitService } from './services/relay-limit.service';
 
 @Controller({
   version: '1',
+  path: 'relay',
 })
 export class RelayController {
   constructor(
@@ -18,7 +19,7 @@ export class RelayController {
     private readonly relayLimitService: RelayLimitService,
   ) {}
 
-  @Post('relay')
+  @Post()
   sponsoredCall(
     @Body(new ZodValidationPipe(SponsoredCallSchema))
     sponsoredCallDto: SponsoredCallDto,
@@ -26,7 +27,7 @@ export class RelayController {
     return this.relayService.sponsoredCall(sponsoredCallDto);
   }
 
-  @Get('relay/:chainId/:address')
+  @Get(':chainId/:address')
   getRelayLimit(
     @Param('chainId', new ZodValidationPipe(ChainIdSchema))
     chainId: string,
