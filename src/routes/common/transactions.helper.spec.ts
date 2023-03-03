@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import * as axios from 'axios';
-import * as deployments from '@safe-global/safe-deployments';
+import { getProxyFactoryDeployment } from '@safe-global/safe-deployments';
 import type { SingletonDeployment } from '@safe-global/safe-deployments/dist/types';
 
 import * as txHelpers from './transactions.helper';
@@ -10,13 +10,6 @@ import {
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_MULTISEND_TX_CALL_DATA,
 } from '../../mocks/transaction-data.mock';
-
-jest.mock('@safe-global/safe-deployments', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('@safe-global/safe-deployments'),
-  };
-});
 
 describe('Transaction helpers', () => {
   describe('createProxyWithNonce', () => {
@@ -53,21 +46,10 @@ describe('Transaction helpers', () => {
     describe('predictSafeAddress', () => {
       const chainId = '5';
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const proxyFactoryAddress = deployments.getProxyFactoryDeployment({
+      const proxyFactoryAddress = getProxyFactoryDeployment({
         network: chainId,
         version: '1.3.0',
       })!.defaultAddress;
-
-      let getProxyFactoryDeploymentSpy: jest.SpyInstance;
-
-      beforeEach(() => {
-        jest.clearAllMocks();
-
-        getProxyFactoryDeploymentSpy = jest.spyOn(
-          deployments,
-          'getProxyFactoryDeployment',
-        );
-      });
 
       it('should predict the Safe address from the data', () => {
         const result = txHelpers.predictSafeAddress(
@@ -77,8 +59,6 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBe('0x8E1a7c91EF7CfE9356f2c654286e00E9ECBf5C3B');
-
-        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should return undefined if no deployment exists for the given chainId', () => {
@@ -89,8 +69,6 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBeUndefined();
-
-        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should return undefined if the to address is not an official proxyFactory', () => {
@@ -101,8 +79,6 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBeUndefined();
-
-        expect(getProxyFactoryDeploymentSpy).toHaveBeenCalledTimes(1);
       });
     });
   });

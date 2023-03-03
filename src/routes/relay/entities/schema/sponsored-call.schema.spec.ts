@@ -38,6 +38,7 @@ describe('sponsoredCall schema', () => {
 
       expect(result.success).toBe(true);
 
+      // Appease TypeScript
       if (!result.success) {
         return;
       }
@@ -95,6 +96,7 @@ describe('sponsoredCall schema', () => {
 
     expect(result.success).toBe(true);
 
+    // Appease TypeScript
     if (!result.success) {
       return;
     }
@@ -209,6 +211,8 @@ describe('sponsoredCall schema', () => {
     });
 
     expect(result.success).toBe(false);
+
+    // Appease TypeScript
     if (result.success) {
       return;
     }
