@@ -19,7 +19,7 @@ export class RelayController {
     private readonly relayLimitService: RelayLimitService,
   ) {}
 
-  @Post('')
+  @Post()
   sponsoredCall(
     @Body(new ZodValidationPipe(SponsoredCallSchema))
     sponsoredCallDto: SponsoredCallDto,
