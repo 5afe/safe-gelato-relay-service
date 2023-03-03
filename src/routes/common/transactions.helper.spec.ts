@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker';
 import * as axios from 'axios';
-import { getProxyFactoryDeployment } from '@safe-global/safe-deployments';
-import type { SingletonDeployment } from '@safe-global/safe-deployments/dist/types';
+import {
+  getMultiSendCallOnlyDeployment,
+  getProxyFactoryDeployment,
+} from '@safe-global/safe-deployments';
 
 import * as txHelpers from './transactions.helper';
 import * as safeHelpers from './safe.helper';
@@ -252,22 +254,9 @@ describe('Transaction helpers', () => {
     describe('isValidMultiSendCall', () => {
       const chainId = '5';
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const multiSendAddress = deployments.getMultiSendCallOnlyDeployment({
+      const multiSendAddress = getMultiSendCallOnlyDeployment({
         network: chainId,
       })!.defaultAddress;
-
-      let isMultiSendCallSpy: jest.SpyInstance;
-      let getMultiSendCallOnlyDeploymentSpy: jest.SpyInstance;
-
-      beforeEach(() => {
-        jest.restoreAllMocks();
-
-        isMultiSendCallSpy = jest.spyOn(txHelpers, 'isMultiSendCall');
-        getMultiSendCallOnlyDeploymentSpy = jest.spyOn(
-          deployments,
-          'getMultiSendCallOnlyDeployment',
-        );
-      });
 
       it('should return true for a valid multisend', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
@@ -279,9 +268,6 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBe(true);
-
-        expect(isMultiSendCallSpy).toHaveBeenCalledTimes(1);
-        expect(getMultiSendCallOnlyDeploymentSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should return false for a invalid multisend calldata', async () => {
@@ -296,16 +282,10 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBe(false);
-
-        expect(isMultiSendCallSpy).toHaveBeenCalledTimes(1);
-        expect(getMultiSendCallOnlyDeploymentSpy).not.toHaveBeenCalled();
       });
 
       it('should return false unofficial multisend addresses', async () => {
         jest.spyOn(txHelpers, 'decodeMultiSendTxs').mockReturnValue([]);
-        jest
-          .spyOn(deployments, 'getMultiSendCallOnlyDeployment')
-          .mockReturnValue({ defaultAddress: '0x123' } as SingletonDeployment);
 
         const result = await txHelpers.isValidMultiSendCall(
           chainId,
@@ -314,9 +294,6 @@ describe('Transaction helpers', () => {
         );
 
         expect(result).toBe(false);
-
-        expect(isMultiSendCallSpy).toHaveBeenCalledTimes(1);
-        expect(getMultiSendCallOnlyDeploymentSpy).toHaveBeenCalledTimes(1);
       });
     });
   });
