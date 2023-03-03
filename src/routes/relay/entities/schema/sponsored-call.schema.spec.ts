@@ -38,9 +38,9 @@ describe('sponsoredCall schema', () => {
 
       expect(result.success).toBe(true);
 
-      // Appease TypeScript
+      // `result` is a union so we need to appease TypeScript
       if (!result.success) {
-        return;
+        throw new Error('Failed to parse sponsored call.');
       }
 
       expect(result.data).toStrictEqual({
@@ -96,9 +96,9 @@ describe('sponsoredCall schema', () => {
 
     expect(result.success).toBe(true);
 
-    // Appease TypeScript
+    // `result` is a union so we need to appease TypeScript
     if (!result.success) {
-      return;
+      throw new Error('Failed to parse sponsored call.');
     }
 
     expect(result.data).toStrictEqual({
@@ -212,9 +212,9 @@ describe('sponsoredCall schema', () => {
 
     expect(result.success).toBe(false);
 
-    // Appease TypeScript
+    // `result` is a union so we need to appease TypeScript
     if (result.success) {
-      return;
+      throw new Error('Failed to parse sponsored call.');
     }
 
     expect(result.error).toStrictEqual(
