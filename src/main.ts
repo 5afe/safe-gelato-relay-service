@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableVersioning();
 
+  // TODO: Define cors headers which we want to allow.
   app.enableCors({
     origin: '*',
   });
