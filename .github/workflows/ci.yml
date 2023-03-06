@@ -39,7 +39,9 @@ jobs:
       - run: yarn run test
 
   docker-publish:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    # reenable after repository is convigured for deployment
+    # if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: ${{ false }}
     needs: [ prettier, es-lint, tests ]
     runs-on: ubuntu-latest
     steps:
