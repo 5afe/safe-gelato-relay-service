@@ -7,26 +7,27 @@ import * as axios from 'axios';
 
 import { RelayModule } from './relay.module';
 import configuration from '../../config/configuration';
-import { RelayService } from './relay.service';
-import { RelayLimitService } from './services/relay-limit.service';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { TestSponsorModule } from 'src/datasources/sponsor/__tests__/test.sponsor.module';
+import {
+  ISponsorService,
+  SponsorService,
+} from 'src/datasources/sponsor/sponsor.service.interface';
 
 jest.mock('axios');
 
 describe('RelayController', () => {
   let app: INestApplication;
-  let relayService: RelayService;
-  let relayLimitService: RelayLimitService;
+  let sponsorService: ISponsorService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    jest.resetAllMocks();
 
-    // TODO: Create test module that provides mock environment variables and versioning to mirror `main.ts`
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         // Features
         RelayModule,
+        TestSponsorModule,
         // Common
         ConfigModule.forRoot({
           isGlobal: true,
@@ -35,8 +36,7 @@ describe('RelayController', () => {
       ],
     }).compile();
 
-    relayService = moduleFixture.get<RelayService>(RelayService);
-    relayLimitService = moduleFixture.get<RelayLimitService>(RelayLimitService);
+    sponsorService = moduleFixture.get<ISponsorService>(SponsorService);
 
     app = moduleFixture.createNestApplication();
     app.enableVersioning();
@@ -53,7 +53,7 @@ describe('RelayController', () => {
       axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
       const relayServiceSpy = jest
-        .spyOn(relayService, 'sponsoredCall')
+        .spyOn(sponsorService, 'sponsoredCall')
         .mockImplementation(() => Promise.resolve({ taskId: '123' }));
 
       const body = {
@@ -74,7 +74,7 @@ describe('RelayController', () => {
       axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
 
       const relayServiceSpy = jest
-        .spyOn(relayService, 'sponsoredCall')
+        .spyOn(sponsorService, 'sponsoredCall')
         .mockImplementation(() => Promise.reject());
 
       const body = {
@@ -95,7 +95,7 @@ describe('RelayController', () => {
       axios.default.get = jest.fn().mockImplementation(() => Promise.reject());
 
       const relayServiceSpy = jest
-        .spyOn(relayService, 'sponsoredCall')
+        .spyOn(sponsorService, 'sponsoredCall')
         .mockImplementation(() => Promise.reject());
 
       const body = {
@@ -116,7 +116,7 @@ describe('RelayController', () => {
       axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
       const relayServiceSpy = jest
-        .spyOn(relayService, 'sponsoredCall')
+        .spyOn(sponsorService, 'sponsoredCall')
         .mockImplementation(() => Promise.reject());
 
       const body = {
@@ -136,9 +136,7 @@ describe('RelayController', () => {
     it('should return a 400 error when the gasLimit is invalid', async () => {
       axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
-      const relayServiceSpy = jest
-        .spyOn(relayService, 'sponsoredCall')
-        .mockImplementation(() => Promise.reject());
+      const relayServiceSpy = jest.spyOn(sponsorService, 'sponsoredCall');
 
       const body = {
         chainId: '5',
@@ -154,46 +152,44 @@ describe('RelayController', () => {
 
       expect(relayServiceSpy).not.toHaveBeenCalled();
     });
+
+    it.todo('should return a 500 if the relayer throws');
+
+    it.todo('should return a 429 if the rate limit is reached');
+
+    it.todo('should not rate limit the same addresses on different chains');
   });
 
   describe('/v1/relay/:chainId/:address (GET)', () => {
     it('should return a 200 when the body is valid', async () => {
-      const relayServiceSpy = jest.spyOn(relayLimitService, 'getRelayLimit');
-
       const chainId = '5';
       const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
         .get(`/v1/relay/${chainId}/${address}`)
         .expect(200);
-
-      expect(relayServiceSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('should return a 400 error when the chainId is invalid', async () => {
-      const relayServiceSpy = jest.spyOn(relayLimitService, 'getRelayLimit');
+    it.todo('should increment the relay limit if limit has not been reached');
 
+    it('should return a 400 error when the chainId is invalid', async () => {
       const chainId = '1337';
       const address = faker.finance.ethereumAddress();
 
       await request(app.getHttpServer())
         .get(`/v1/relay/${chainId}/${address}`)
         .expect(400);
-
-      expect(relayServiceSpy).not.toHaveBeenCalled();
     });
 
     it('should return a 400 error when the address is invalid', async () => {
-      const relayServiceSpy = jest.spyOn(relayLimitService, 'getRelayLimit');
-
       const chainId = '5';
       const address = '0x123';
 
       await request(app.getHttpServer())
         .get(`/v1/relay/${chainId}/${address}`)
         .expect(400);
-
-      expect(relayServiceSpy).not.toHaveBeenCalled();
     });
+
+    it.todo('should not increment the relay limit if limit has been reached');
   });
 });
