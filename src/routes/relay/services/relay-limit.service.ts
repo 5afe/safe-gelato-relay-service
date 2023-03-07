@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
 import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
+import { RequestScopedLoggingService } from '../../../routes/common/logging/logging.service';
 
 @Injectable()
 export class RelayLimitService {
@@ -14,6 +15,7 @@ export class RelayLimitService {
   constructor(
     private readonly configService: ConfigService,
     private readonly throttlerStorageService: ThrottlerStorageService,
+    private readonly loggingService: RequestScopedLoggingService,
   ) {
     this.ttl = this.configService.getOrThrow<number>('relay.ttl');
     this.limit = this.configService.getOrThrow<number>('relay.limit');
@@ -36,6 +38,11 @@ export class RelayLimitService {
     remaining: number;
     expiresAt?: number;
   } {
+    this.loggingService.log(
+      'Called getRelayLimit for address %s on chain %s',
+      address,
+      chainId,
+    );
     const key = this.generateKey(chainId, address);
     const throttlerEntry = this.throttlerStorageService.storage[key] || {
       totalHits: 0,
