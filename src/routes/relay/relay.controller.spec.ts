@@ -69,32 +69,9 @@ describe('RelayController', () => {
       it('should return a 201 when the body is valid', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
-        const sponsorServiceSpy = jest
-          .spyOn(mockSponsorService, 'sponsoredCall')
-          .mockImplementation(() => Promise.resolve({ taskId: '123' }));
-
-        const body = {
-          chainId: '5',
-          to: faker.finance.ethereumAddress(),
-          data: MOCK_EXEC_TX_CALL_DATA,
-        };
-
-        const result = await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201);
-
-        expect(result.body).toStrictEqual({ taskId: '123' });
-
-        expect(sponsorServiceSpy).toHaveBeenCalledTimes(1);
-      });
-
-      it('should return a 500 if the relayer throws', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
-
-        const sponsorServiceSpy = jest
-          .spyOn(mockSponsorService, 'sponsoredCall')
-          .mockImplementation(() => Promise.reject());
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
 
         const body = {
           chainId: '5',
@@ -105,9 +82,31 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(500);
+          .expect(201, {
+            taskId: '123',
+          });
+      });
 
-        expect(sponsorServiceSpy).toHaveBeenCalledTimes(1);
+      it('should return a 500 if the relayer throws', async () => {
+        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.reject(),
+        );
+
+        const body = {
+          chainId: '5',
+          to: faker.finance.ethereumAddress(),
+          data: MOCK_EXEC_TX_CALL_DATA,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(500, {
+            statusCode: 500,
+            message: 'Relay failed',
+          });
       });
     });
 
@@ -117,9 +116,9 @@ describe('RelayController', () => {
           .fn()
           .mockImplementation(() => Promise.reject());
 
-        const sponsorServiceSpy = jest
-          .spyOn(mockSponsorService, 'sponsoredCall')
-          .mockImplementation(() => Promise.reject());
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.reject(),
+        );
 
         const body = {
           chainId: '1337',
@@ -130,9 +129,10 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(422);
-
-        expect(sponsorServiceSpy).not.toHaveBeenCalled();
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
 
       it('should return a 422 error when the to address is invalid', async () => {
@@ -140,9 +140,9 @@ describe('RelayController', () => {
           .fn()
           .mockImplementation(() => Promise.reject());
 
-        const sponsorServiceSpy = jest
-          .spyOn(mockSponsorService, 'sponsoredCall')
-          .mockImplementation(() => Promise.reject());
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.reject(),
+        );
 
         const body = {
           chainId: '5',
@@ -153,17 +153,18 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(422);
-
-        expect(sponsorServiceSpy).not.toHaveBeenCalled();
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
 
       it('should return a 422 error when the data is invalid', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
-        const sponsorServiceSpy = jest
-          .spyOn(mockSponsorService, 'sponsoredCall')
-          .mockImplementation(() => Promise.reject());
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.reject(),
+        );
 
         const body = {
           chainId: '5',
@@ -174,18 +175,14 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(422);
-
-        expect(sponsorServiceSpy).not.toHaveBeenCalled();
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
 
       it('should return a 422 error when the gasLimit is invalid', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
-
-        const sponsorServiceSpy = jest.spyOn(
-          mockSponsorService,
-          'sponsoredCall',
-        );
 
         const body = {
           chainId: '5',
@@ -197,20 +194,16 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(422);
-
-        expect(sponsorServiceSpy).not.toHaveBeenCalled();
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
     });
 
     describe('Rate limiting', () => {
       it('should return a 429 if the rate limit is reached', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
-
-        const sponsorServiceSpy = jest.spyOn(
-          mockSponsorService,
-          'sponsoredCall',
-        );
 
         const body = {
           chainId: '5',
@@ -230,18 +223,18 @@ describe('RelayController', () => {
         await request(app.getHttpServer())
           .post('/v1/relay')
           .send(body)
-          .expect(429);
+          .expect(429, {
+            statusCode: 429,
+            message: 'Relay limit reached',
+          });
 
-        expect(sponsorServiceSpy).toHaveBeenCalledTimes(THROTTLE_LIMIT);
+        expect(mockSponsorService.sponsoredCall).toHaveBeenCalledTimes(
+          THROTTLE_LIMIT,
+        );
       });
 
       it('should not rate limit the same addresses on different chains', async () => {
         axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
-
-        const sponsorServiceSpy = jest.spyOn(
-          mockSponsorService,
-          'sponsoredCall',
-        );
 
         const body = {
           to: faker.finance.ethereumAddress(),
@@ -266,7 +259,9 @@ describe('RelayController', () => {
           .expect(201);
 
         // Called on chainId 5 until limit reached and then once on 100
-        expect(sponsorServiceSpy).toHaveBeenCalledTimes(THROTTLE_LIMIT + 1);
+        expect(mockSponsorService.sponsoredCall).toHaveBeenCalledTimes(
+          THROTTLE_LIMIT + 1,
+        );
       });
     });
   });
@@ -296,14 +291,15 @@ describe('RelayController', () => {
 
         await request(app.getHttpServer()).post('/v1/relay').send(body);
 
-        const result = await request(app.getHttpServer())
+        await request(app.getHttpServer())
           .get(`/v1/relay/${chainId}/${address}`)
-          .expect(200);
-
-        expect(result.body).toStrictEqual({
-          remaining: 4,
-          expiresAt: expect.any(Number),
-        });
+          .expect(200)
+          .expect((res) => {
+            expect(res.body).toStrictEqual({
+              remaining: 4,
+              expiresAt: expect.any(Number),
+            });
+          });
       });
 
       it('should not return negative limits more requests were made than the limit', async () => {
@@ -328,14 +324,15 @@ describe('RelayController', () => {
           }),
         );
 
-        const result = await request(app.getHttpServer())
+        await request(app.getHttpServer())
           .get(`/v1/relay/${chainId}/${address}`)
-          .expect(200);
-
-        expect(result.body).toStrictEqual({
-          remaining: 0,
-          expiresAt: expect.any(Number),
-        });
+          .expect(200)
+          .expect((res) => {
+            expect(res.body).toStrictEqual({
+              remaining: 0,
+              expiresAt: expect.any(Number),
+            });
+          });
       });
     });
 
@@ -346,7 +343,10 @@ describe('RelayController', () => {
 
         await request(app.getHttpServer())
           .get(`/v1/relay/${chainId}/${address}`)
-          .expect(422);
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
 
       it('should return a 422 error when the address is invalid', async () => {
@@ -355,7 +355,10 @@ describe('RelayController', () => {
 
         await request(app.getHttpServer())
           .get(`/v1/relay/${chainId}/${address}`)
-          .expect(422);
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
       });
     });
   });

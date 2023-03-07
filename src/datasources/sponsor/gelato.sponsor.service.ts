@@ -1,5 +1,6 @@
 import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
 import { Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common/decorators';
 import { ConfigService } from '@nestjs/config';
 
 import { SponsoredCallDto } from '../../routes/relay/entities/sponsored-call.entity';
@@ -7,9 +8,10 @@ import { ISponsorService } from './sponsor.service.interface';
 
 @Injectable()
 export class GelatoSponsorService implements ISponsorService {
-  private readonly relayer = new GelatoRelay();
-
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('GelatoRelay') private readonly relayer: GelatoRelay,
+  ) {}
 
   /**
    * If you are using your own custom gas limit, please add a 150k gas buffer on top of the expected
@@ -17,14 +19,10 @@ export class GelatoSponsorService implements ISponsorService {
    * buffer reduces your chance of the task cancelling before it is executed on-chain.
    * @see https://docs.gelato.network/developer-services/relay/quick-start/optional-parameters
    */
-  private getRelayGasLimit(gasLimit?: string): string | undefined {
-    const GAS_LIMIT_BUFFER = 150_000;
+  static getRelayGasLimit(gasLimit: bigint): bigint {
+    const GAS_LIMIT_BUFFER = BigInt(150_000);
 
-    if (!gasLimit) {
-      return undefined;
-    }
-
-    return (BigInt(gasLimit) + BigInt(GAS_LIMIT_BUFFER)).toString();
+    return gasLimit + GAS_LIMIT_BUFFER;
   }
 
   /**
@@ -33,12 +31,18 @@ export class GelatoSponsorService implements ISponsorService {
   async sponsoredCall(
     sponsoredCallDto: SponsoredCallDto,
   ): Promise<RelayResponse> {
-    const { chainId, data, to, gasLimit } = sponsoredCallDto;
+    const { chainId, data, to } = sponsoredCallDto;
 
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 
+    const gasLimit = sponsoredCallDto.gasLimit
+      ? GelatoSponsorService.getRelayGasLimit(
+          sponsoredCallDto.gasLimit,
+        ).toString()
+      : undefined;
+
     return this.relayer.sponsoredCall({ chainId, data, target: to }, apiKey, {
-      gasLimit: this.getRelayGasLimit(gasLimit),
+      gasLimit,
     });
   }
 }

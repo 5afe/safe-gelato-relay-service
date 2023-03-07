@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ConfigService } from '@nestjs/config';
 import { SupportedChainId } from '../../config/constants';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
@@ -24,7 +25,9 @@ describe('GelatoSponsorService', () => {
     },
   });
 
-  const relayService = new GelatoSponsorService(mockConfigService);
+  const mockRelayer = new GelatoRelay();
+
+  const relayService = new GelatoSponsorService(mockConfigService, mockRelayer);
 
   describe('sponsoredCall', () => {
     it('should call the relay service', async () => {
@@ -48,7 +51,7 @@ describe('GelatoSponsorService', () => {
         to: address,
         data: MOCK_EXEC_TX_CALL_DATA,
         safeAddress: address,
-        gasLimit: '123',
+        gasLimit: BigInt('123'),
       };
 
       await relayService.sponsoredCall(body);
