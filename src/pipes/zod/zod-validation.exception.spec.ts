@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { BadRequestException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ZodValidationException } from './zod-validation.exception';
@@ -26,13 +26,13 @@ describe('ZodValidationException', () => {
 
     const error = new ZodValidationException(result.error);
 
-    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error).toBeInstanceOf(ZodValidationException);
 
     expect(error.message).toBe('Validation failed');
-    expect(error.getStatus()).toBe(HttpStatus.BAD_REQUEST);
+
+    expect(error.getStatus()).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
 
     expect(error.getResponse()).toStrictEqual({
-      statusCode: 400,
       message: 'Validation failed',
       cause: [
         {

@@ -1,12 +1,11 @@
-import { BadRequestException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { ZodError } from 'zod';
 
-export class ZodValidationException extends BadRequestException {
+export class ZodValidationException extends HttpException {
   constructor(private error: ZodError) {
-    super({
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Validation failed',
-      cause: error.issues,
-    });
+    super(
+      { message: 'Validation failed', cause: error.issues },
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
   }
 }

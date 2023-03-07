@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayLimitService } from './services/relay-limit.service';
@@ -31,10 +26,10 @@ export class RelayService {
 
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, to)) {
-      throw new BadRequestException({
-        statusCode: HttpStatus.TOO_MANY_REQUESTS,
-        message: 'Relay limit reached',
-      });
+      throw new HttpException(
+        'Relay limit reached',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     let response: RelayResponse;
@@ -43,11 +38,7 @@ export class RelayService {
       // Relay
       response = await this.sponsorService.sponsoredCall(sponsoredCallDto);
     } catch (err) {
-      throw new BadRequestException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Relay failed',
-        cause: err,
-      });
+      throw new HttpException('Relay failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Increase the counter
