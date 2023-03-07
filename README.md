@@ -31,3 +31,13 @@ $ yarn run test:e2e
 # test coverage
 $ yarn run test:cov
 ```
+
+## Running service locally
+
+```bash
+# start service
+docker-compose up -d
+
+# stop service
+docker-compose stop
+```
