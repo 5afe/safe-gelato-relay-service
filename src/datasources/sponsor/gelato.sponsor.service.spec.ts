@@ -5,12 +5,20 @@ import { SupportedChainId } from '../../config/constants';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
 import { GelatoSponsorService } from './gelato.sponsor.service';
 
-const mockSponsoredCall = jest.fn();
-jest.mock('@gelatonetwork/relay-sdk', () => ({
-  GelatoRelay: jest.fn().mockImplementation(() => ({
-    sponsoredCall: mockSponsoredCall,
-  })),
-}));
+const mockGelatoRelay: GelatoRelay = {
+  callWithSyncFee: jest.fn(),
+  sponsoredCall: jest.fn(),
+  sponsoredCallERC2771: jest.fn(),
+  getSignatureDataERC2771: jest.fn(),
+  sponsoredCallERC2771WithSignature: jest.fn(),
+  isNetworkSupported: jest.fn(),
+  getSupportedNetworks: jest.fn(),
+  isOracleActive: jest.fn(),
+  getGelatoOracles: jest.fn(),
+  getPaymentTokens: jest.fn(),
+  getEstimatedFee: jest.fn(),
+  getTaskStatus: jest.fn(),
+};
 
 describe('GelatoSponsorService', () => {
   beforeEach(() => {
@@ -25,7 +33,7 @@ describe('GelatoSponsorService', () => {
     },
   });
 
-  const mockRelayer = new GelatoRelay();
+  const mockRelayer = jest.mocked(mockGelatoRelay);
 
   const relayService = new GelatoSponsorService(mockConfigService, mockRelayer);
 
@@ -41,7 +49,7 @@ describe('GelatoSponsorService', () => {
 
       await relayService.sponsoredCall(body);
 
-      expect(mockSponsoredCall).toHaveBeenCalledTimes(1);
+      expect(mockRelayer.sponsoredCall).toHaveBeenCalledTimes(1);
     });
 
     it('should add a gas buffer to the relay', async () => {
@@ -56,7 +64,7 @@ describe('GelatoSponsorService', () => {
 
       await relayService.sponsoredCall(body);
 
-      expect(mockSponsoredCall).toHaveBeenCalledWith(
+      expect(mockRelayer.sponsoredCall).toHaveBeenCalledWith(
         { chainId: body.chainId, target: body.to, data: body.data },
         expect.any(String),
         {
