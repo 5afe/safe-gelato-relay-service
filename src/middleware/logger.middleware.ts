@@ -1,13 +1,20 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  LoggerService,
+  NestMiddleware,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { RequestScopedLoggingService } from 'src/routes/common/logging/logging.service';
+import { LoggingService } from '../routes/common/logging/logging.service';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  constructor(private readonly loggingService: RequestScopedLoggingService) {}
+  constructor(
+    @Inject(LoggingService) private readonly loggingService: LoggerService,
+  ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    this.loggingService.debug('[==>] %s %s', req.method, req.url);
+    this.loggingService.debug?.('[==>] %s %s', req.method, req.url);
 
     const contentLength = res.get('content-length') || '';
     const contentType = res.get('content-type') || '';

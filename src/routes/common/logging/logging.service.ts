@@ -2,6 +2,8 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
 import * as winston from 'winston';
 
+export const LoggingService = Symbol('LoggerService');
+
 @Injectable()
 export class RequestScopedLoggingService implements LoggerService {
   constructor(private readonly cls: ClsService) {}

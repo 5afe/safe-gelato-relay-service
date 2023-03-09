@@ -1,9 +1,11 @@
 import { Global, Module } from '@nestjs/common';
-import { RequestScopedLoggingService } from './logging.service';
+import { LoggingService, RequestScopedLoggingService } from './logging.service';
 
 @Global()
 @Module({
-  providers: [RequestScopedLoggingService],
-  exports: [RequestScopedLoggingService],
+  providers: [
+    { provide: LoggingService, useClass: RequestScopedLoggingService },
+  ],
+  exports: [LoggingService],
 })
 export class RequestScopedLoggingModule {}

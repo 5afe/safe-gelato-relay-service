@@ -10,6 +10,8 @@ import configuration from '../../config/configuration';
 import { RelayService } from './relay.service';
 import { RelayLimitService } from './services/relay-limit.service';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { ClsModule } from 'nestjs-cls';
+import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 
 jest.mock('axios');
 
@@ -32,6 +34,14 @@ describe('RelayController', () => {
           isGlobal: true,
           load: [configuration],
         }),
+        // Register the ClsModule and automatically mount the ClsMiddleware
+        ClsModule.forRoot({
+          global: true,
+          middleware: {
+            generateId: true,
+          },
+        }),
+        TestLoggingModule,
       ],
     }).compile();
 

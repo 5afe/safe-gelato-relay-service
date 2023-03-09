@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
+import { mockLoggerService } from '../../common/logging/__tests__/test.logging.module';
 
 import { RelayLimitService } from './relay-limit.service';
 
@@ -27,6 +28,7 @@ describe('RelayLimitService', () => {
     relayLimitService = new RelayLimitService(
       mockConfigService,
       throttlerStorageService,
+      mockLoggerService,
     );
   });
 

@@ -6,6 +6,7 @@ import { SupportedChainId } from '../../config/constants';
 import { RelayLimitService } from './services/relay-limit.service';
 import { ThrottlerStorageService } from '@nestjs/throttler';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { mockLoggerService } from '../common/logging/__tests__/test.logging.module';
 
 describe('getRelayGasLimit', () => {
   it('should return undefined if no gasLimit is provided', () => {
@@ -52,6 +53,7 @@ describe('RelayService', () => {
     relayLimitService = new RelayLimitService(
       mockConfigService,
       throttlerStorageService,
+      mockLoggerService,
     );
 
     relayService = new RelayService(mockConfigService, relayLimitService);
