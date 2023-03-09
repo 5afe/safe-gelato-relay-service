@@ -1,8 +1,7 @@
-import { Global, Module, LoggerService } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
+import { ILoggingService, LoggingService } from '../logging.interface';
 
-import { LoggingService } from '../logging.service';
-
-const loggerService: LoggerService = {
+const loggerService: ILoggingService = {
   log: function (message: any, ...optionalParams: any[]) {
     console.log(message, ...optionalParams);
   },
@@ -11,6 +10,9 @@ const loggerService: LoggerService = {
   },
   warn: function (message: any, ...optionalParams: any[]) {
     console.warn(message, ...optionalParams);
+  },
+  debug: function (message: string, ...optionalParams: any[]): void {
+    console.debug(message, ...optionalParams);
   },
 };
 

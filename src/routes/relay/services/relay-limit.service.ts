@@ -1,8 +1,11 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
 import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
-import { LoggingService } from '../../common/logging/logging.service';
+import {
+  ILoggingService,
+  LoggingService,
+} from '../../common/logging/logging.interface';
 
 @Injectable()
 export class RelayLimitService {
@@ -15,7 +18,7 @@ export class RelayLimitService {
   constructor(
     private readonly configService: ConfigService,
     private readonly throttlerStorageService: ThrottlerStorageService,
-    @Inject(LoggingService) private readonly loggingService: LoggerService,
+    @Inject(LoggingService) private readonly loggingService: ILoggingService,
   ) {
     this.ttl = this.configService.getOrThrow<number>('relay.ttl');
     this.limit = this.configService.getOrThrow<number>('relay.limit');

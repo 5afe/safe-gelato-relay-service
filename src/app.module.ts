@@ -19,7 +19,7 @@ import { RequestScopedLoggingModule } from './routes/common/logging/logging.modu
       isGlobal: true,
       load: [configuration],
     }),
-    // Register the ClsModule and automatically mount the ClsMiddleware
+    // Module for storing and reading from the async local storage
     ClsModule.forRoot({
       global: true,
       middleware: {
@@ -33,6 +33,7 @@ import { RequestScopedLoggingModule } from './routes/common/logging/logging.modu
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
+      // The ClsMiddleware needs to be applied before the LoggerMiddleware
       .apply(ClsMiddleware, LoggerMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }

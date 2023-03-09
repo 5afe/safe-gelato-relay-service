@@ -1,6 +1,12 @@
 import { Global, Module } from '@nestjs/common';
-import { LoggingService, RequestScopedLoggingService } from './logging.service';
+import { LoggingService } from './logging.interface';
+import { RequestScopedLoggingService } from './logging.service';
 
+/**
+ * Module for logging messages throughout the application.
+ *
+ * Provides the RequestScopedLoggingService which logs the current time and request ID with every message.
+ */
 @Global()
 @Module({
   providers: [
