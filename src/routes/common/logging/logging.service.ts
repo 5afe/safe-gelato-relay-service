@@ -23,9 +23,6 @@ export class RequestScopedLoggingService implements ILoggingService {
   debug(message: string, ...optionalParams: any[]) {
     winston.debug(this.transformMessage(message), ...optionalParams);
   }
-  verbose(message: string, ...optionalParams: any[]) {
-    winston.verbose(this.transformMessage(message), ...optionalParams);
-  }
 
   private transformMessage(message: string): string {
     const requestId = this.cls.getId();
