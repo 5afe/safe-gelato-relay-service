@@ -5,6 +5,7 @@ import { ClsModule, ClsMiddleware } from 'nestjs-cls';
 
 import configuration from './config/configuration';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import { SponsorModule } from './datasources/sponsor/sponsor.module';
 import { RelayModule } from './routes/relay/relay.module';
 import { RequestScopedLoggingModule } from './routes/common/logging/logging.module';
 
@@ -12,6 +13,7 @@ import { RequestScopedLoggingModule } from './routes/common/logging/logging.modu
   imports: [
     // Features
     RelayModule,
+    SponsorModule,
     // Common
     ConfigModule.forRoot({
       isGlobal: true,
