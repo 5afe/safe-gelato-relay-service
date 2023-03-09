@@ -1,73 +1,44 @@
-import { GelatoRelay, RelayResponse } from '@gelatonetwork/relay-sdk';
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayLimitService } from './services/relay-limit.service';
-
-/**
- * If you are using your own custom gas limit, please add a 150k gas buffer on top of the expected
- * gas usage for the transaction. This is for the Gelato Relay execution overhead, and adding this
- * buffer reduces your chance of the task cancelling before it is executed on-chain.
- * @see https://docs.gelato.network/developer-services/relay/quick-start/optional-parameters
- */
-export const _getRelayGasLimit = (gasLimit?: string): string | undefined => {
-  const GAS_LIMIT_BUFFER = 150_000;
-
-  if (!gasLimit) {
-    return undefined;
-  }
-
-  return (BigInt(gasLimit) + BigInt(GAS_LIMIT_BUFFER)).toString();
-};
+import {
+  ISponsorService,
+  SponsorService,
+} from '../../datasources/sponsor/sponsor.service.interface';
+import { RelayResponse } from '@gelatonetwork/relay-sdk';
 
 @Injectable()
 export class RelayService {
-  private readonly relayer: GelatoRelay;
-
   constructor(
-    private readonly configService: ConfigService,
     private readonly relayLimitService: RelayLimitService,
-  ) {
-    this.relayer = new GelatoRelay();
-  }
+    @Inject(SponsorService) private readonly sponsorService: ISponsorService,
+  ) {}
 
   /**
-   * Relays transaction data via Gelato `sponsoredCall`
+   * Relays transaction data via SponsorService `sponsoredCall`
    * Validation takes place through ZodValidationPipe in controller
    */
-  async sponsoredCall({
-    chainId,
-    data,
-    to,
-    gasLimit,
-    safeAddress,
-  }: SponsoredCallDto): Promise<RelayResponse> {
-    const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
+  async sponsoredCall(
+    sponsoredCallDto: SponsoredCallDto,
+  ): Promise<RelayResponse> {
+    const { chainId, to, safeAddress } = sponsoredCallDto;
 
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, to)) {
-      throw new BadRequestException({
-        statusCode: HttpStatus.TOO_MANY_REQUESTS,
-        message: 'Relay limit reached',
-      });
+      throw new HttpException(
+        'Relay limit reached',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
     }
 
     let response: RelayResponse;
 
     try {
       // Relay
-      response = await this.relayer.sponsoredCall(
-        { chainId, data, target: to },
-        apiKey,
-        { gasLimit: _getRelayGasLimit(gasLimit) },
-      );
+      response = await this.sponsorService.sponsoredCall(sponsoredCallDto);
     } catch (err) {
-      throw new BadRequestException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Relay failed',
-        cause: err,
-      });
+      throw new HttpException('Relay failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Increase the counter
