@@ -22,9 +22,10 @@ describe('RequestScopedLoggingService', () => {
     jest.spyOn(winston, 'debug').mockImplementation(debugMock);
     jest.spyOn(winston, 'error').mockImplementation(errorMock);
     jest.spyOn(winston, 'warn').mockImplementation(warnMock);
+
+    loggingService = new RequestScopedLoggingService(mockClsService);
   });
   beforeEach(() => {
-    loggingService = new RequestScopedLoggingService(mockClsService as any);
     jest.clearAllMocks();
   });
 
