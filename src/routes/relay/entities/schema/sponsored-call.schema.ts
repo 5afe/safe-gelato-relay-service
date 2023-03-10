@@ -5,10 +5,8 @@ import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
   isValidMultiSendCall,
   isExecTransactionCall,
-  isMultiSendCall,
   getSafeAddressFromMultiSend,
-} from '../../../../routes/common/transactions.helper';
-import { isSafeContract } from '../../../../routes/common/safe.helper';
+} from './sponsored-call.schema.helper';
 
 export const SponsoredCallSchema = z
   .object({
@@ -31,32 +29,15 @@ export const SponsoredCallSchema = z
     };
 
     if (isExecTransactionCall(data)) {
-      const isSafe = await isSafeContract(chainId, to);
-
-      // Non-Safe smart contract mimicing `execTransaction`
-      if (!isSafe) {
-        setError('Only `execTransaction` from Safes can be relayed');
-
-        return z.NEVER;
-      }
-
       return {
         ...values,
         safeAddress: to,
       };
     }
 
-    if (isMultiSendCall(data)) {
-      const isValid = await isValidMultiSendCall(chainId, to, data);
-
-      // MultiSend not containing only `execTransaction` calls from the same Safe
-      if (!isValid) {
-        setError('Invalid `multiSend` transaction');
-
-        return z.NEVER;
-      }
-
-      const safeAddress = await getSafeAddressFromMultiSend(chainId, data);
+    // MultiSend not containing only `execTransaction` calls
+    if (isValidMultiSendCall(chainId, to, data)) {
+      const safeAddress = getSafeAddressFromMultiSend(data);
 
       if (!safeAddress) {
         setError('Cannot decode Safe address from `multiSend` transaction');

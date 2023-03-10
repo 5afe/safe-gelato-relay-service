@@ -1,8 +1,6 @@
 import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 import { ethers } from 'ethers';
 
-import { isSafeContract } from './safe.helper';
-
 // ======================== General ========================
 
 /**
@@ -37,7 +35,7 @@ export const isExecTransactionCall = (data: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-export const isMultiSendCall = (data: string): boolean => {
+export const _isMultiSendCall = (data: string): boolean => {
   const MULTISEND_TX_SIGNATURE = 'multiSend(bytes)';
 
   return isCalldata(data, MULTISEND_TX_SIGNATURE);
@@ -53,7 +51,8 @@ interface MultiSendTransactionData {
  * @param encodedMultiSendData multiSend call data
  * @returns array of individual transaction data
  */
-export const decodeMultiSendTxs = (
+// TODO: Replace with https://github.com/safe-global/safe-core-sdk/pull/342 when merged
+export const _decodeMultiSendTxs = (
   encodedMultiSendData: string,
 ): MultiSendTransactionData[] => {
   // uint8 operation, address to, uint256 value, uint256 dataLength
@@ -112,11 +111,10 @@ export const decodeMultiSendTxs = (
  * @param data multisend call data
  * @returns the `to` address of all batched transactions contained in `data` or `undefined` if the transactions do not share one common `to` address.
  */
-export const getSafeAddressFromMultiSend = async (
-  chainId: string,
+export const getSafeAddressFromMultiSend = (
   data: string,
-): Promise<string | void> => {
-  const individualTxs = decodeMultiSendTxs(data);
+): string | undefined => {
+  const individualTxs = _decodeMultiSendTxs(data);
 
   if (individualTxs.length === 0) {
     return;
@@ -140,10 +138,6 @@ export const getSafeAddressFromMultiSend = async (
     return;
   }
 
-  if (!(await isSafeContract(chainId, firstRecipient))) {
-    return;
-  }
-
   return firstRecipient;
 };
 
@@ -155,12 +149,12 @@ export const getSafeAddressFromMultiSend = async (
  * @param data multiSend call data
  * @returns whether the call is valid
  */
-export const isValidMultiSendCall = async (
+export const isValidMultiSendCall = (
   chainId: string,
   to: string,
   data: string,
 ) => {
-  if (!isMultiSendCall(data)) {
+  if (!_isMultiSendCall(data)) {
     return false;
   }
 
