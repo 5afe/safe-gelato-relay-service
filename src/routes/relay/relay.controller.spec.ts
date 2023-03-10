@@ -234,7 +234,7 @@ describe('RelayController', () => {
           .send(body)
           .expect(422, {
             statusCode: 422,
-            message: 'Validation failed',
+            message: 'Safe address is not a valid Safe contract',
           });
       });
 
@@ -314,7 +314,7 @@ describe('RelayController', () => {
           .send(body)
           .expect(422, {
             statusCode: 422,
-            message: 'Validation failed',
+            message: 'Safe address is not a valid Safe contract',
           });
       });
 
