@@ -14,6 +14,8 @@ import {
   MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
   MOCK_MULTISEND_CALL_DATA_2_FAKE_TXS_SAME_RECIPIENT,
 } from '../../mocks/transaction-data.mock';
+import { ClsModule } from 'nestjs-cls';
+import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
 import {
   ISponsorService,
@@ -61,6 +63,14 @@ describe('RelayController', () => {
             }),
           ],
         }),
+        // Register the ClsModule and automatically mount the ClsMiddleware
+        ClsModule.forRoot({
+          global: true,
+          middleware: {
+            generateId: true,
+          },
+        }),
+        TestLoggingModule,
       ],
     }).compile();
 
