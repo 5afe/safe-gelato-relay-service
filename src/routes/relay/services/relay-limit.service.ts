@@ -41,11 +41,6 @@ export class RelayLimitService {
     remaining: number;
     expiresAt?: number;
   } {
-    this.loggingService.log(
-      'Called getRelayLimit for address %s on chain %s',
-      address,
-      chainId,
-    );
     const key = this.generateKey(chainId, address);
     const throttlerEntry = this.throttlerStorageService.storage[key] || {
       totalHits: 0,

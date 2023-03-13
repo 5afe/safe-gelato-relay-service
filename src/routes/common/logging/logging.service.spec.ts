@@ -25,6 +25,7 @@ describe('RequestScopedLoggingService', () => {
 
     loggingService = new RequestScopedLoggingService(mockClsService);
   });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -38,6 +39,7 @@ describe('RequestScopedLoggingService', () => {
       `${new Date('2023-01-01').toISOString()} 123-456 - ${message}`,
     );
   });
+
   it('error', () => {
     const message = 'Some message';
     loggingService.error(message);
