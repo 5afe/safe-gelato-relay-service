@@ -3,11 +3,17 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
 import * as request from 'supertest';
-import * as axios from 'axios';
+import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
-import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import {
+  MOCK_EXEC_TX_CALL_DATA,
+  MOCK_FAKE_CALL_DATA,
+  MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_DIFF_RECIPIENTS,
+  MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
+  MOCK_MULTISEND_CALL_DATA_2_FAKE_TXS_SAME_RECIPIENT,
+} from '../../mocks/transaction-data.mock';
 import { ClsModule } from 'nestjs-cls';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
@@ -15,14 +21,19 @@ import {
   ISponsorService,
   SponsorService,
 } from '../../datasources/sponsor/sponsor.service.interface';
-
-jest.mock('axios');
+import { TestSafeInfoModule } from '../../datasources/safe-info/__tests__/test.safe-info.module';
+import {
+  ISafeInfoService,
+  SafeInfoService,
+} from '../../datasources/safe-info/safe-info.service.interface';
 
 describe('RelayController', () => {
+  const THROTTLE_TTL = 60 * 60;
   const THROTTLE_LIMIT = 5;
 
   let app: INestApplication;
   let mockSponsorService: ISponsorService;
+  let mockSafeInfoService: ISafeInfoService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -33,19 +44,20 @@ describe('RelayController', () => {
         // Features
         RelayModule,
         TestSponsorModule,
+        TestSafeInfoModule,
         // Common
         ConfigModule.forRoot({
           isGlobal: true,
           load: [
             () => ({
               relay: {
-                ttl: 60 * 60,
+                ttl: THROTTLE_TTL,
                 limit: THROTTLE_LIMIT,
               },
               gelato: {
                 apiKey: {
-                  [SupportedChainId.GOERLI]: 'faleApiKey5',
-                  [SupportedChainId.GNOSIS_CHAIN]: 'faleApiKey100',
+                  [SupportedChainId.GOERLI]: faker.random.word(),
+                  [SupportedChainId.GNOSIS_CHAIN]: faker.random.word(),
                 },
               },
             }),
@@ -63,6 +75,7 @@ describe('RelayController', () => {
     }).compile();
 
     mockSponsorService = moduleFixture.get<ISponsorService>(SponsorService);
+    mockSafeInfoService = moduleFixture.get<ISafeInfoService>(SafeInfoService);
 
     app = moduleFixture.createNestApplication();
     app.enableVersioning();
@@ -75,9 +88,16 @@ describe('RelayController', () => {
   });
 
   describe('/v1/relay (POST)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
+      network: '5',
+    })!.defaultAddress;
+
     describe('Relayer', () => {
-      it('should return a 201 when the body is valid', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+      it('should return a 201 when the body is a valid execTransaction call', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
 
         (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
           Promise.resolve({ taskId: '123' }),
@@ -87,6 +107,31 @@ describe('RelayController', () => {
           chainId: '5',
           to: faker.finance.ethereumAddress(),
           data: MOCK_EXEC_TX_CALL_DATA,
+          gasLimit: '123',
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(201, {
+            taskId: '123',
+          });
+      });
+
+      it('should return a 201 when the body is a valid multiSend call', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
+        const body = {
+          chainId: '5',
+          to: MULTI_SEND_CALL_ONLY_ADDRESS,
+          data: MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
+          gasLimit: '123',
         };
 
         await request(app.getHttpServer())
@@ -98,7 +143,9 @@ describe('RelayController', () => {
       });
 
       it('should return a 500 if the relayer throws', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
 
         (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
           Promise.reject(),
@@ -122,16 +169,12 @@ describe('RelayController', () => {
 
     describe('Validation', () => {
       it('should return a 422 error when the chainId is invalid', async () => {
-        axios.default.get = jest
-          .fn()
-          .mockImplementation(() => Promise.reject());
-
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.reject(),
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false,
         );
 
         const body = {
-          chainId: '1337',
+          chainId: '1337', // Invalid chainId
           to: faker.finance.ethereumAddress(),
           data: MOCK_EXEC_TX_CALL_DATA,
         };
@@ -146,17 +189,13 @@ describe('RelayController', () => {
       });
 
       it('should return a 422 error when the to address is invalid', async () => {
-        axios.default.get = jest
-          .fn()
-          .mockImplementation(() => Promise.reject());
-
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.reject(),
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false,
         );
 
         const body = {
           chainId: '5',
-          to: '0xinvalid',
+          to: '0xinvalid', // Not valid
           data: MOCK_EXEC_TX_CALL_DATA,
         };
 
@@ -169,17 +208,15 @@ describe('RelayController', () => {
           });
       });
 
-      it('should return a 422 error when the data is invalid', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
-
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.reject(),
+      it('should return a 422 error when the data is not an execTransaction or multiSend call', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
         );
 
         const body = {
           chainId: '5',
           to: faker.finance.ethereumAddress(),
-          data: '0x1',
+          data: MOCK_FAKE_CALL_DATA, // Not an execTransaction or multiSend call
         };
 
         await request(app.getHttpServer())
@@ -191,8 +228,110 @@ describe('RelayController', () => {
           });
       });
 
+      it('should return a 422 error when the data is an execTransaction to a non-Safe', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false, // Not a Safe
+        );
+
+        const body = {
+          chainId: '5',
+          to: faker.finance.ethereumAddress(),
+          data: MOCK_EXEC_TX_CALL_DATA,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Safe address is not a valid Safe contract',
+          });
+      });
+
+      it('should return a 422 error when the data is a multiSend containing non-execTransaction transactions', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false,
+        );
+
+        const body = {
+          chainId: '5',
+          to: MULTI_SEND_CALL_ONLY_ADDRESS,
+          data: MOCK_MULTISEND_CALL_DATA_2_FAKE_TXS_SAME_RECIPIENT,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 error when the data is a multiSend with execTransactions to varying recipients', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false,
+        );
+
+        const body = {
+          chainId: '5',
+          to: MULTI_SEND_CALL_ONLY_ADDRESS,
+          data: MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_DIFF_RECIPIENTS,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 error when the data is a multiSend from an invalid MultiSend deployment', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false,
+        );
+
+        const body = {
+          chainId: '5',
+          to: faker.finance.ethereumAddress(), // Invalid deployment
+          data: MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 error when the data is a multiSend to a non-Safe', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          false, // Not a Safe
+        );
+
+        const body = {
+          chainId: '5',
+          to: MULTI_SEND_CALL_ONLY_ADDRESS,
+          data: MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Safe address is not a valid Safe contract',
+          });
+      });
+
       it('should return a 422 error when the gasLimit is invalid', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
 
         const body = {
           chainId: '5',
@@ -213,7 +352,9 @@ describe('RelayController', () => {
 
     describe('Rate limiting', () => {
       it('should return a 429 if the rate limit is reached', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
 
         const body = {
           chainId: '5',
@@ -244,7 +385,9 @@ describe('RelayController', () => {
       });
 
       it('should not rate limit the same addresses on different chains', async () => {
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
 
         const body = {
           to: faker.finance.ethereumAddress(),
@@ -288,10 +431,12 @@ describe('RelayController', () => {
       });
 
       it('should increment the relay limit if limit has not been reached', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
         const chainId = '5';
         const address = faker.finance.ethereumAddress();
-
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
         const body = {
           chainId,
@@ -313,10 +458,12 @@ describe('RelayController', () => {
       });
 
       it('should not return negative limits more requests were made than the limit', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
         const chainId = '5';
         const address = faker.finance.ethereumAddress();
-
-        axios.default.get = jest.fn().mockResolvedValue({ data: 'mockSafe' });
 
         const body = {
           chainId,

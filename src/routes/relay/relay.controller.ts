@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { ZodValidationPipe } from '../../pipes/zod/zod-validation.pipe';
 import { AddressSchema } from '../common/schema/address.schema';
-import { SponsoredCallSchema } from './entities/schema/sponsored-call.schema';
+import { SponsoredCallDtoValidatorPipe } from './pipes/sponsored-call-dto.validator.pipe';
 import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayService } from './relay.service';
 import { ChainIdSchema } from '../common/schema/chain-id.schema';
@@ -21,7 +21,7 @@ export class RelayController {
 
   @Post()
   sponsoredCall(
-    @Body(new ZodValidationPipe(SponsoredCallSchema))
+    @Body(SponsoredCallDtoValidatorPipe)
     sponsoredCallDto: SponsoredCallDto,
   ): Promise<RelayResponse> {
     return this.relayService.sponsoredCall(sponsoredCallDto);
