@@ -519,4 +519,10 @@ describe('RelayController', () => {
       });
     });
   });
+
+  describe('/v1/relay/health (GET)', () => {
+    it('should return a 200 response', async () => {
+      await request(app.getHttpServer()).get(`/v1/relay/health`).expect(200);
+    });
+  });
 });

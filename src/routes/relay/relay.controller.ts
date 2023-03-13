@@ -39,4 +39,9 @@ export class RelayController {
   } {
     return this.relayLimitService.getRelayLimit(chainId, address);
   }
+
+  @Get('health')
+  getHealth() {
+    return;
+  }
 }
