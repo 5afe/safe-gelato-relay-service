@@ -15,22 +15,19 @@ import { SponsoredCallDto } from '../entities/sponsored-call.entity';
 
 @Injectable()
 export class SponsoredCallDtoValidatorPipe implements PipeTransform {
-  static schema = SponsoredCallSchema;
+  private readonly schema = SponsoredCallSchema;
 
   constructor(
     @Inject(SafeInfoService) private safeInfoService: ISafeInfoService,
   ) {}
 
   async transform<T>(value: T): Promise<SponsoredCallDto> {
-    const result = await SponsoredCallDtoValidatorPipe.schema.safeParseAsync(
-      value,
-    );
+    const result = await this.schema.safeParseAsync(value);
 
     if (!result.success) {
       throw new HttpException(
         'Validation failed',
         HttpStatus.UNPROCESSABLE_ENTITY,
-        { cause: result.error },
       );
     }
 
