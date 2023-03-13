@@ -35,7 +35,7 @@ export const isExecTransactionCall = (data: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-export const _isMultiSendCall = (data: string): boolean => {
+const isMultiSendCall = (data: string): boolean => {
   const MULTISEND_TX_SIGNATURE = 'multiSend(bytes)';
 
   return isCalldata(data, MULTISEND_TX_SIGNATURE);
@@ -52,7 +52,7 @@ interface MultiSendTransactionData {
  * @returns array of individual transaction data
  */
 // TODO: Replace with https://github.com/safe-global/safe-core-sdk/pull/342 when merged
-export const _decodeMultiSendTxs = (
+const decodeMultiSendTxs = (
   encodedMultiSendData: string,
 ): MultiSendTransactionData[] => {
   // uint8 operation, address to, uint256 value, uint256 dataLength
@@ -111,13 +111,11 @@ export const _decodeMultiSendTxs = (
  * @param data multisend call data
  * @returns the `to` address of all batched transactions contained in `data` or `undefined` if the transactions do not share one common `to` address.
  */
-export const getSafeAddressFromMultiSend = (
-  data: string,
-): string | undefined => {
-  const individualTxs = _decodeMultiSendTxs(data);
+export const getSafeAddressFromMultiSend = (data: string): string | null => {
+  const individualTxs = decodeMultiSendTxs(data);
 
   if (individualTxs.length === 0) {
-    return;
+    return null;
   }
 
   const isEveryTxExecTx = individualTxs.every(({ data }) => {
@@ -125,7 +123,7 @@ export const getSafeAddressFromMultiSend = (
   });
 
   if (!isEveryTxExecTx) {
-    return;
+    return null;
   }
 
   const firstRecipient = individualTxs[0].to;
@@ -135,7 +133,7 @@ export const getSafeAddressFromMultiSend = (
   });
 
   if (!isSameToAddress) {
-    return;
+    return null;
   }
 
   return firstRecipient;
@@ -154,7 +152,7 @@ export const isValidMultiSendCall = (
   to: string,
   data: string,
 ) => {
-  if (!_isMultiSendCall(data)) {
+  if (!isMultiSendCall(data)) {
     return false;
   }
 

@@ -28,6 +28,7 @@ export const SponsoredCallSchema = z
       });
     };
 
+    // `execTransaction`
     if (isExecTransactionCall(data)) {
       return {
         ...values,
@@ -35,23 +36,20 @@ export const SponsoredCallSchema = z
       };
     }
 
-    // MultiSend not containing only `execTransaction` calls
-    if (isValidMultiSendCall(chainId, to, data)) {
-      const safeAddress = getSafeAddressFromMultiSend(data);
-
-      if (!safeAddress) {
-        setError('Cannot decode Safe address from `multiSend` transaction');
-
-        return z.NEVER;
-      }
-
-      return {
-        ...values,
-        safeAddress,
-      };
+    if (!isValidMultiSendCall(chainId, to, data)) {
+      setError('Only (batched) Safe transactions can be relayed');
+      return z.NEVER;
     }
 
-    setError('Only (batched) Safe transactions can be relayed');
+    const safeAddress = getSafeAddressFromMultiSend(data);
+    if (!safeAddress) {
+      setError('Cannot decode Safe address from `multiSend` transaction');
+      return z.NEVER;
+    }
 
-    return z.NEVER;
+    // `multiSend`
+    return {
+      ...values,
+      safeAddress,
+    };
   });
