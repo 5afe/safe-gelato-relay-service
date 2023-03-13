@@ -8,6 +8,8 @@ import * as axios from 'axios';
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
 import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { ClsModule } from 'nestjs-cls';
+import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
 import {
   ISponsorService,
@@ -49,6 +51,14 @@ describe('RelayController', () => {
             }),
           ],
         }),
+        // Register the ClsModule and automatically mount the ClsMiddleware
+        ClsModule.forRoot({
+          global: true,
+          middleware: {
+            generateId: true,
+          },
+        }),
+        TestLoggingModule,
       ],
     }).compile();
 

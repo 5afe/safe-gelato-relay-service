@@ -2,6 +2,8 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import * as winston from 'winston';
+import { format } from 'winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +13,17 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
   });
+
+  winston.add(
+    new winston.transports.Console({
+      level: 'debug',
+      format: format.combine(
+        format.colorize({ all: true }),
+        format.splat(),
+        format.simple(),
+      ),
+    }),
+  );
 
   const configService = app.get(ConfigService);
   const port = configService.get('applicationPort');
