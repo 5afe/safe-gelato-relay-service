@@ -38,7 +38,7 @@ Currently two chains are supported: Goerli (chainId=5) and Gnosis Chain (chainId
 # To configure Goerli
 export GELATO_GOERLI_API_KEY=<GOERLI_GELATO_API_KEY>
 
-# To configure Gnosis Chains
+# To configure Gnosis Chain
 export GELATO_GNOSIS_CHAIN_API_KEY=<GNOSIS_GELATO_API_KEY>
 ```
 
