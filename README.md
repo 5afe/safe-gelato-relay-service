@@ -82,7 +82,7 @@ Additionally, if you want the test coverage to be generated, you can execute the
 yarn run test:cov
 ```
 
-By default, the coverage results will be under `<PROJ_FOLDER>/coverage/`
+By default, the coverage results will be under `<PROJ_FOLDER>/coverage/`.
 
 ## Linter and Style Guide
 
