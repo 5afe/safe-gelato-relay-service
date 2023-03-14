@@ -76,7 +76,7 @@ If you want to execute the tests for the service, you can execute the following:
 yarn run test
 ```
 
-Additionally, if you want the test coverage to be generated you can execute the following:
+Additionally, if you want the test coverage to be generated, you can execute the following:
 
 ```bash
 yarn run test:cov
