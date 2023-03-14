@@ -70,7 +70,7 @@ yarn run start:prod
 
 ## Test
 
-If you want to execute the tests for the service you can execute the following:
+If you want to execute the tests for the service, you can execute the following:
 
 ```bash
 yarn run test
