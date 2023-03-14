@@ -31,7 +31,7 @@ corepack enable && yarn install
 ## Running the service
 
 Before running the service you need to set up a Gelato API Key ([instructions](https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production)).
-This can be done via an environment variable in the local environment where you are executing the service:
+This can be added via an environment variable in the local environment where you are executing the service:
 
 Currently two chains are supported: Goerli (chainId=5) and Gnosis Chain (chainId=100).
 ```bash
