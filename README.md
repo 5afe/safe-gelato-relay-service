@@ -2,7 +2,7 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/5afe/safe-gelato-relay-service/badge.svg?branch=main)](https://coveralls.io/github/5afe/safe-gelato-relay-service?branch=main)
 
-**⚠️ Warning: This service is currently going active development. Functionality might change considerably.**
+**⚠️ Warning: This service is currently undergoing active development. Functionality might change considerably.**
 
 The Safe Gelato Relay Service is a web service which allows relaying transactions via the 
 [Gelato Relay Service](https://docs.gelato.network/developer-services/relay).
