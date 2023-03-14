@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+  pull_request:
 
 jobs:
   prettier:
@@ -36,7 +37,9 @@ jobs:
           cache: 'yarn'
       - run: yarn install --immutable
       - run: yarn run build
-      - run: yarn run test
+      - run: yarn run test:cov
+      - name: Upload Coverage
+        uses: coverallsapp/github-action@v1
 
   docker-publish:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main')
