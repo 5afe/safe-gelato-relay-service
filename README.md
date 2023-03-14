@@ -1,5 +1,7 @@
 # Safe Gelato Relay Service
 
+[![Coverage Status](https://coveralls.io/repos/github/5afe/safe-gelato-relay-service/badge.svg?branch=main)](https://coveralls.io/github/5afe/safe-gelato-relay-service?branch=main)
+
 ## Installation
 
 ```bash
