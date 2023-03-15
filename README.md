@@ -19,7 +19,7 @@ Development images are currently being published to [Docker Hub](https://hub.doc
 ## Requirements
 
 - Node 18 (LTS) – https://nodejs.org/en/
-- Gelato's 1Balance API key – Follow instructions at: https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production 
+- Gelato's 1Balance API key – https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production 
 
 ## Installation
 
@@ -29,7 +29,7 @@ corepack enable && yarn install
 
 ## Running the service
 
-Before running the service you need to set up a Gelato API Key ([instructions](https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production)).
+Before running the service you need to set up a Gelato API Key – https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production.
 This can be added via an environment variable in the local environment where you are executing the service:
 
 Currently two chains are supported: Goerli (chainId=5) and Gnosis Chain (chainId=100).
