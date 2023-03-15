@@ -13,8 +13,7 @@ but it is currently not covered.
 
 ## Docker
 
-Development images are currently being published to Docker Hub. 
-You can find them here: https://hub.docker.com/r/safeglobal/safe-gelato-relay-service.
+Development images are currently being published to [Docker Hub](https://hub.docker.com/r/safeglobal/safe-gelato-relay-service).
 
 
 ## Requirements
