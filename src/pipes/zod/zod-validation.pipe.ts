@@ -17,7 +17,6 @@ export class ZodValidationPipe implements PipeTransform {
       throw new HttpException(
         'Validation failed',
         HttpStatus.UNPROCESSABLE_ENTITY,
-        { cause: result.error },
       );
     }
 
