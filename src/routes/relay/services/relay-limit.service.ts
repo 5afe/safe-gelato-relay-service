@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
-import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
 
 @Injectable()
 export class RelayLimitService {
@@ -50,20 +49,22 @@ export class RelayLimitService {
   /**
    * Check if an address can relay
    */
-  public canRelay(chainId: string, address: string): boolean {
-    const limit = this.getRelayLimit(chainId, address);
-    // TODO: Add relay bypass for staging
-    return limit.remaining > 0;
+  public canRelay(chainId: string, address: string[]): boolean {
+    return address.every((address) => {
+      const limit = this.getRelayLimit(chainId, address);
+      return limit.remaining > 0;
+    });
   }
 
   /**
    * Increment the number of relays for an address
    */
-  public async increment(
-    chainId: string,
-    address: string,
-  ): Promise<ThrottlerStorageRecord> {
-    const key = this.generateKey(chainId, address);
-    return await this.throttlerStorageService.increment(key, this.ttl);
+  public async increment(chainId: string, address: string[]): Promise<void> {
+    await Promise.all(
+      address.map((address) => {
+        const key = this.generateKey(chainId, address);
+        return this.throttlerStorageService.increment(key, this.ttl);
+      }),
+    );
   }
 }

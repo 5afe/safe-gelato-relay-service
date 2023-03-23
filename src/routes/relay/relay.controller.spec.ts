@@ -3,11 +3,15 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { faker } from '@faker-js/faker';
 import * as request from 'supertest';
-import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
+import {
+  getMultiSendCallOnlyDeployment,
+  getProxyFactoryDeployment,
+} from '@safe-global/safe-deployments';
 
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
 import {
+  MOCK_SETUP_2_OWNERS_1_THRESHOLD,
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_FAKE_CALL_DATA,
   MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_DIFF_RECIPIENTS,
@@ -26,6 +30,16 @@ import {
   ISafeInfoService,
   SafeInfoService,
 } from '../../datasources/safe-info/safe-info.service.interface';
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
+  network: '5',
+})!.defaultAddress;
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const PROXY_FACTORY_DEPLOYMENT_ADDRESS = getProxyFactoryDeployment({
+  network: '5',
+})!.defaultAddress;
 
 describe('RelayController', () => {
   const THROTTLE_TTL = 60 * 60;
@@ -88,11 +102,6 @@ describe('RelayController', () => {
   });
 
   describe('/v1/relay (POST)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
-      network: '5',
-    })!.defaultAddress;
-
     describe('Relayer', () => {
       it('should return a 201 when the body is a valid execTransaction call', async () => {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
@@ -131,6 +140,26 @@ describe('RelayController', () => {
           chainId: '5',
           to: MULTI_SEND_CALL_ONLY_ADDRESS,
           data: MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
+          gasLimit: '123',
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(201, {
+            taskId: '123',
+          });
+      });
+
+      it('should return a 201 when the body is a valid setup call', async () => {
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
+        const body = {
+          chainId: '5',
+          to: PROXY_FACTORY_DEPLOYMENT_ADDRESS,
+          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
           gasLimit: '123',
         };
 
@@ -208,7 +237,7 @@ describe('RelayController', () => {
           });
       });
 
-      it('should return a 422 error when the data is not an execTransaction or multiSend call', async () => {
+      it('should return a 422 error when the data is not an execTransaction, multiSend or setup call', async () => {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
           true,
         );
@@ -216,7 +245,7 @@ describe('RelayController', () => {
         const body = {
           chainId: '5',
           to: faker.finance.ethereumAddress(),
-          data: MOCK_FAKE_CALL_DATA, // Not an execTransaction or multiSend call
+          data: MOCK_FAKE_CALL_DATA, // Not an execTransaction, multiSend or setup call
         };
 
         await request(app.getHttpServer())
@@ -325,6 +354,26 @@ describe('RelayController', () => {
           .expect(422, {
             statusCode: 422,
             message: 'Safe address is not a valid Safe contract',
+          });
+      });
+
+      it('should return a 422 when the data is a setup from an invalid proxy factory deployment', async () => {
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
+        const body = {
+          chainId: '5',
+          to: faker.finance.ethereumAddress(), // Invalid deployment
+          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
           });
       });
 
@@ -455,6 +504,40 @@ describe('RelayController', () => {
               expiresAt: expect.any(Number),
             });
           });
+      });
+
+      it('should increment all the owners of a setup call', async () => {
+        const chainId = '5';
+
+        const owners = [
+          '0x0000000000000000000000000000000000000001',
+          '0x0000000000000000000000000000000000000002',
+        ];
+
+        const body = {
+          chainId,
+          to: PROXY_FACTORY_DEPLOYMENT_ADDRESS,
+          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(201);
+
+        await Promise.all(
+          owners.map((owner) => {
+            return request(app.getHttpServer())
+              .get(`/v1/relay/${chainId}/${owner}`)
+              .expect(200)
+              .expect((res) => {
+                expect(res.body).toStrictEqual({
+                  remaining: 4,
+                  expiresAt: expect.any(Number),
+                });
+              });
+          }),
+        );
       });
 
       it('should not return negative limits more requests were made than the limit', async () => {

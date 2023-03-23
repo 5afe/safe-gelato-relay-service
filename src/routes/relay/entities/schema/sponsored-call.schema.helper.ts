@@ -1,5 +1,8 @@
-import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
-import { ethers } from 'ethers';
+import {
+  getMultiSendCallOnlyDeployment,
+  getProxyFactoryDeployment,
+} from '@safe-global/safe-deployments';
+import { ethers, Interface } from 'ethers';
 
 // ======================== General ========================
 
@@ -165,4 +168,47 @@ export const isValidMultiSendCall = (
   }
 
   return true;
+};
+
+// ============================= setup =============================
+
+export const isSetupCall = (data: string): boolean => {
+  const SETUP_TX_SIGNATURE =
+    'setup(address[],uint256,address,bytes,address,address,uint256,address)';
+
+  return isCalldata(data, SETUP_TX_SIGNATURE);
+};
+
+export const isValidSetupCall = (
+  chainId: string,
+  to: string,
+  data: string,
+): boolean => {
+  if (!isSetupCall(data)) {
+    return false;
+  }
+
+  const proxyFactoryDeployment = getProxyFactoryDeployment({
+    network: chainId,
+  });
+
+  if (!proxyFactoryDeployment || to !== proxyFactoryDeployment.defaultAddress) {
+    return false;
+  }
+
+  return true;
+};
+
+export const getOwnersFromSetup = (encodedData: string): string[] => {
+  const SETUP_FRAGMENT =
+    'function setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data, address fallbackHandler, address paymentToken, uint256 payment, address payable paymentReceiver) external';
+
+  const setupInterface = new Interface([SETUP_FRAGMENT]);
+
+  const [owners] = setupInterface.decodeFunctionData(
+    SETUP_FRAGMENT,
+    encodedData,
+  );
+
+  return owners;
 };

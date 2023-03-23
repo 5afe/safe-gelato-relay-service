@@ -6,6 +6,8 @@ import {
   isValidMultiSendCall,
   isExecTransactionCall,
   getSafeAddressFromMultiSend,
+  isValidSetupCall,
+  getOwnersFromSetup,
 } from './sponsored-call.schema.helper';
 
 export const SponsoredCallSchema = z
@@ -32,24 +34,34 @@ export const SponsoredCallSchema = z
     if (isExecTransactionCall(data)) {
       return {
         ...values,
-        safeAddress: to,
+        limitAddresses: [to],
       };
     }
 
-    if (!isValidMultiSendCall(chainId, to, data)) {
-      setError('Only (batched) Safe transactions can be relayed');
-      return z.NEVER;
-    }
-
-    const safeAddress = getSafeAddressFromMultiSend(data);
-    if (!safeAddress) {
-      setError('Cannot decode Safe address from `multiSend` transaction');
-      return z.NEVER;
-    }
-
     // `multiSend`
-    return {
-      ...values,
-      safeAddress,
-    };
+    if (isValidMultiSendCall(chainId, to, data)) {
+      const safeAddress = getSafeAddressFromMultiSend(data);
+      if (!safeAddress) {
+        setError('Cannot decode Safe address from `multiSend` transaction');
+        return z.NEVER;
+      }
+
+      return {
+        ...values,
+        limitAddresses: [safeAddress],
+      };
+    }
+
+    // `setup`
+    if (isValidSetupCall(chainId, to, data)) {
+      return {
+        ...values,
+        limitAddresses: getOwnersFromSetup(data),
+      };
+    }
+
+    setError(
+      'Only Safe creation or (batched) Safe transactions can be relayed',
+    );
+    return z.NEVER;
   });

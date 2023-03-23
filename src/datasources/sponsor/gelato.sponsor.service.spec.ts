@@ -44,7 +44,7 @@ describe('GelatoSponsorService', () => {
         chainId: '5' as SupportedChainId,
         to: address,
         data: MOCK_EXEC_TX_CALL_DATA,
-        safeAddress: address,
+        limitAddresses: [address],
       };
 
       await relayService.sponsoredCall(body);
@@ -58,7 +58,7 @@ describe('GelatoSponsorService', () => {
         chainId: '5' as SupportedChainId,
         to: address,
         data: MOCK_EXEC_TX_CALL_DATA,
-        safeAddress: address,
+        limitAddresses: [address],
         gasLimit: BigInt('123'),
       };
 

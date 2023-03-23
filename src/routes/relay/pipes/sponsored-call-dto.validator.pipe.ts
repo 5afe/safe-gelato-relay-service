@@ -11,6 +11,7 @@ import {
   SafeInfoService,
 } from '../../../datasources/safe-info/safe-info.service.interface';
 import { SponsoredCallSchema } from '../entities/schema/sponsored-call.schema';
+import { isSetupCall } from '../entities/schema/sponsored-call.schema.helper';
 import { SponsoredCallDto } from '../entities/sponsored-call.entity';
 
 @Injectable()
@@ -31,16 +32,19 @@ export class SponsoredCallDtoValidatorPipe implements PipeTransform {
       );
     }
 
-    const isSafeContract = await this.safeInfoService.isSafeContract(
-      result.data.chainId,
-      result.data.safeAddress,
-    );
-
-    if (!isSafeContract) {
-      throw new HttpException(
-        'Safe address is not a valid Safe contract',
-        HttpStatus.UNPROCESSABLE_ENTITY,
+    if (!isSetupCall(result.data.data)) {
+      const isSafeContract = await this.safeInfoService.isSafeContract(
+        result.data.chainId,
+        // Safe transactions only every have one limit address
+        result.data.limitAddresses[0],
       );
+
+      if (!isSafeContract) {
+        throw new HttpException(
+          'Safe address is not a valid Safe contract',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
     }
 
     return result.data;
