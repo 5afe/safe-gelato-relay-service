@@ -11,7 +11,7 @@ import {
   SafeInfoService,
 } from '../../../datasources/safe-info/safe-info.service.interface';
 import { SponsoredCallSchema } from '../entities/schema/sponsored-call.schema';
-import { isSetupCall } from '../entities/schema/sponsored-call.schema.helper';
+import { isCreateProxyWithNonce } from '../entities/schema/sponsored-call.schema.helper';
 import { SponsoredCallDto } from '../entities/sponsored-call.entity';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class SponsoredCallDtoValidatorPipe implements PipeTransform {
       );
     }
 
-    if (!isSetupCall(result.data.data)) {
+    if (!isCreateProxyWithNonce(result.data.data)) {
       const isSafeContract = await this.safeInfoService.isSafeContract(
         result.data.chainId,
         // Safe transactions only every have one limit address

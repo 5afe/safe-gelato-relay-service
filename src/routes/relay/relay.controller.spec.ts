@@ -11,12 +11,13 @@ import {
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
 import {
-  MOCK_SETUP_2_OWNERS_1_THRESHOLD,
   MOCK_EXEC_TX_CALL_DATA,
   MOCK_FAKE_CALL_DATA,
   MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_DIFF_RECIPIENTS,
   MOCK_MULTISEND_CALL_DATA_2_EXEC_TXS_SAME_RECIPIENT,
   MOCK_MULTISEND_CALL_DATA_2_FAKE_TXS_SAME_RECIPIENT,
+  MOCK_OFFICIAL_CREATE_PROXY_WITH_NONCE,
+  MOCK_UNOFFICIAL_CREATE_PROXY_WITH_NONCE,
 } from '../../mocks/transaction-data.mock';
 import { ClsModule } from 'nestjs-cls';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
@@ -151,7 +152,7 @@ describe('RelayController', () => {
           });
       });
 
-      it('should return a 201 when the body is a valid setup call', async () => {
+      it('should return a 201 when the body is a valid createProxyWithNonce call', async () => {
         (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
           Promise.resolve({ taskId: '123' }),
         );
@@ -159,7 +160,7 @@ describe('RelayController', () => {
         const body = {
           chainId: '5',
           to: PROXY_FACTORY_DEPLOYMENT_ADDRESS,
-          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
+          data: MOCK_OFFICIAL_CREATE_PROXY_WITH_NONCE,
           gasLimit: '123',
         };
 
@@ -237,7 +238,7 @@ describe('RelayController', () => {
           });
       });
 
-      it('should return a 422 error when the data is not an execTransaction, multiSend or setup call', async () => {
+      it('should return a 422 error when the data is not an execTransaction, multiSend or createProxyWithNonce call', async () => {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
           true,
         );
@@ -245,7 +246,7 @@ describe('RelayController', () => {
         const body = {
           chainId: '5',
           to: faker.finance.ethereumAddress(),
-          data: MOCK_FAKE_CALL_DATA, // Not an execTransaction, multiSend or setup call
+          data: MOCK_FAKE_CALL_DATA, // Not an execTransaction, multiSend or createProxyWithNonce call
         };
 
         await request(app.getHttpServer())
@@ -357,7 +358,7 @@ describe('RelayController', () => {
           });
       });
 
-      it('should return a 422 when the data is a setup from an invalid proxy factory deployment', async () => {
+      it('should return a 422 when an unofficial proxy factory deployment is called', async () => {
         (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
           Promise.resolve({ taskId: '123' }),
         );
@@ -365,7 +366,27 @@ describe('RelayController', () => {
         const body = {
           chainId: '5',
           to: faker.finance.ethereumAddress(), // Invalid deployment
-          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
+          data: MOCK_OFFICIAL_CREATE_PROXY_WITH_NONCE,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 when the data is a createProxyWithNonce with an invalid singleton', async () => {
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
+        const body = {
+          chainId: '5',
+          to: PROXY_FACTORY_DEPLOYMENT_ADDRESS,
+          data: MOCK_UNOFFICIAL_CREATE_PROXY_WITH_NONCE,
         };
 
         await request(app.getHttpServer())
@@ -506,7 +527,7 @@ describe('RelayController', () => {
           });
       });
 
-      it('should increment all the owners of a setup call', async () => {
+      it('should increment all the owners of a createProxyWithNonce call', async () => {
         const chainId = '5';
 
         const owners = [
@@ -517,7 +538,7 @@ describe('RelayController', () => {
         const body = {
           chainId,
           to: PROXY_FACTORY_DEPLOYMENT_ADDRESS,
-          data: MOCK_SETUP_2_OWNERS_1_THRESHOLD,
+          data: MOCK_OFFICIAL_CREATE_PROXY_WITH_NONCE,
         };
 
         await request(app.getHttpServer())

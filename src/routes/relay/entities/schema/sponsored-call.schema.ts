@@ -6,7 +6,7 @@ import {
   isValidMultiSendCall,
   isExecTransactionCall,
   getSafeAddressFromMultiSend,
-  isValidSetupCall,
+  isValidCreateProxyWithNonceCall,
   getOwnersFromSetup,
 } from './sponsored-call.schema.helper';
 
@@ -53,7 +53,7 @@ export const SponsoredCallSchema = z
     }
 
     // `setup`
-    if (isValidSetupCall(chainId, to, data)) {
+    if (isValidCreateProxyWithNonceCall(chainId, to, data)) {
       return {
         ...values,
         limitAddresses: getOwnersFromSetup(data),

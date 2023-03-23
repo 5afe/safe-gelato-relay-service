@@ -1,6 +1,8 @@
 import {
   getMultiSendCallOnlyDeployment,
   getProxyFactoryDeployment,
+  getSafeL2SingletonDeployment,
+  getSafeSingletonDeployment,
 } from '@safe-global/safe-deployments';
 import { ethers, Interface } from 'ethers';
 
@@ -170,21 +172,49 @@ export const isValidMultiSendCall = (
   return true;
 };
 
-// ============================= setup =============================
+// ===================== createProxyWithNonce ======================
 
-export const isSetupCall = (data: string): boolean => {
-  const SETUP_TX_SIGNATURE =
-    'setup(address[],uint256,address,bytes,address,address,uint256,address)';
+export const isCreateProxyWithNonce = (data: string): boolean => {
+  const SETUP_TX_SIGNATURE = 'createProxyWithNonce(address,bytes,uint256)';
 
   return isCalldata(data, SETUP_TX_SIGNATURE);
 };
 
-export const isValidSetupCall = (
+interface CreateProxyWithNonceTransactionData {
+  readonly singleton: string;
+  readonly initializer: string;
+  readonly saltNonce: bigint;
+}
+
+const decodeCreateProxyWithNonce = (
+  encodedData: string,
+): CreateProxyWithNonceTransactionData => {
+  const CREATE_PROXY_WITH_NONCE_FRAGMENT =
+    'function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce)';
+
+  const createProxyWithNonceInterface = new Interface([
+    CREATE_PROXY_WITH_NONCE_FRAGMENT,
+  ]);
+
+  const [singleton, initializer, saltNonce] =
+    createProxyWithNonceInterface.decodeFunctionData(
+      CREATE_PROXY_WITH_NONCE_FRAGMENT,
+      encodedData,
+    );
+
+  return {
+    singleton,
+    initializer,
+    saltNonce,
+  };
+};
+
+export const isValidCreateProxyWithNonceCall = (
   chainId: string,
   to: string,
   data: string,
 ): boolean => {
-  if (!isSetupCall(data)) {
+  if (!isCreateProxyWithNonce(data)) {
     return false;
   }
 
@@ -196,18 +226,32 @@ export const isValidSetupCall = (
     return false;
   }
 
-  return true;
+  const { singleton } = decodeCreateProxyWithNonce(data);
+
+  const safeL1Deployment = getSafeSingletonDeployment({
+    network: chainId,
+  });
+  const safeL2Deployment = getSafeL2SingletonDeployment({
+    network: chainId,
+  });
+
+  const isL1Singleton = safeL1Deployment?.defaultAddress === singleton;
+  const isL2Singleton = safeL2Deployment?.defaultAddress === singleton;
+
+  return isL1Singleton || isL2Singleton;
 };
 
 export const getOwnersFromSetup = (encodedData: string): string[] => {
   const SETUP_FRAGMENT =
     'function setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data, address fallbackHandler, address paymentToken, uint256 payment, address payable paymentReceiver) external';
 
+  const { initializer } = decodeCreateProxyWithNonce(encodedData);
+
   const setupInterface = new Interface([SETUP_FRAGMENT]);
 
   const [owners] = setupInterface.decodeFunctionData(
     SETUP_FRAGMENT,
-    encodedData,
+    initializer,
   );
 
   return owners;
