@@ -47,21 +47,21 @@ export class RelayLimitService {
   }
 
   /**
-   * Check if an address can relay
+   * Check if addresses can relay
    */
-  public canRelay(chainId: string, address: string[]): boolean {
-    return address.every((address) => {
+  public canRelay(chainId: string, addresses: string[]): boolean {
+    return addresses.every((address) => {
       const limit = this.getRelayLimit(chainId, address);
       return limit.remaining > 0;
     });
   }
 
   /**
-   * Increment the number of relays for an address
+   * Increment the number of relays for addresses
    */
-  public async increment(chainId: string, address: string[]): Promise<void> {
+  public async increment(chainId: string, addresses: string[]): Promise<void> {
     await Promise.all(
-      address.map((address) => {
+      addresses.map((address) => {
         const key = this.generateKey(chainId, address);
         return this.throttlerStorageService.increment(key, this.ttl);
       }),
