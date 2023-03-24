@@ -67,6 +67,9 @@
     "typescript": "^4.3.5"
   },
   "jest": {
+    "testPathIgnorePatterns": [
+      "__mocks__"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",

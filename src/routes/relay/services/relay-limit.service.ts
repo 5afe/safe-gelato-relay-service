@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class RelayLimitService {
@@ -22,7 +23,7 @@ export class RelayLimitService {
    * Generate key for caching number of relays
    */
   private generateKey(chainId: string, address: string) {
-    return `${chainId}:${address}`;
+    return `${chainId}:${ethers.getAddress(address)}`;
   }
 
   /**

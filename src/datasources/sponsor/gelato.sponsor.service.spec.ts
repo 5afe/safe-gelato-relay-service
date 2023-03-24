@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ConfigService } from '@nestjs/config';
 import { SupportedChainId } from '../../config/constants';
-import { MOCK_EXEC_TX_CALL_DATA } from '../../mocks/transaction-data.mock';
+import { getMockExecTransactionCalldata } from '../../__mocks__/transaction-calldata.mock';
 import { GelatoSponsorService } from './gelato.sponsor.service';
 
 const mockGelatoRelay: GelatoRelay = {
@@ -39,12 +39,14 @@ describe('GelatoSponsorService', () => {
 
   describe('sponsoredCall', () => {
     it('should call the relay service', async () => {
-      const address = faker.finance.ethereumAddress();
+      const to = faker.finance.ethereumAddress();
+      const data = await getMockExecTransactionCalldata({ to, value: 0 });
+
       const body = {
         chainId: '5' as SupportedChainId,
-        to: address,
-        data: MOCK_EXEC_TX_CALL_DATA,
-        limitAddresses: [address],
+        to,
+        data,
+        limitAddresses: [to],
       };
 
       await relayService.sponsoredCall(body);
@@ -53,12 +55,14 @@ describe('GelatoSponsorService', () => {
     });
 
     it('should add a gas buffer to the relay', async () => {
-      const address = faker.finance.ethereumAddress();
+      const to = faker.finance.ethereumAddress();
+      const data = await getMockExecTransactionCalldata({ to, value: 0 });
+
       const body = {
         chainId: '5' as SupportedChainId,
-        to: address,
-        data: MOCK_EXEC_TX_CALL_DATA,
-        limitAddresses: [address],
+        to,
+        data,
+        limitAddresses: [to],
         gasLimit: BigInt('123'),
       };
 

@@ -4,7 +4,7 @@ import {
   getSafeL2SingletonDeployment,
   getSafeSingletonDeployment,
 } from '@safe-global/safe-deployments';
-import { ethers, Interface } from 'ethers';
+import { ethers } from 'ethers';
 
 // ======================== General ========================
 
@@ -85,6 +85,14 @@ const decodeMultiSendTxs = (
       (index += INDIVIDUAL_TX_DATA_LENGTH),
     )}`;
 
+    console.log(
+      'decode',
+      ethers.AbiCoder.defaultAbiCoder().decode(
+        ['uint8', 'address', 'uint256', 'uint256'],
+        ethers.zeroPadValue(txDataEncoded, 32 * 4),
+      ),
+    );
+
     // Decode operation, to, value, dataLength
     const [, txTo, , txDataBytesLength] =
       ethers.AbiCoder.defaultAbiCoder().decode(
@@ -141,7 +149,7 @@ export const getSafeAddressFromMultiSend = (data: string): string | null => {
     return null;
   }
 
-  return firstRecipient;
+  return ethers.getAddress(firstRecipient);
 };
 
 /**
@@ -192,7 +200,7 @@ const decodeCreateProxyWithNonce = (
   const CREATE_PROXY_WITH_NONCE_FRAGMENT =
     'function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce)';
 
-  const createProxyWithNonceInterface = new Interface([
+  const createProxyWithNonceInterface = new ethers.Interface([
     CREATE_PROXY_WITH_NONCE_FRAGMENT,
   ]);
 
@@ -241,18 +249,20 @@ export const isValidCreateProxyWithNonceCall = (
   return isL1Singleton || isL2Singleton;
 };
 
-export const getOwnersFromSetup = (encodedData: string): string[] => {
+export const getOwnersFromCreateProxyWithNonce = (
+  encodedData: string,
+): string[] => {
   const SETUP_FRAGMENT =
     'function setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data, address fallbackHandler, address paymentToken, uint256 payment, address payable paymentReceiver) external';
 
   const { initializer } = decodeCreateProxyWithNonce(encodedData);
 
-  const setupInterface = new Interface([SETUP_FRAGMENT]);
+  const setupInterface = new ethers.Interface([SETUP_FRAGMENT]);
 
   const [owners] = setupInterface.decodeFunctionData(
     SETUP_FRAGMENT,
     initializer,
   );
 
-  return owners;
+  return owners.map(ethers.getAddress);
 };

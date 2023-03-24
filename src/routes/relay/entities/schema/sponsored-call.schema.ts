@@ -7,7 +7,7 @@ import {
   isExecTransactionCall,
   getSafeAddressFromMultiSend,
   isValidCreateProxyWithNonceCall,
-  getOwnersFromSetup,
+  getOwnersFromCreateProxyWithNonce,
 } from './sponsored-call.schema.helper';
 
 export const SponsoredCallSchema = z
@@ -56,7 +56,7 @@ export const SponsoredCallSchema = z
     if (isValidCreateProxyWithNonceCall(chainId, to, data)) {
       return {
         ...values,
-        limitAddresses: getOwnersFromSetup(data),
+        limitAddresses: getOwnersFromCreateProxyWithNonce(data),
       };
     }
 
