@@ -4,7 +4,7 @@ import { AddressSchema } from '../../../common/schema/address.schema';
 import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
   isValidMultiSendCall,
-  isExecTransactionCall,
+  isExecTransactionCalldata,
   getSafeAddressFromMultiSend,
   isValidCreateProxyWithNonceCall,
   getOwnersFromCreateProxyWithNonce,
@@ -31,7 +31,7 @@ export const SponsoredCallSchema = z
     };
 
     // `execTransaction`
-    if (isExecTransactionCall(data)) {
+    if (isExecTransactionCalldata(data)) {
       return {
         ...values,
         limitAddresses: [to],
@@ -52,7 +52,7 @@ export const SponsoredCallSchema = z
       };
     }
 
-    // `setup`
+    // `createProxyWithNonce`
     if (isValidCreateProxyWithNonceCall(chainId, to, data)) {
       return {
         ...values,

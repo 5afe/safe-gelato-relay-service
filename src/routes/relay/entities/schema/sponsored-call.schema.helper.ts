@@ -26,7 +26,7 @@ const isCalldata = (data: string, signature: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-export const isExecTransactionCall = (data: string): boolean => {
+export const isExecTransactionCalldata = (data: string): boolean => {
   const EXEC_TX_SIGNATURE =
     'execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)';
 
@@ -40,7 +40,7 @@ export const isExecTransactionCall = (data: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-const isMultiSendCall = (data: string): boolean => {
+const isMultiSendCalldata = (data: string): boolean => {
   const MULTISEND_TX_SIGNATURE = 'multiSend(bytes)';
 
   return isCalldata(data, MULTISEND_TX_SIGNATURE);
@@ -85,14 +85,6 @@ const decodeMultiSendTxs = (
       (index += INDIVIDUAL_TX_DATA_LENGTH),
     )}`;
 
-    console.log(
-      'decode',
-      ethers.AbiCoder.defaultAbiCoder().decode(
-        ['uint8', 'address', 'uint256', 'uint256'],
-        ethers.zeroPadValue(txDataEncoded, 32 * 4),
-      ),
-    );
-
     // Decode operation, to, value, dataLength
     const [, txTo, , txDataBytesLength] =
       ethers.AbiCoder.defaultAbiCoder().decode(
@@ -132,7 +124,7 @@ export const getSafeAddressFromMultiSend = (data: string): string | null => {
   }
 
   const isEveryTxExecTx = individualTxs.every(({ data }) => {
-    return isExecTransactionCall(data);
+    return isExecTransactionCalldata(data);
   });
 
   if (!isEveryTxExecTx) {
@@ -165,7 +157,7 @@ export const isValidMultiSendCall = (
   to: string,
   data: string,
 ) => {
-  if (!isMultiSendCall(data)) {
+  if (!isMultiSendCalldata(data)) {
     return false;
   }
 
@@ -182,7 +174,7 @@ export const isValidMultiSendCall = (
 
 // ===================== createProxyWithNonce ======================
 
-export const isCreateProxyWithNonce = (data: string): boolean => {
+export const isCreateProxyWithNonceCalldata = (data: string): boolean => {
   const SETUP_TX_SIGNATURE = 'createProxyWithNonce(address,bytes,uint256)';
 
   return isCalldata(data, SETUP_TX_SIGNATURE);
@@ -222,7 +214,7 @@ export const isValidCreateProxyWithNonceCall = (
   to: string,
   data: string,
 ): boolean => {
-  if (!isCreateProxyWithNonce(data)) {
+  if (!isCreateProxyWithNonceCalldata(data)) {
     return false;
   }
 

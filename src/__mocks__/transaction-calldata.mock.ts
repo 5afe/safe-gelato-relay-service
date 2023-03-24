@@ -93,13 +93,6 @@ export async function getMockMultiSendCalldata(
   const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
   const internalTransactions = transactions.map(({ to, value, data }) => {
-    console.log('encode', [
-      OPERATION,
-      to,
-      value,
-      ethers.dataLength(data),
-      data,
-    ]);
     return abiCoder.encode(
       ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
       [OPERATION, to, value, ethers.dataLength(data), data],
