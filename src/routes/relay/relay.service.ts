@@ -22,10 +22,10 @@ export class RelayService {
   async sponsoredCall(
     sponsoredCallDto: SponsoredCallDto,
   ): Promise<RelayResponse> {
-    const { chainId, to, safeAddress } = sponsoredCallDto;
+    const { chainId, limitAddresses } = sponsoredCallDto;
 
     // Check rate limit is not reached
-    if (!this.relayLimitService.canRelay(chainId, to)) {
+    if (!this.relayLimitService.canRelay(chainId, limitAddresses)) {
       throw new HttpException(
         'Relay limit reached',
         HttpStatus.TOO_MANY_REQUESTS,
@@ -42,7 +42,7 @@ export class RelayService {
     }
 
     // Increase the counter
-    await this.relayLimitService.increment(chainId, safeAddress);
+    await this.relayLimitService.increment(chainId, limitAddresses);
 
     // TODO: Add rate limit headers
     return response;

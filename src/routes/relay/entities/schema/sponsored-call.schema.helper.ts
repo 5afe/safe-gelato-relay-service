@@ -1,4 +1,9 @@
-import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
+import {
+  getMultiSendCallOnlyDeployment,
+  getProxyFactoryDeployment,
+  getSafeL2SingletonDeployment,
+  getSafeSingletonDeployment,
+} from '@safe-global/safe-deployments';
 import { ethers } from 'ethers';
 
 // ======================== General ========================
@@ -21,7 +26,7 @@ const isCalldata = (data: string, signature: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-export const isExecTransactionCall = (data: string): boolean => {
+export const isExecTransactionCalldata = (data: string): boolean => {
   const EXEC_TX_SIGNATURE =
     'execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)';
 
@@ -35,7 +40,7 @@ export const isExecTransactionCall = (data: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-const isMultiSendCall = (data: string): boolean => {
+const isMultiSendCalldata = (data: string): boolean => {
   const MULTISEND_TX_SIGNATURE = 'multiSend(bytes)';
 
   return isCalldata(data, MULTISEND_TX_SIGNATURE);
@@ -119,7 +124,7 @@ export const getSafeAddressFromMultiSend = (data: string): string | null => {
   }
 
   const isEveryTxExecTx = individualTxs.every(({ data }) => {
-    return isExecTransactionCall(data);
+    return isExecTransactionCalldata(data);
   });
 
   if (!isEveryTxExecTx) {
@@ -136,7 +141,7 @@ export const getSafeAddressFromMultiSend = (data: string): string | null => {
     return null;
   }
 
-  return firstRecipient;
+  return ethers.getAddress(firstRecipient);
 };
 
 /**
@@ -152,7 +157,7 @@ export const isValidMultiSendCall = (
   to: string,
   data: string,
 ) => {
-  if (!isMultiSendCall(data)) {
+  if (!isMultiSendCalldata(data)) {
     return false;
   }
 
@@ -165,4 +170,91 @@ export const isValidMultiSendCall = (
   }
 
   return true;
+};
+
+// ===================== createProxyWithNonce ======================
+
+export const isCreateProxyWithNonceCalldata = (data: string): boolean => {
+  const SETUP_TX_SIGNATURE = 'createProxyWithNonce(address,bytes,uint256)';
+
+  return isCalldata(data, SETUP_TX_SIGNATURE);
+};
+
+interface CreateProxyWithNonceTransactionData {
+  readonly singleton: string;
+  readonly initializer: string;
+  readonly saltNonce: bigint;
+}
+
+const decodeCreateProxyWithNonce = (
+  encodedData: string,
+): CreateProxyWithNonceTransactionData => {
+  const CREATE_PROXY_WITH_NONCE_FRAGMENT =
+    'function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce)';
+
+  const createProxyWithNonceInterface = new ethers.Interface([
+    CREATE_PROXY_WITH_NONCE_FRAGMENT,
+  ]);
+
+  const [singleton, initializer, saltNonce] =
+    createProxyWithNonceInterface.decodeFunctionData(
+      CREATE_PROXY_WITH_NONCE_FRAGMENT,
+      encodedData,
+    );
+
+  return {
+    singleton,
+    initializer,
+    saltNonce,
+  };
+};
+
+export const isValidCreateProxyWithNonceCall = (
+  chainId: string,
+  to: string,
+  data: string,
+): boolean => {
+  if (!isCreateProxyWithNonceCalldata(data)) {
+    return false;
+  }
+
+  const proxyFactoryDeployment = getProxyFactoryDeployment({
+    network: chainId,
+  });
+
+  if (!proxyFactoryDeployment || to !== proxyFactoryDeployment.defaultAddress) {
+    return false;
+  }
+
+  const { singleton } = decodeCreateProxyWithNonce(data);
+
+  const safeL1Deployment = getSafeSingletonDeployment({
+    network: chainId,
+  });
+  const safeL2Deployment = getSafeL2SingletonDeployment({
+    network: chainId,
+  });
+
+  const isL1Singleton = safeL1Deployment?.defaultAddress === singleton;
+  const isL2Singleton = safeL2Deployment?.defaultAddress === singleton;
+
+  return isL1Singleton || isL2Singleton;
+};
+
+export const getOwnersFromCreateProxyWithNonce = (
+  encodedData: string,
+): string[] => {
+  const SETUP_FRAGMENT =
+    'function setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data, address fallbackHandler, address paymentToken, uint256 payment, address payable paymentReceiver) external';
+
+  const { initializer } = decodeCreateProxyWithNonce(encodedData);
+
+  const setupInterface = new ethers.Interface([SETUP_FRAGMENT]);
+
+  const [owners] = setupInterface.decodeFunctionData(
+    SETUP_FRAGMENT,
+    initializer,
+  );
+
+  return owners.map(ethers.getAddress);
 };

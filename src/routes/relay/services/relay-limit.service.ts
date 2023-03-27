@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerStorageService } from '@nestjs/throttler';
-import { ThrottlerStorageRecord } from '@nestjs/throttler/dist/throttler-storage-record.interface';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class RelayLimitService {
@@ -23,7 +23,7 @@ export class RelayLimitService {
    * Generate key for caching number of relays
    */
   private generateKey(chainId: string, address: string) {
-    return `${chainId}:${address}`;
+    return `${chainId}:${ethers.getAddress(address)}`;
   }
 
   /**
@@ -48,22 +48,24 @@ export class RelayLimitService {
   }
 
   /**
-   * Check if an address can relay
+   * Check if addresses can relay
    */
-  public canRelay(chainId: string, address: string): boolean {
-    const limit = this.getRelayLimit(chainId, address);
-    // TODO: Add relay bypass for staging
-    return limit.remaining > 0;
+  public canRelay(chainId: string, addresses: string[]): boolean {
+    return addresses.every((address) => {
+      const limit = this.getRelayLimit(chainId, address);
+      return limit.remaining > 0;
+    });
   }
 
   /**
-   * Increment the number of relays for an address
+   * Increment the number of relays for addresses
    */
-  public async increment(
-    chainId: string,
-    address: string,
-  ): Promise<ThrottlerStorageRecord> {
-    const key = this.generateKey(chainId, address);
-    return await this.throttlerStorageService.increment(key, this.ttl);
+  public async increment(chainId: string, addresses: string[]): Promise<void> {
+    await Promise.all(
+      addresses.map((address) => {
+        const key = this.generateKey(chainId, address);
+        return this.throttlerStorageService.increment(key, this.ttl);
+      }),
+    );
   }
 }

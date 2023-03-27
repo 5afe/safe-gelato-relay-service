@@ -4,8 +4,10 @@ import { AddressSchema } from '../../../common/schema/address.schema';
 import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
   isValidMultiSendCall,
-  isExecTransactionCall,
+  isExecTransactionCalldata,
   getSafeAddressFromMultiSend,
+  isValidCreateProxyWithNonceCall,
+  getOwnersFromCreateProxyWithNonce,
 } from './sponsored-call.schema.helper';
 
 export const SponsoredCallSchema = z
@@ -29,27 +31,37 @@ export const SponsoredCallSchema = z
     };
 
     // `execTransaction`
-    if (isExecTransactionCall(data)) {
+    if (isExecTransactionCalldata(data)) {
       return {
         ...values,
-        safeAddress: to,
+        limitAddresses: [to],
       };
     }
 
-    if (!isValidMultiSendCall(chainId, to, data)) {
-      setError('Only (batched) Safe transactions can be relayed');
-      return z.NEVER;
-    }
-
-    const safeAddress = getSafeAddressFromMultiSend(data);
-    if (!safeAddress) {
-      setError('Cannot decode Safe address from `multiSend` transaction');
-      return z.NEVER;
-    }
-
     // `multiSend`
-    return {
-      ...values,
-      safeAddress,
-    };
+    if (isValidMultiSendCall(chainId, to, data)) {
+      const safeAddress = getSafeAddressFromMultiSend(data);
+      if (!safeAddress) {
+        setError('Cannot decode Safe address from `multiSend` transaction');
+        return z.NEVER;
+      }
+
+      return {
+        ...values,
+        limitAddresses: [safeAddress],
+      };
+    }
+
+    // `createProxyWithNonce`
+    if (isValidCreateProxyWithNonceCall(chainId, to, data)) {
+      return {
+        ...values,
+        limitAddresses: getOwnersFromCreateProxyWithNonce(data),
+      };
+    }
+
+    setError(
+      'Only Safe creation or (batched) Safe transactions can be relayed',
+    );
+    return z.NEVER;
   });
