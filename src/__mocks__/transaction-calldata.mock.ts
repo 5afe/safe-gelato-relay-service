@@ -7,7 +7,9 @@ import {
 } from '@safe-global/safe-deployments';
 import type { DeploymentFilter } from '@safe-global/safe-deployments';
 
-export const MOCK_UNKNOWN_CALL_DATA = ethers.zeroPadBytes('0x7a761202', 970);
+export const MOCK_UNSUPPORTED_CALLDATA = new ethers.Interface([
+  'function unsupported()',
+]).encodeFunctionData('unsupported');
 
 function getSafeSingletonInterface(
   filter?: DeploymentFilter,
@@ -22,8 +24,9 @@ function getSafeSingletonInterface(
 }
 
 function getPrevalidatedSignature(address: string): string {
-  return `0x000000000000000000000000${address.slice(
-    2,
+  return `${ethers.zeroPadValue(
+    address,
+    32,
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 }
 

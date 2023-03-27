@@ -17,7 +17,7 @@ import { SupportedChainId } from '../../config/constants';
 import {
   getMockExecTransactionCalldata,
   getMockMultiSendCalldata,
-  MOCK_UNKNOWN_CALL_DATA,
+  MOCK_UNSUPPORTED_CALLDATA,
   getMockCreateProxyWithNonceCalldata,
 } from '../../__mocks__/transaction-calldata.mock';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
@@ -324,7 +324,7 @@ describe('RelayController', () => {
         const body = {
           chainId: '5',
           to: faker.finance.ethereumAddress(),
-          data: MOCK_UNKNOWN_CALL_DATA, // Unknown call
+          data: MOCK_UNSUPPORTED_CALLDATA, // Unknown call
         };
 
         await request(app.getHttpServer())
@@ -394,12 +394,12 @@ describe('RelayController', () => {
           {
             to: contract,
             value: 0,
-            data: MOCK_UNKNOWN_CALL_DATA,
+            data: MOCK_UNSUPPORTED_CALLDATA,
           },
           {
             to: contract,
             value: 0,
-            data: MOCK_UNKNOWN_CALL_DATA,
+            data: MOCK_UNSUPPORTED_CALLDATA,
           },
         ]);
 
