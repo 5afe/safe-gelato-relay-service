@@ -90,12 +90,10 @@ export async function getMockMultiSendCalldata(
 
   const multiSendInterface = getMultiSendCallOnlyInterface();
 
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
-
   const internalTransactions = transactions.map(({ to, value, data }) => {
-    return abiCoder.encode(
+    return ethers.solidityPacked(
       ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
-      [OPERATION, to, value, ethers.dataLength(data), data],
+      [OPERATION, to, value, ethers.dataLength(data), ethers.getBytes(data)],
     );
   });
 
