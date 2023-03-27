@@ -17,11 +17,7 @@ async function bootstrap() {
   winston.add(
     new winston.transports.Console({
       level: 'debug',
-      format: format.combine(
-        format.colorize({ all: true }),
-        format.splat(),
-        format.simple(),
-      ),
+      format: format.combine(format.splat(), format.simple()),
     }),
   );
 
