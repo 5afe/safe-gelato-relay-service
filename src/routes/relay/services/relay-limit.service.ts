@@ -33,6 +33,7 @@ export class RelayLimitService {
     chainId: string,
     address: string,
   ): {
+    limit: number;
     remaining: number;
     expiresAt?: number;
   } {
@@ -42,6 +43,7 @@ export class RelayLimitService {
     };
 
     return {
+      limit: this.limit,
       remaining: Math.max(0, this.limit - throttlerEntry.totalHits),
       expiresAt: throttlerEntry.expiresAt,
     };
