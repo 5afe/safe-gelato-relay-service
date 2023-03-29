@@ -729,6 +729,7 @@ describe('RelayController', () => {
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
+              limit: 5,
               remaining: 4,
               expiresAt: expect.any(Number),
             });
@@ -757,6 +758,7 @@ describe('RelayController', () => {
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
+              limit: 5,
               remaining: 4,
               expiresAt: expect.any(Number),
             });
@@ -795,6 +797,7 @@ describe('RelayController', () => {
               .expect(200)
               .expect((res) => {
                 expect(res.body).toStrictEqual({
+                  limit: 5,
                   remaining: 4,
                   expiresAt: expect.any(Number),
                 });
@@ -833,6 +836,7 @@ describe('RelayController', () => {
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
+              limit: 5,
               remaining: 0,
               expiresAt: expect.any(Number),
             });
