@@ -7,12 +7,17 @@ import {
   SponsorService,
 } from '../../datasources/sponsor/sponsor.service.interface';
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
+import {
+  ILoggingService,
+  LoggingService,
+} from '../common/logging/logging.interface';
 
 @Injectable()
 export class RelayService {
   constructor(
     private readonly relayLimitService: RelayLimitService,
     @Inject(SponsorService) private readonly sponsorService: ISponsorService,
+    @Inject(LoggingService) private readonly loggingService: ILoggingService,
   ) {}
 
   /**
@@ -26,6 +31,9 @@ export class RelayService {
 
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, limitAddresses)) {
+      this.loggingService.error(
+        'Transaction can not be relayed because the address relay limit was reached.',
+      );
       throw new HttpException(
         'Relay limit reached',
         HttpStatus.TOO_MANY_REQUESTS,
@@ -38,6 +46,10 @@ export class RelayService {
       // Relay
       response = await this.sponsorService.sponsoredCall(sponsoredCallDto);
     } catch (err) {
+      this.loggingService.error(
+        'Unexpected error from Gelato sponsored call: `%s`',
+        err,
+      );
       throw new HttpException('Relay failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

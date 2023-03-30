@@ -17,15 +17,14 @@ export class LoggerMiddleware implements NestMiddleware {
     const contentLength = res.get('content-length') || '';
     const contentType = res.get('content-type') || '';
 
-    const responseMessage: [string, number, string, string] = [
-      '[<==] %d %s %s',
-      res.statusCode,
-      contentLength,
-      contentType,
-    ];
-
     res.on('finish', () => {
       const { statusCode } = res;
+      const responseMessage: [string, number, string, string] = [
+        '[<==] %d %s %s',
+        res.statusCode,
+        contentLength,
+        contentType,
+      ];
       if (statusCode < 400) {
         this.loggingService.log(...responseMessage);
       } else if (statusCode >= 400 && statusCode < 500) {
