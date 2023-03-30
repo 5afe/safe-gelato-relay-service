@@ -32,7 +32,7 @@ export class RelayService {
     // Check rate limit is not reached
     if (!this.relayLimitService.canRelay(chainId, limitAddresses)) {
       this.loggingService.error(
-        'Transaction could not be relayed because the relay limit was reached.',
+        'Transaction can not be relayed because the address relay limit was reached.',
       );
       throw new HttpException(
         'Relay limit reached',
