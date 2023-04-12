@@ -5,10 +5,10 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@adraffy/ens-normalize@npm:1.8.9":
-  version: 1.8.9
-  resolution: "@adraffy/ens-normalize@npm:1.8.9"
-  checksum: 17791dce03a4320a88c377136c48d0c16ac3e5b07aad321d028c8342fcf821b95c0082cd269cddd488472d1273e8157ae101f2e4e7f9e6be42667ed7ab9614d9
+"@adraffy/ens-normalize@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@adraffy/ens-normalize@npm:1.9.0"
+  checksum: a8d47f85db7a0bba01227fae8781a3245a4517875503d6848a47ca29e7f7da271742a2f93b55afc1b9201e74eda1fd1f1e6e79e70f967359fd7f6ec3d45bf243
   languageName: node
   linkType: hard
 
@@ -3793,17 +3793,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.0.5":
-  version: 6.0.5
-  resolution: "ethers@npm:6.0.5"
+"ethers@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "ethers@npm:6.3.0"
   dependencies:
-    "@adraffy/ens-normalize": 1.8.9
+    "@adraffy/ens-normalize": 1.9.0
     "@noble/hashes": 1.1.2
     "@noble/secp256k1": 1.7.1
     aes-js: 4.0.0-beta.3
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: 84530dc40fe42048c1f63184c144065f6c63de25bd7f11d4373e052432f2d84cbe3183361485ebc69296fa53c0fab34ee0b4cf59f04ab6e2816859feb3263262
+  checksum: 4248d8c5d02382b6e2ced896c9b3f62b8d33b5121127ac5597eeec6e49acb15753f5d4a7e0d403b3131bf092417f9686384af28f9285544c184ccce502bca96d
   languageName: node
   linkType: hard
 
@@ -6735,7 +6735,7 @@ __metadata:
     eslint: ^8.0.1
     eslint-config-prettier: ^8.3.0
     eslint-plugin-prettier: ^4.0.0
-    ethers: ^6.0.5
+    ethers: ^6.3.0
     husky: ^8.0.0
     jest: 28.1.2
     nestjs-cls: ^3.2.1
