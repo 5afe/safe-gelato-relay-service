@@ -15,10 +15,10 @@ import { ethers } from 'ethers';
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
 import {
+  getMockCreateProxyWithNonceCalldata,
   getMockExecTransactionCalldata,
   getMockMultiSendCalldata,
   MOCK_UNSUPPORTED_CALLDATA,
-  getMockCreateProxyWithNonceCalldata,
 } from '../../__mocks__/transaction-calldata.mock';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
@@ -31,6 +31,7 @@ import {
   ISafeInfoService,
   SafeInfoService,
 } from '../../datasources/safe-info/safe-info.service.interface';
+import { TestAppProvider } from '../../app.provider';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
@@ -102,8 +103,7 @@ describe('RelayController', () => {
     mockSponsorService = moduleFixture.get<ISponsorService>(SponsorService);
     mockSafeInfoService = moduleFixture.get<ISafeInfoService>(SafeInfoService);
 
-    app = moduleFixture.createNestApplication();
-    app.enableVersioning();
+    app = await new TestAppProvider().provide(moduleFixture);
 
     await app.init();
   });

@@ -1,24 +1,12 @@
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
-import * as winston from 'winston';
-import { format } from 'winston';
+import { DefaultAppProvider } from './app.provider';
+import { INestApplication } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableVersioning();
-
-  // TODO: Define cors headers which we want to allow.
-  app.enableCors({
-    origin: '*',
-  });
-
-  winston.add(
-    new winston.transports.Console({
-      level: 'debug',
-      format: format.combine(format.splat(), format.simple()),
-    }),
+  const app: INestApplication = await new DefaultAppProvider().provide(
+    AppModule,
   );
 
   const configService = app.get(ConfigService);
@@ -26,4 +14,5 @@ async function bootstrap() {
 
   await app.listen(port);
 }
+
 bootstrap();
