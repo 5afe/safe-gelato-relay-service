@@ -46,13 +46,13 @@ export abstract class AppProvider {
     (app: INestApplication) => void
   >;
 
-  public async provide(module: any): Promise<INestApplication> {
+  public async provide(module: unknown): Promise<INestApplication> {
     const app = await this.getApp(module);
     this.configuration.forEach((f) => f(app));
     return app;
   }
 
-  protected abstract getApp(module: any): Promise<INestApplication>;
+  protected abstract getApp(module: unknown): Promise<INestApplication>;
 }
 
 /**
@@ -65,7 +65,7 @@ export class DefaultAppProvider extends AppProvider {
   protected readonly configuration: Array<(app: INestApplication) => void> =
     DEFAULT_CONFIGURATION;
 
-  protected getApp(module: any): Promise<INestApplication> {
+  protected getApp(module: unknown): Promise<INestApplication> {
     return NestFactory.create(module);
   }
 }
@@ -88,11 +88,9 @@ export class TestAppProvider extends AppProvider {
     }
   }
 
-  protected getApp(module: any): Promise<INestApplication> {
+  protected getApp(module: unknown): Promise<INestApplication> {
     if (!(module instanceof TestingModule))
-      return Promise.reject(
-        `${module.constructor.name} is not a TestingModule`,
-      );
+      return Promise.reject(`Provided module is not a TestingModule`);
     return Promise.resolve(module.createNestApplication());
   }
 }
