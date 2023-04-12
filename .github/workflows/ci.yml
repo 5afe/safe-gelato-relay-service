@@ -90,7 +90,7 @@ jobs:
             safeglobal/safe-gelato-relay-service:${{ github.event.release.tag_name }}
             safeglobal/safe-gelato-relay-service:latest
           # Use inline cache storage https://docs.docker.com/build/cache/backends/inline/
-          cache-from: type=registry,ref=safeglobal/safe-gelato-relay-service:staging
+          cache-from: type=registry,ref=safeglobal/safe-gelato-relay-service:latest
           cache-to: type=inline
 
   autodeploy:
