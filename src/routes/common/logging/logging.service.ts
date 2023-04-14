@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
-import * as winston from 'winston';
 import { ILoggingService } from './logging.interface';
+import { Inject } from '@nestjs/common/decorators';
+import winston from 'winston';
 
 /**
  * Implementation of LoggerService which prepends the current time and a unique request ID to every logged message.
@@ -10,22 +11,25 @@ import { ILoggingService } from './logging.interface';
  */
 @Injectable()
 export class RequestScopedLoggingService implements ILoggingService {
-  constructor(private readonly cls: ClsService) {}
+  constructor(
+    @Inject('Logger') private readonly logger: winston.Logger,
+    private readonly cls: ClsService,
+  ) {}
 
   info(message: string, ...optionalParams: unknown[]) {
-    winston.info(this.transformMessage(message), ...optionalParams);
+    this.logger.info(this.transformMessage(message), ...optionalParams);
   }
 
   error(message: string, ...optionalParams: unknown[]) {
-    winston.error(this.transformMessage(message), ...optionalParams);
+    this.logger.error(this.transformMessage(message), ...optionalParams);
   }
 
   warn(message: string, ...optionalParams: unknown[]) {
-    winston.warn(this.transformMessage(message), ...optionalParams);
+    this.logger.warn(this.transformMessage(message), ...optionalParams);
   }
 
   debug(message: string, ...optionalParams: unknown[]) {
-    winston.debug(this.transformMessage(message), ...optionalParams);
+    this.logger.debug(this.transformMessage(message), ...optionalParams);
   }
 
   private transformMessage(message: string): string {

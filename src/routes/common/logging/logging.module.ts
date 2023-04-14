@@ -1,6 +1,31 @@
 import { Global, Module } from '@nestjs/common';
 import { LoggingService } from './logging.interface';
 import { RequestScopedLoggingService } from './logging.service';
+import * as winston from 'winston';
+import { format } from 'winston';
+import * as Transport from 'winston-transport';
+
+/**
+ * Provides a new instance of a Winston logger using the provided {@link transports}
+ *
+ * @param transports - the logger transports to be used in the winston instance
+ */
+function winstonFactory(transports: Transport[] | Transport): winston.Logger {
+  return winston.createLogger({ transports: transports });
+}
+
+const LoggerTransports = Symbol('LoggerTransports');
+
+/**
+ * Factory which provides a collection of transports to be used by the
+ * logger instance
+ */
+function winstonTransportsFactory(): Transport[] | Transport {
+  return new winston.transports.Console({
+    level: 'debug',
+    format: format.combine(format.splat(), format.simple()),
+  });
+}
 
 /**
  * Module for logging messages throughout the application.
@@ -11,6 +36,13 @@ import { RequestScopedLoggingService } from './logging.service';
 @Module({
   providers: [
     { provide: LoggingService, useClass: RequestScopedLoggingService },
+    { provide: LoggerTransports, useFactory: winstonTransportsFactory },
+    {
+      // Using a symbol or a string as a provider key doesn't work when using factories
+      provide: 'Logger',
+      useFactory: winstonFactory,
+      inject: [LoggerTransports],
+    },
   ],
   exports: [LoggingService],
 })
