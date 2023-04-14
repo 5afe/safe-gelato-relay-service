@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ILoggingService, LoggingService } from '../logging.interface';
 
 const loggerService: ILoggingService = {
-  log: console.log,
+  info: console.log,
   error: console.error,
   warn: console.warn,
   debug: console.debug,

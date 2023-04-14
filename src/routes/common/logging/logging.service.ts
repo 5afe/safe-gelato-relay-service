@@ -11,15 +11,19 @@ import { ILoggingService } from './logging.interface';
 @Injectable()
 export class RequestScopedLoggingService implements ILoggingService {
   constructor(private readonly cls: ClsService) {}
-  log(message: string, ...optionalParams: unknown[]) {
+
+  info(message: string, ...optionalParams: unknown[]) {
     winston.info(this.transformMessage(message), ...optionalParams);
   }
+
   error(message: string, ...optionalParams: unknown[]) {
     winston.error(this.transformMessage(message), ...optionalParams);
   }
+
   warn(message: string, ...optionalParams: unknown[]) {
     winston.warn(this.transformMessage(message), ...optionalParams);
   }
+
   debug(message: string, ...optionalParams: unknown[]) {
     winston.debug(this.transformMessage(message), ...optionalParams);
   }
