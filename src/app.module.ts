@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
-import { ClsModule, ClsMiddleware } from 'nestjs-cls';
+import { ClsMiddleware, ClsModule } from 'nestjs-cls';
 
 import configuration from './config/configuration';
 import { NetworkModule } from './datasources/network/network.module';
@@ -10,6 +10,8 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
 import { SponsorModule } from './datasources/sponsor/sponsor.module';
 import { RelayModule } from './routes/relay/relay.module';
 import { RequestScopedLoggingModule } from './routes/common/logging/logging.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RouteLoggerInterceptor } from './routes/common/interceptors/route-logger.interceptor';
 
 @Module({
   imports: [
@@ -32,6 +34,12 @@ import { RequestScopedLoggingModule } from './routes/common/logging/logging.modu
       },
     }),
     RequestScopedLoggingModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RouteLoggerInterceptor,
+    },
   ],
 })
 export class AppModule {
