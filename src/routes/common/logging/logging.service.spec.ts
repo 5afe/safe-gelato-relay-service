@@ -32,7 +32,8 @@ describe('RequestScopedLoggingService', () => {
 
   it('log', () => {
     const message = 'Some message';
-    loggingService.log(message);
+
+    loggingService.info(message);
 
     expect(infoMock).toHaveBeenCalledTimes(1);
     expect(infoMock).toHaveBeenCalledWith(
@@ -42,6 +43,7 @@ describe('RequestScopedLoggingService', () => {
 
   it('error', () => {
     const message = 'Some message';
+
     loggingService.error(message);
 
     expect(errorMock).toHaveBeenCalledTimes(1);
@@ -52,6 +54,7 @@ describe('RequestScopedLoggingService', () => {
 
   it('warn', () => {
     const message = 'Some message';
+
     loggingService.warn(message);
 
     expect(warnMock).toHaveBeenCalledTimes(1);
@@ -62,6 +65,7 @@ describe('RequestScopedLoggingService', () => {
 
   it('debug', () => {
     const message = 'Some message';
+
     loggingService.debug(message);
 
     expect(debugMock).toHaveBeenCalledTimes(1);

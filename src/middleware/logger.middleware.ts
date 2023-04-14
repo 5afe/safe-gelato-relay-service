@@ -12,7 +12,7 @@ export class LoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    this.loggingService.debug?.('[==>] %s %s', req.method, req.url);
+    this.loggingService.info('[==>] %s %s', req.method, req.url);
 
     const contentLength = res.get('content-length') || '';
     const contentType = res.get('content-type') || '';
@@ -26,7 +26,7 @@ export class LoggerMiddleware implements NestMiddleware {
         contentType,
       ];
       if (statusCode < 400) {
-        this.loggingService.log(...responseMessage);
+        this.loggingService.info(...responseMessage);
       } else if (statusCode >= 400 && statusCode < 500) {
         this.loggingService.warn(...responseMessage);
       } else {
