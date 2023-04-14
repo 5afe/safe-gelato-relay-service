@@ -12,19 +12,9 @@ export class LoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    this.loggingService.info('[==>] %s %s', req.method, req.url);
-
-    const contentLength = res.get('content-length') || '';
-    const contentType = res.get('content-type') || '';
-
     res.on('finish', () => {
       const { statusCode } = res;
-      const responseMessage: [string, number, string, string] = [
-        '[<==] %d %s %s',
-        res.statusCode,
-        contentLength,
-        contentType,
-      ];
+      const responseMessage: [string, number] = ['[<==] %d', res.statusCode];
       if (statusCode < 400) {
         this.loggingService.info(...responseMessage);
       } else if (statusCode >= 400 && statusCode < 500) {
