@@ -2,7 +2,6 @@ import { Global, Module } from '@nestjs/common';
 import { LoggingService } from './logging.interface';
 import { RequestScopedLoggingService } from './logging.service';
 import * as winston from 'winston';
-import { format } from 'winston';
 import * as Transport from 'winston-transport';
 
 /**
@@ -23,7 +22,10 @@ const LoggerTransports = Symbol('LoggerTransports');
 function winstonTransportsFactory(): Transport[] | Transport {
   return new winston.transports.Console({
     level: 'debug',
-    format: format.combine(format.splat(), format.simple()),
+    format: winston.format.combine(
+      winston.format.splat(),
+      winston.format.simple(),
+    ),
   });
 }
 
