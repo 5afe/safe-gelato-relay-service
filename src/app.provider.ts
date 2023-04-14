@@ -1,17 +1,6 @@
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing/testing-module';
-import * as winston from 'winston';
-import { format } from 'winston';
-
-function configureLogger() {
-  winston.add(
-    new winston.transports.Console({
-      level: 'debug',
-      format: format.combine(format.splat(), format.simple()),
-    }),
-  );
-}
 
 function configureVersioning(app: INestApplication) {
   app.enableVersioning({
@@ -26,7 +15,6 @@ function configureCors(app: INestApplication) {
 }
 
 const DEFAULT_CONFIGURATION: ((app: INestApplication) => void)[] = [
-  configureLogger,
   configureVersioning,
   configureCors,
 ];
