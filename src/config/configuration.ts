@@ -5,9 +5,13 @@ export default () => ({
     name: 'safe-gelato-relay-service',
   },
   applicationPort: process.env.APPLICATION_PORT || '3000',
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT ? +process.env.REDIS_PORT : undefined,
+  },
   relay: {
-    ttl: process.env.THROTTLE_TTL || 60 * 60, // 1 hour
-    limit: process.env.THROTTLE_LIMIT || 5,
+    ttl: process.env.THROTTLE_TTL ? +process.env.THROTTLE_TTL : 60 * 60, // 1 hour in seconds
+    limit: process.env.THROTTLE_LIMIT ? +process.env.THROTTLE_LIMIT : 5,
   },
   gelato: {
     apiKey: {

@@ -29,8 +29,13 @@ export class RelayService {
   ): Promise<RelayResponse> {
     const { chainId, limitAddresses } = sponsoredCallDto;
 
+    const canRelay = await this.relayLimitService.canRelay(
+      chainId,
+      limitAddresses,
+    );
+
     // Check rate limit is not reached
-    if (!this.relayLimitService.canRelay(chainId, limitAddresses)) {
+    if (!canRelay) {
       this.loggingService.error(
         'Transaction can not be relayed because the address relay limit was reached.',
       );

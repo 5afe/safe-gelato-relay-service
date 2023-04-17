@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ThrottlerStorageService } from '@nestjs/throttler';
 import { ethers } from 'ethers';
+
+import {
+  CacheService,
+  ICacheService,
+} from '../../../datasources/cache/cache.service.interface';
 
 @Injectable()
 export class RelayLimitService {
@@ -13,7 +17,7 @@ export class RelayLimitService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly throttlerStorageService: ThrottlerStorageService,
+    @Inject(CacheService) private readonly cacheService: ICacheService,
   ) {
     this.ttl = this.configService.getOrThrow<number>('relay.ttl');
     this.limit = this.configService.getOrThrow<number>('relay.limit');
@@ -27,46 +31,64 @@ export class RelayLimitService {
   }
 
   /**
-   * Get the current relay limit for an address
+   * Get the number of cached attempts for an address
    */
-  public getRelayLimit(
+  private async getCachedAttempts(
     chainId: string,
     address: string,
-  ): {
+  ): Promise<number> {
+    const key = this.generateKey(chainId, address);
+    const attempts = await this.cacheService.get(key);
+    return typeof attempts === 'string' ? Number(attempts) : 0;
+  }
+
+  /**
+   * Get the current relay limit for an address
+   */
+  public async getRelayLimit(
+    chainId: string,
+    address: string,
+  ): Promise<{
     limit: number;
     remaining: number;
-    expiresAt?: number;
-  } {
-    const key = this.generateKey(chainId, address);
-    const throttlerEntry = this.throttlerStorageService.storage[key] || {
-      totalHits: 0,
-    };
+  }> {
+    const attempts = await this.getCachedAttempts(chainId, address);
 
     return {
       limit: this.limit,
-      remaining: Math.max(0, this.limit - throttlerEntry.totalHits),
-      expiresAt: throttlerEntry.expiresAt,
+      remaining: Math.max(0, this.limit - attempts),
     };
   }
 
   /**
    * Check if addresses can relay
    */
-  public canRelay(chainId: string, addresses: string[]): boolean {
-    return addresses.every((address) => {
-      const limit = this.getRelayLimit(chainId, address);
-      return limit.remaining > 0;
-    });
+  public async canRelay(
+    chainId: string,
+    addresses: Array<string>,
+  ): Promise<boolean> {
+    const attempts = await Promise.all(
+      addresses.map((address) => this.getCachedAttempts(chainId, address)),
+    );
+    return attempts.every((attempts) => attempts < this.limit);
   }
 
   /**
    * Increment the number of relays for addresses
    */
-  public async increment(chainId: string, addresses: string[]): Promise<void> {
+  public async increment(
+    chainId: string,
+    addresses: Array<string>,
+  ): Promise<void> {
+    const attempts = await Promise.all(
+      addresses.map((address) => this.getCachedAttempts(chainId, address)),
+    );
+
     await Promise.all(
-      addresses.map((address) => {
+      addresses.map((address, i) => {
         const key = this.generateKey(chainId, address);
-        return this.throttlerStorageService.increment(key, this.ttl);
+        const incremented = attempts[i] + 1;
+        return this.cacheService.set(key, incremented.toString(), this.ttl);
       }),
     );
   }

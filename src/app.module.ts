@@ -12,6 +12,7 @@ import { RelayModule } from './routes/relay/relay.module';
 import { RequestScopedLoggingModule } from './routes/common/logging/logging.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RouteLoggerInterceptor } from './routes/common/interceptors/route-logger.interceptor';
+import { CacheModule } from './datasources/cache/cache.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RouteLoggerInterceptor } from './routes/common/interceptors/route-logge
       isGlobal: true,
       load: [configuration],
     }),
+    CacheModule,
     NetworkModule,
     // Module for storing and reading from the async local storage
     ClsModule.forRoot({
