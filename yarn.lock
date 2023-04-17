@@ -974,13 +974,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gelatonetwork/relay-sdk@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "@gelatonetwork/relay-sdk@npm:3.2.1"
+"@gelatonetwork/relay-sdk@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "@gelatonetwork/relay-sdk@npm:3.5.0"
   dependencies:
     axios: 0.24.0
     ethers: 5.7.2
-  checksum: d793ddfd0228b6337229eb1fe559b1b185b4cb2055edc4c44593f1a97af30764b54b4c58e53780c810467f1014271bd743c12c5160d0d960b79603a4361ee04e
+  checksum: 1826e9caeaa5b7642b113dc2e29e6304543a3f45fdd14451d1090a5959a69bfc48aee2cbe2b65ce83c4a235a73b29423271287ca8f3173f1ff78dcc3e6102808
   languageName: node
   linkType: hard
 
@@ -6715,7 +6715,7 @@ __metadata:
   resolution: "safe-gelato-relay-service@workspace:."
   dependencies:
     "@faker-js/faker": ^7.6.0
-    "@gelatonetwork/relay-sdk": ^3.2.1
+    "@gelatonetwork/relay-sdk": ^3.5.0
     "@nestjs/cli": ^9.0.0
     "@nestjs/common": ^9.0.0
     "@nestjs/config": ^2.3.1
