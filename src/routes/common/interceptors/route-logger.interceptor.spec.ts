@@ -64,10 +64,14 @@ describe('RouteLoggerInterceptor tests', () => {
 
     expect(mockLoggingService.error).toBeCalledTimes(1);
     expect(mockLoggingService.error).toBeCalledWith(
-      '[==>] %s %s %d',
-      'GET',
-      '/test/server-error',
-      500,
+      expect.objectContaining({
+        client_ip: null,
+        detail: 'Some 500 error',
+        method: 'GET',
+        path: '/test/server-error',
+        route: '/test/server-error',
+        status_code: 500,
+      }),
     );
     expect(mockLoggingService.info).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
@@ -79,10 +83,14 @@ describe('RouteLoggerInterceptor tests', () => {
 
     expect(mockLoggingService.info).toBeCalledTimes(1);
     expect(mockLoggingService.info).toBeCalledWith(
-      '[==>] %s %s %d',
-      'GET',
-      '/test/client-error',
-      405,
+      expect.objectContaining({
+        client_ip: null,
+        detail: 'Some 400 error',
+        method: 'GET',
+        path: '/test/client-error',
+        route: '/test/client-error',
+        status_code: 405,
+      }),
     );
     expect(mockLoggingService.error).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
@@ -94,10 +102,14 @@ describe('RouteLoggerInterceptor tests', () => {
 
     expect(mockLoggingService.info).toBeCalledTimes(1);
     expect(mockLoggingService.info).toBeCalledWith(
-      '[==>] %s %s %d',
-      'GET',
-      '/test/success',
-      200,
+      expect.objectContaining({
+        client_ip: null,
+        detail: null,
+        method: 'GET',
+        path: '/test/success',
+        route: '/test/success',
+        status_code: 200,
+      }),
     );
     expect(mockLoggingService.error).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
@@ -111,10 +123,14 @@ describe('RouteLoggerInterceptor tests', () => {
 
     expect(mockLoggingService.error).toBeCalledTimes(1);
     expect(mockLoggingService.error).toBeCalledWith(
-      '[==>] %s %s %d',
-      'GET',
-      '/test/server-error-non-http',
-      500,
+      expect.objectContaining({
+        client_ip: null,
+        detail: 'Some random error',
+        method: 'GET',
+        path: '/test/server-error-non-http',
+        route: '/test/server-error-non-http',
+        status_code: 500,
+      }),
     );
     expect(mockLoggingService.info).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();

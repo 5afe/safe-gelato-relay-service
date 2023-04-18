@@ -16,26 +16,31 @@ export class RequestScopedLoggingService implements ILoggingService {
     private readonly cls: ClsService,
   ) {}
 
-  info(message: string, ...optionalParams: unknown[]) {
-    this.logger.info(this.transformMessage(message), ...optionalParams);
+  info(message: string | unknown) {
+    this.logger.log('info', this.formatMessage(message));
   }
 
-  error(message: string, ...optionalParams: unknown[]) {
-    this.logger.error(this.transformMessage(message), ...optionalParams);
+  error(message: string | unknown) {
+    this.logger.log('error', this.formatMessage(message));
   }
 
-  warn(message: string, ...optionalParams: unknown[]) {
-    this.logger.warn(this.transformMessage(message), ...optionalParams);
+  warn(message: string | unknown) {
+    this.logger.log('warn', this.formatMessage(message));
   }
 
-  debug(message: string, ...optionalParams: unknown[]) {
-    this.logger.debug(this.transformMessage(message), ...optionalParams);
+  debug(message: string | unknown) {
+    this.logger.log('debug', this.formatMessage(message));
   }
 
-  private transformMessage(message: string): string {
+  private formatMessage(message: string | unknown): unknown {
     const requestId = this.cls.getId();
     const timestamp = Date.now();
     const dateAsString = new Date(timestamp).toISOString();
-    return `${dateAsString} ${requestId} - ${message}`;
+
+    return {
+      message,
+      request_id: requestId,
+      timestamp: dateAsString,
+    };
   }
 }

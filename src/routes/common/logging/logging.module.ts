@@ -22,10 +22,7 @@ const LoggerTransports = Symbol('LoggerTransports');
 function winstonTransportsFactory(): Transport[] | Transport {
   return new winston.transports.Console({
     level: 'debug',
-    format: winston.format.combine(
-      winston.format.splat(),
-      winston.format.simple(),
-    ),
+    format: winston.format.json(),
   });
 }
 
