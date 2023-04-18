@@ -123,8 +123,43 @@ describe('RelayController', () => {
           Promise.resolve({ taskId: '123' }),
         );
 
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
+
+        const body = {
+          chainId: '5',
+          to: faker.finance.ethereumAddress(),
+          data,
+          gasLimit: '123',
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(201, {
+            taskId: '123',
+          });
+      });
+
+      it('should return a 201 when the body is a rejection execTransaction call', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
         const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+
+        // Rejection
+        const data = await getMockExecTransactionCalldata({
+          to,
+          value: 0,
+          data: '0x',
+        });
 
         const body = {
           chainId: '5',
@@ -150,22 +185,70 @@ describe('RelayController', () => {
           Promise.resolve({ taskId: '123' }),
         );
 
+        const value1 = 1;
         const execTransaction1 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: 1,
         });
 
+        const value2 = 1;
         const execTransaction2 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value2,
         });
 
         const safe = faker.finance.ethereumAddress();
 
         // 2 x `execTransaction` calls of the same Safe
         const data = await getMockMultiSendCalldata([
-          { to: safe, data: execTransaction1, value: 0 },
-          { to: safe, data: execTransaction2, value: 0 },
+          { to: safe, data: execTransaction1, value: value1 },
+          { to: safe, data: execTransaction2, value: value2 },
+        ]);
+
+        const body = {
+          chainId: '5',
+          to: GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS,
+          data,
+          gasLimit: '123',
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(201, {
+            taskId: '123',
+          });
+      });
+
+      it('should return a 201 when the body is a valid multiSend call (including a rejection execTransaction call)', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
+          Promise.resolve({ taskId: '123' }),
+        );
+
+        const value1 = 1;
+        const execTransaction1 = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: value1,
+        });
+
+        // Rejection
+        const value2 = 0;
+        const execTransaction2 = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: value2,
+          data: '0x',
+        });
+
+        const safe = faker.finance.ethereumAddress();
+
+        // 2 x `execTransaction` calls of the same Safe
+        const data = await getMockMultiSendCalldata([
+          { to: safe, data: execTransaction1, value: value1 },
+          { to: safe, data: execTransaction2, value: value2 },
         ]);
 
         const body = {
@@ -250,12 +333,14 @@ describe('RelayController', () => {
           Promise.reject(),
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -275,12 +360,14 @@ describe('RelayController', () => {
           false,
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '1337', // Invalid chainId
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -298,8 +385,10 @@ describe('RelayController', () => {
           false,
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
@@ -336,17 +425,42 @@ describe('RelayController', () => {
           });
       });
 
+      it('should return a 422 error when the data is an execTransaction to self', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        const to = faker.finance.ethereumAddress();
+        const data = await getMockExecTransactionCalldata({ to, value: 1 });
+
+        const body = {
+          chainId: '5',
+          to,
+          data,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
       it('should return a 422 error when the data is an execTransaction to a non-Safe', async () => {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
           false, // Not a Safe
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -393,13 +507,61 @@ describe('RelayController', () => {
         const data = await getMockMultiSendCalldata([
           {
             to: contract,
-            value: 0,
+            value: 1,
             data: MOCK_UNSUPPORTED_CALLDATA,
           },
           {
             to: contract,
-            value: 0,
+            value: 1,
             data: MOCK_UNSUPPORTED_CALLDATA,
+          },
+        ]);
+
+        const body = {
+          chainId: '5',
+          to: GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS,
+          data,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 error when the data is a multiSend with execTransaction(s) to self', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        const selfSafe = faker.finance.ethereumAddress(); // Safe address
+
+        const value1 = 1;
+        const execTransaction1 = await getMockExecTransactionCalldata({
+          to: selfSafe,
+          value: value1,
+        });
+
+        const value2 = 1;
+        const execTransaction2 = await getMockExecTransactionCalldata({
+          to: selfSafe,
+          value: value2,
+        });
+
+        // 2 x `execTransaction` calls of same Safes
+        const data = await getMockMultiSendCalldata([
+          {
+            to: selfSafe,
+            data: execTransaction1,
+            value: value1,
+          },
+          {
+            to: selfSafe, // Safe address
+            data: execTransaction2,
+            value: value2,
           },
         ]);
 
@@ -423,14 +585,16 @@ describe('RelayController', () => {
           false,
         );
 
+        const value1 = 1;
         const execTransaction1 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value1,
         });
 
+        const value2 = 1;
         const execTransaction2 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value2,
         });
 
         // 2 x `execTransaction` calls of different Safes
@@ -438,12 +602,12 @@ describe('RelayController', () => {
           {
             to: faker.finance.ethereumAddress(), // Safe address
             data: execTransaction1,
-            value: 0,
+            value: value1,
           },
           {
             to: faker.finance.ethereumAddress(), // Safe address
             data: execTransaction2,
-            value: 0,
+            value: value2,
           },
         ]);
 
@@ -464,25 +628,27 @@ describe('RelayController', () => {
 
       it('should return a 422 error when the data is a multiSend from an invalid MultiSend deployment', async () => {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
-          false,
+          true,
         );
 
+        const value1 = 1;
         const execTransaction1 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value1,
         });
 
+        const value2 = 1;
         const execTransaction2 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value2,
         });
 
         const safe = faker.finance.ethereumAddress();
 
         // 2 x `execTransaction` calls of the same Safe
         const data = await getMockMultiSendCalldata([
-          { to: safe, data: execTransaction1, value: 0 },
-          { to: safe, data: execTransaction2, value: 0 },
+          { to: safe, data: execTransaction1, value: value1 },
+          { to: safe, data: execTransaction2, value: value2 },
         ]);
 
         const body = {
@@ -505,22 +671,24 @@ describe('RelayController', () => {
           false, // Not a Safe
         );
 
+        const value1 = 1;
         const execTransaction1 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value1,
         });
 
+        const value2 = 1;
         const execTransaction2 = await getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
-          value: 0,
+          value: value2,
         });
 
         const contract = faker.finance.ethereumAddress();
 
         // 2 x `execTransaction` calls of the same contract
         const data = await getMockMultiSendCalldata([
-          { to: contract, data: execTransaction1, value: 0 },
-          { to: contract, data: execTransaction2, value: 0 },
+          { to: contract, data: execTransaction1, value: value1 },
+          { to: contract, data: execTransaction2, value: value2 },
         ]);
 
         const body = {
@@ -601,12 +769,14 @@ describe('RelayController', () => {
           true,
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
           gasLimit: '1.23',
         };
@@ -627,12 +797,14 @@ describe('RelayController', () => {
           true,
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -663,12 +835,14 @@ describe('RelayController', () => {
           true,
         );
 
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
           chainId: '5',
-          to,
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -712,20 +886,21 @@ describe('RelayController', () => {
           true,
         );
 
-        const chainId = '5';
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
-          chainId,
-          to: to.toLowerCase(),
+          chainId: '5',
+          to: faker.finance.ethereumAddress().toLowerCase(),
           data,
         };
 
         await request(app.getHttpServer()).post('/v1/relay').send(body);
 
         await request(app.getHttpServer())
-          .get(`/v1/relay/${chainId}/${ethers.getAddress(to)}`)
+          .get(`/v1/relay/${body.chainId}/${ethers.getAddress(body.to)}`)
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
@@ -741,20 +916,21 @@ describe('RelayController', () => {
           true,
         );
 
-        const chainId = '5';
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
-          chainId,
-          to,
+          chainId: '5',
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
         await request(app.getHttpServer()).post('/v1/relay').send(body);
 
         await request(app.getHttpServer())
-          .get(`/v1/relay/${chainId}/${to}`)
+          .get(`/v1/relay/${body.chainId}/${body.to}`)
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
@@ -766,8 +942,6 @@ describe('RelayController', () => {
       });
 
       it('should increment all the owners of a createProxyWithNonce call', async () => {
-        const chainId = '5';
-
         const owners = [
           faker.finance.ethereumAddress(),
           faker.finance.ethereumAddress(),
@@ -780,7 +954,7 @@ describe('RelayController', () => {
         });
 
         const body = {
-          chainId,
+          chainId: '5',
           to: GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS,
           data,
         };
@@ -793,7 +967,7 @@ describe('RelayController', () => {
         await Promise.all(
           owners.map((owner) => {
             return request(app.getHttpServer())
-              .get(`/v1/relay/${chainId}/${owner}`)
+              .get(`/v1/relay/${body.chainId}/${owner}`)
               .expect(200)
               .expect((res) => {
                 expect(res.body).toStrictEqual({
@@ -811,13 +985,14 @@ describe('RelayController', () => {
           true,
         );
 
-        const chainId = '5';
-        const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 0 });
+        const data = await getMockExecTransactionCalldata({
+          to: faker.finance.ethereumAddress(),
+          value: 1,
+        });
 
         const body = {
-          chainId,
-          to,
+          chainId: '5',
+          to: faker.finance.ethereumAddress(),
           data,
         };
 
@@ -832,7 +1007,7 @@ describe('RelayController', () => {
         );
 
         await request(app.getHttpServer())
-          .get(`/v1/relay/${chainId}/${to}`)
+          .get(`/v1/relay/${body.chainId}/${body.to}`)
           .expect(200)
           .expect((res) => {
             expect(res.body).toStrictEqual({
