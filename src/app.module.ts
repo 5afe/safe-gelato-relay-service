@@ -6,7 +6,7 @@ import { ClsMiddleware, ClsModule } from 'nestjs-cls';
 import configuration from './config/configuration';
 import { NetworkModule } from './datasources/network/network.module';
 import { SafeInfoModule } from './datasources/safe-info/safe-info.module';
-import { LoggerMiddleware } from './middleware/logger.middleware';
+import { NotFoundLoggerMiddleware } from './middleware/not-found-logger.middleware';
 import { SponsorModule } from './datasources/sponsor/sponsor.module';
 import { RelayModule } from './routes/relay/relay.module';
 import { RequestScopedLoggingModule } from './routes/common/logging/logging.module';
@@ -46,7 +46,7 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       // The ClsMiddleware needs to be applied before the LoggerMiddleware
-      .apply(ClsMiddleware, LoggerMiddleware)
+      .apply(ClsMiddleware, NotFoundLoggerMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
