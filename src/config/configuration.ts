@@ -6,7 +6,7 @@ export default () => ({
   },
   applicationPort: process.env.APPLICATION_PORT || '3000',
   redis: {
-    host: process.env.REDIS_HOST || 'redis',
+    host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || '6379',
   },
   relay: {
