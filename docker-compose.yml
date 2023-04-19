@@ -1,12 +1,16 @@
 version: '3.5'
 
 services:
-
   web:
     build: .
     tty: true
     environment:
       APPLICATION_PORT: ${APPLICATION_PORT-3000}
+
+  redis:
+    image: redis:alpine
+    ports:
+      - ${REDIS_PORT:-6379}:6379
 
   nginx:
     image: nginx:1.21-alpine

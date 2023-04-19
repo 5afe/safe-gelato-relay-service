@@ -6,8 +6,8 @@ export default () => ({
   },
   applicationPort: process.env.APPLICATION_PORT || '3000',
   redis: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT ? +process.env.REDIS_PORT : undefined,
+    host: process.env.REDIS_HOST || 'redis',
+    port: process.env.REDIS_PORT || '6379',
   },
   relay: {
     ttl: process.env.THROTTLE_TTL ? +process.env.THROTTLE_TTL : 60 * 60, // 1 hour in seconds
