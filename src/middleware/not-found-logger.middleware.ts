@@ -4,6 +4,7 @@ import {
   ILoggingService,
   LoggingService,
 } from '../routes/common/logging/logging.interface';
+import { formatRouteLogMessage } from '../routes/common/logging/utils';
 
 /**
  * Middleware which logs requests that resulted in 404. Request side effects
@@ -20,14 +21,13 @@ export class NotFoundLoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
+    const startTimeMs: number = performance.now();
+
     res.on('finish', () => {
       const { statusCode } = res;
       if (statusCode === 404) {
         this.loggingService.info(
-          '[==>] %s %s %d',
-          req.method,
-          req.url,
-          res.statusCode,
+          formatRouteLogMessage(statusCode, req, startTimeMs),
         );
       }
     });
