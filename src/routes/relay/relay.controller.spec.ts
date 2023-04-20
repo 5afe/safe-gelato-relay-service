@@ -72,7 +72,6 @@ describe('RelayController', () => {
         RelayModule,
         TestSponsorModule,
         TestSafeInfoModule,
-        TestCacheModule,
         // Common
         ConfigModule.forRoot({
           isGlobal: true,
@@ -91,6 +90,7 @@ describe('RelayController', () => {
             }),
           ],
         }),
+        TestCacheModule,
         // Register the ClsModule and automatically mount the ClsMiddleware
         ClsModule.forRoot({
           global: true,

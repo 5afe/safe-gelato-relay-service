@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 
-import { MockCacheService } from './mock.cache.service';
+import { FakeCacheService } from './fake.cache.service';
 
-describe('MockCacheService', () => {
-  let cache: MockCacheService;
+describe('FakeCacheService', () => {
+  let cache: FakeCacheService;
 
   beforeEach(() => {
-    cache = new MockCacheService();
+    cache = new FakeCacheService();
   });
 
   it('sets and gets keys', async () => {

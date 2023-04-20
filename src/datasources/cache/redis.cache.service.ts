@@ -8,7 +8,7 @@ export class RedisCacheService implements ICacheService, OnModuleDestroy {
   constructor(@Inject('RedisClient') private readonly client: RedisClient) {}
 
   public async get(key: string): Promise<string | null> {
-    return await this.client.get(key);
+    return this.client.get(key);
   }
 
   public async set(key: string, value: string, ttl?: number): Promise<void> {

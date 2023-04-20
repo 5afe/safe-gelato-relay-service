@@ -2,7 +2,7 @@ import { OnModuleDestroy } from '@nestjs/common';
 
 import { ICacheService } from '../cache.service.interface';
 
-export class MockCacheService implements ICacheService, OnModuleDestroy {
+export class FakeCacheService implements ICacheService, OnModuleDestroy {
   private cache: Record<string, unknown> = {};
   private _timeoutIds: Array<NodeJS.Timeout> = [];
 

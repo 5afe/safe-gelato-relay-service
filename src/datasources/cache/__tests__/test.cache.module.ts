@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 
 import { CacheService } from '../cache.service.interface';
-import { MockCacheService } from './mock.cache.service';
+import { FakeCacheService } from './fake.cache.service';
 
-const mockCacheService = new MockCacheService();
+const mockCacheService = new FakeCacheService();
 
 @Global()
 @Module({

@@ -37,9 +37,27 @@ export class RelayLimitService {
     chainId: string,
     address: string,
   ): Promise<number> {
+    const DEFAULT_ATTEMPTS = 0;
+
     const key = this.generateKey(chainId, address);
     const attempts = await this.cacheService.get(key);
-    return typeof attempts === 'string' ? Number(attempts) : 0;
+
+    return typeof attempts === 'string'
+      ? // If attempts is not a number, return default
+        Number(attempts) || DEFAULT_ATTEMPTS
+      : DEFAULT_ATTEMPTS;
+  }
+
+  /**
+   * Set the number of attempts for an address in cache
+   */
+  private async setCachedAttempts(
+    chainId: string,
+    address: string,
+    attempts: number,
+  ): Promise<void> {
+    const key = this.generateKey(chainId, address);
+    return this.cacheService.set(key, attempts.toString(), this.ttl);
   }
 
   /**
@@ -80,15 +98,11 @@ export class RelayLimitService {
     chainId: string,
     addresses: Array<string>,
   ): Promise<void> {
-    const attempts = await Promise.all(
-      addresses.map((address) => this.getCachedAttempts(chainId, address)),
-    );
-
-    await Promise.all(
-      addresses.map((address, i) => {
-        const key = this.generateKey(chainId, address);
-        const incremented = attempts[i] + 1;
-        return this.cacheService.set(key, incremented.toString(), this.ttl);
+    await Promise.allSettled(
+      addresses.map(async (address) => {
+        const currentAttempts = await this.getCachedAttempts(chainId, address);
+        const incremented = currentAttempts + 1;
+        return this.setCachedAttempts(chainId, address, incremented);
       }),
     );
   }
