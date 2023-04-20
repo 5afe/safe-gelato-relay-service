@@ -52,8 +52,7 @@ export class RelayService {
       response = await this.sponsorService.sponsoredCall(sponsoredCallDto);
     } catch (err) {
       this.loggingService.error(
-        'Unexpected error from Gelato sponsored call: `%s`',
-        err,
+        `Unexpected error from Gelato sponsored call: ${err}`,
       );
       throw new HttpException('Relay failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
