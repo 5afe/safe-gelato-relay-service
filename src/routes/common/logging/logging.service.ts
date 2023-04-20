@@ -32,7 +32,7 @@ export class RequestScopedLoggingService implements ILoggingService {
     this.logger.log('debug', this.formatMessage(message));
   }
 
-  private formatMessage(message: string | unknown): unknown {
+  private formatMessage(message: string | unknown) {
     const requestId = this.cls.getId();
     const timestamp = Date.now();
     const dateAsString = new Date(timestamp).toISOString();

@@ -63,16 +63,15 @@ describe('RouteLoggerInterceptor tests', () => {
     await request(app.getHttpServer()).get('/test/server-error').expect(500);
 
     expect(mockLoggingService.error).toBeCalledTimes(1);
-    expect(mockLoggingService.error).toBeCalledWith(
-      expect.objectContaining({
-        client_ip: null,
-        detail: 'Some 500 error',
-        method: 'GET',
-        path: '/test/server-error',
-        route: '/test/server-error',
-        status_code: 500,
-      }),
-    );
+    expect(mockLoggingService.error).toBeCalledWith({
+      client_ip: null,
+      detail: 'Some 500 error',
+      method: 'GET',
+      path: '/test/server-error',
+      response_time_ms: expect.any(Number),
+      route: '/test/server-error',
+      status_code: 500,
+    });
     expect(mockLoggingService.info).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
     expect(mockLoggingService.warn).not.toBeCalled();
@@ -82,16 +81,15 @@ describe('RouteLoggerInterceptor tests', () => {
     await request(app.getHttpServer()).get('/test/client-error').expect(405);
 
     expect(mockLoggingService.info).toBeCalledTimes(1);
-    expect(mockLoggingService.info).toBeCalledWith(
-      expect.objectContaining({
-        client_ip: null,
-        detail: 'Some 400 error',
-        method: 'GET',
-        path: '/test/client-error',
-        route: '/test/client-error',
-        status_code: 405,
-      }),
-    );
+    expect(mockLoggingService.info).toBeCalledWith({
+      client_ip: null,
+      detail: 'Some 400 error',
+      method: 'GET',
+      path: '/test/client-error',
+      response_time_ms: expect.any(Number),
+      route: '/test/client-error',
+      status_code: 405,
+    });
     expect(mockLoggingService.error).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
     expect(mockLoggingService.warn).not.toBeCalled();
@@ -101,16 +99,15 @@ describe('RouteLoggerInterceptor tests', () => {
     await request(app.getHttpServer()).get('/test/success').expect(200);
 
     expect(mockLoggingService.info).toBeCalledTimes(1);
-    expect(mockLoggingService.info).toBeCalledWith(
-      expect.objectContaining({
-        client_ip: null,
-        detail: null,
-        method: 'GET',
-        path: '/test/success',
-        route: '/test/success',
-        status_code: 200,
-      }),
-    );
+    expect(mockLoggingService.info).toBeCalledWith({
+      client_ip: null,
+      detail: null,
+      method: 'GET',
+      path: '/test/success',
+      response_time_ms: expect.any(Number),
+      route: '/test/success',
+      status_code: 200,
+    });
     expect(mockLoggingService.error).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
     expect(mockLoggingService.warn).not.toBeCalled();
@@ -122,16 +119,15 @@ describe('RouteLoggerInterceptor tests', () => {
       .expect(500);
 
     expect(mockLoggingService.error).toBeCalledTimes(1);
-    expect(mockLoggingService.error).toBeCalledWith(
-      expect.objectContaining({
-        client_ip: null,
-        detail: 'Some random error',
-        method: 'GET',
-        path: '/test/server-error-non-http',
-        route: '/test/server-error-non-http',
-        status_code: 500,
-      }),
-    );
+    expect(mockLoggingService.error).toBeCalledWith({
+      client_ip: null,
+      detail: 'Some random error',
+      method: 'GET',
+      path: '/test/server-error-non-http',
+      response_time_ms: expect.any(Number),
+      route: '/test/server-error-non-http',
+      status_code: 500,
+    });
     expect(mockLoggingService.info).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
     expect(mockLoggingService.warn).not.toBeCalled();

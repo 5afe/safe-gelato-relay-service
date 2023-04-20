@@ -5,7 +5,7 @@ export function formatRouteLogMessage(
   request: any,
   startTimeMs: number,
   detail?: string,
-): unknown {
+) {
   const clientIp = request.header(HEADER_IP_ADDRESS) ?? null;
 
   return {

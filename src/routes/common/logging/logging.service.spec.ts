@@ -1,6 +1,7 @@
 import { ClsService } from 'nestjs-cls';
 import { RequestScopedLoggingService } from './logging.service';
 import * as winston from 'winston';
+import { faker } from '@faker-js/faker';
 
 const mockClsService = {
   getId: jest.fn(() => '123-456'),
@@ -11,11 +12,13 @@ const mockLogger = {
 } as unknown as winston.Logger;
 
 describe('RequestScopedLoggingService', () => {
+  const systemTime: Date = faker.date.recent();
+
   let loggingService: RequestScopedLoggingService;
 
   beforeAll(() => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2023-01-01'));
+    jest.setSystemTime(systemTime);
   });
 
   beforeEach(() => {
@@ -35,7 +38,7 @@ describe('RequestScopedLoggingService', () => {
     expect(mockLogger.log).toHaveBeenCalledWith('info', {
       message: 'Some message',
       request_id: '123-456',
-      timestamp: new Date('2023-01-01').toISOString(),
+      timestamp: systemTime.toISOString(),
     });
   });
 
@@ -48,7 +51,7 @@ describe('RequestScopedLoggingService', () => {
     expect(mockLogger.log).toHaveBeenCalledWith('error', {
       message: 'Some message',
       request_id: '123-456',
-      timestamp: new Date('2023-01-01').toISOString(),
+      timestamp: systemTime.toISOString(),
     });
   });
 
@@ -61,7 +64,7 @@ describe('RequestScopedLoggingService', () => {
     expect(mockLogger.log).toHaveBeenCalledWith('warn', {
       message: 'Some message',
       request_id: '123-456',
-      timestamp: new Date('2023-01-01').toISOString(),
+      timestamp: systemTime.toISOString(),
     });
   });
 
@@ -74,7 +77,7 @@ describe('RequestScopedLoggingService', () => {
     expect(mockLogger.log).toHaveBeenCalledWith('debug', {
       message: 'Some message',
       request_id: '123-456',
-      timestamp: new Date('2023-01-01').toISOString(),
+      timestamp: systemTime.toISOString(),
     });
   });
 });
