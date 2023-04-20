@@ -21,7 +21,7 @@ async function redisClientFactory(
   });
 
   client.on('error', (err) => {
-    loggingService.error('Redis client error: `%s`', err);
+    loggingService.error(`Redis client error: ${err}`);
   });
   client.connect();
 
