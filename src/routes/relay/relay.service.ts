@@ -29,8 +29,13 @@ export class RelayService {
   ): Promise<RelayResponse> {
     const { chainId, limitAddresses } = sponsoredCallDto;
 
+    const canRelay = await this.relayLimitService.canRelay(
+      chainId,
+      limitAddresses,
+    );
+
     // Check rate limit is not reached
-    if (!this.relayLimitService.canRelay(chainId, limitAddresses)) {
+    if (!canRelay) {
       this.loggingService.error(
         'Transaction can not be relayed because the address relay limit was reached.',
       );
@@ -47,8 +52,7 @@ export class RelayService {
       response = await this.sponsorService.sponsoredCall(sponsoredCallDto);
     } catch (err) {
       this.loggingService.error(
-        'Unexpected error from Gelato sponsored call: `%s`',
-        err,
+        `Unexpected error from Gelato sponsored call: ${err}`,
       );
       throw new HttpException('Relay failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }

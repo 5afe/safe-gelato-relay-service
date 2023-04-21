@@ -1,24 +1,24 @@
 import { ClsService } from 'nestjs-cls';
 import { RequestScopedLoggingService } from './logging.service';
 import * as winston from 'winston';
+import { faker } from '@faker-js/faker';
 
 const mockClsService = {
   getId: jest.fn(() => '123-456'),
 } as unknown as ClsService;
 
 const mockLogger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
+  log: jest.fn(),
 } as unknown as winston.Logger;
 
 describe('RequestScopedLoggingService', () => {
+  const systemTime: Date = faker.date.recent();
+
   let loggingService: RequestScopedLoggingService;
 
   beforeAll(() => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date('2023-01-01'));
+    jest.setSystemTime(systemTime);
   });
 
   beforeEach(() => {
@@ -34,10 +34,12 @@ describe('RequestScopedLoggingService', () => {
 
     loggingService.info(message);
 
-    expect(mockLogger.info).toHaveBeenCalledTimes(1);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `${new Date('2023-01-01').toISOString()} 123-456 - ${message}`,
-    );
+    expect(mockLogger.log).toHaveBeenCalledTimes(1);
+    expect(mockLogger.log).toHaveBeenCalledWith('info', {
+      message: 'Some message',
+      request_id: '123-456',
+      timestamp: systemTime.toISOString(),
+    });
   });
 
   it('error', () => {
@@ -45,10 +47,12 @@ describe('RequestScopedLoggingService', () => {
 
     loggingService.error(message);
 
-    expect(mockLogger.error).toHaveBeenCalledTimes(1);
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      `${new Date('2023-01-01').toISOString()} 123-456 - ${message}`,
-    );
+    expect(mockLogger.log).toHaveBeenCalledTimes(1);
+    expect(mockLogger.log).toHaveBeenCalledWith('error', {
+      message: 'Some message',
+      request_id: '123-456',
+      timestamp: systemTime.toISOString(),
+    });
   });
 
   it('warn', () => {
@@ -56,10 +60,12 @@ describe('RequestScopedLoggingService', () => {
 
     loggingService.warn(message);
 
-    expect(mockLogger.warn).toHaveBeenCalledTimes(1);
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      `${new Date('2023-01-01').toISOString()} 123-456 - ${message}`,
-    );
+    expect(mockLogger.log).toHaveBeenCalledTimes(1);
+    expect(mockLogger.log).toHaveBeenCalledWith('warn', {
+      message: 'Some message',
+      request_id: '123-456',
+      timestamp: systemTime.toISOString(),
+    });
   });
 
   it('debug', () => {
@@ -67,9 +73,11 @@ describe('RequestScopedLoggingService', () => {
 
     loggingService.debug(message);
 
-    expect(mockLogger.debug).toHaveBeenCalledTimes(1);
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      `${new Date('2023-01-01').toISOString()} 123-456 - ${message}`,
-    );
+    expect(mockLogger.log).toHaveBeenCalledTimes(1);
+    expect(mockLogger.log).toHaveBeenCalledWith('debug', {
+      message: 'Some message',
+      request_id: '123-456',
+      timestamp: systemTime.toISOString(),
+    });
   });
 });

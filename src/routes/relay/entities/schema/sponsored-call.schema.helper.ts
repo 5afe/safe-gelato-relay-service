@@ -1,10 +1,11 @@
+import { ethers } from 'ethers';
 import {
   getMultiSendCallOnlyDeployment,
   getProxyFactoryDeployment,
   getSafeL2SingletonDeployment,
   getSafeSingletonDeployment,
 } from '@safe-global/safe-deployments';
-import { ethers } from 'ethers';
+import type { SingletonDeployment } from '@safe-global/safe-deployments';
 
 // ======================== General ========================
 
@@ -19,6 +20,45 @@ const isCalldata = (data: string, signature: string): boolean => {
   return data.startsWith(signatureId);
 };
 
+/**
+ * Checks whether data is a call to any method in the specified singleton
+ * @param singletonDeployment singleton deployment
+ * @param data call data
+ * @returns boolean
+ */
+const isSingletonCalldata = (
+  singletonDeployment: SingletonDeployment,
+  data: string,
+): boolean => {
+  const deploymentInterface = new ethers.Interface(singletonDeployment.abi);
+
+  return deploymentInterface.fragments.some((fragment) => {
+    if (ethers.FunctionFragment.isFunction(fragment)) {
+      const signature = fragment.format();
+      return isCalldata(data, signature);
+    }
+  });
+};
+
+/**
+ * Checks whether data is a call to any method in the Safe singleton
+ * @param data call data
+ * @returns boolean
+ */
+export const isSafeCalldata = (data: string): boolean => {
+  const safeL1Deployment = getSafeSingletonDeployment();
+  const safeL2Deployment = getSafeL2SingletonDeployment();
+
+  if (!safeL1Deployment || !safeL2Deployment) {
+    return false;
+  }
+
+  return (
+    isSingletonCalldata(safeL1Deployment, data) ||
+    isSingletonCalldata(safeL2Deployment, data)
+  );
+};
+
 // ==================== execTransaction ====================
 
 /**
@@ -26,11 +66,54 @@ const isCalldata = (data: string, signature: string): boolean => {
  * @param data call data
  * @returns boolean
  */
-export const isExecTransactionCalldata = (data: string): boolean => {
+const isExecTransactionCalldata = (data: string): boolean => {
   const EXEC_TX_SIGNATURE =
     'execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)';
 
   return isCalldata(data, EXEC_TX_SIGNATURE);
+};
+
+/**
+ * Validates that the call `data` is `execTransaction` and the `to` address is not self
+ * other than Safe-specific ones such as owner management or setting the fallback handler
+ *
+ * @param to recipient address
+ * @param data execTransaction call data
+ * @returns whether the call is valid
+ */
+export const isValidExecTransactionCall = (
+  to: string,
+  data: string,
+): boolean => {
+  const EXEC_TX_FRAGMENT =
+    'function execTransaction(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes memory signatures)';
+
+  if (!isExecTransactionCalldata(data)) {
+    return false;
+  }
+
+  const execTxInterface = new ethers.Interface([EXEC_TX_FRAGMENT]);
+
+  const [txTo, txValue, txData] = execTxInterface.decodeFunctionData(
+    EXEC_TX_FRAGMENT,
+    data,
+  );
+
+  // Transaction to another party
+  const toSelf = to === txTo;
+  if (!toSelf) {
+    return true;
+  }
+
+  // `execTransaction` to self
+  const hasValue = Number(txValue) > 0;
+  if (hasValue) {
+    return false;
+  }
+
+  // Safe-specific transaction, e.g. `setFallbackHandler`
+  const isCancellation = txData === '0x';
+  return isCancellation || isSafeCalldata(txData);
 };
 
 // ======================= multiSend =======================
@@ -111,7 +194,7 @@ const decodeMultiSendTxs = (
 };
 
 /**
- * Extracts the common `to` address from a multisend transaction
+ * Extracts the common `to` address from a multisend transaction if it is not a self-transaction
  *
  * @param data multisend call data
  * @returns the `to` address of all batched transactions contained in `data` or `undefined` if the transactions do not share one common `to` address.
@@ -123,11 +206,11 @@ export const getSafeAddressFromMultiSend = (data: string): string | null => {
     return null;
   }
 
-  const isEveryTxExecTx = individualTxs.every(({ data }) => {
-    return isExecTransactionCalldata(data);
+  const isEveryTxValidExecTx = individualTxs.every(({ to, data }) => {
+    return isValidExecTransactionCall(to, data);
   });
 
-  if (!isEveryTxExecTx) {
+  if (!isEveryTxValidExecTx) {
     return null;
   }
 

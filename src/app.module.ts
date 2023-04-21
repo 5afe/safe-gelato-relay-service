@@ -6,12 +6,13 @@ import { ClsMiddleware, ClsModule } from 'nestjs-cls';
 import configuration from './config/configuration';
 import { NetworkModule } from './datasources/network/network.module';
 import { SafeInfoModule } from './datasources/safe-info/safe-info.module';
-import { LoggerMiddleware } from './middleware/logger.middleware';
+import { NotFoundLoggerMiddleware } from './middleware/not-found-logger.middleware';
 import { SponsorModule } from './datasources/sponsor/sponsor.module';
 import { RelayModule } from './routes/relay/relay.module';
 import { RequestScopedLoggingModule } from './routes/common/logging/logging.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RouteLoggerInterceptor } from './routes/common/interceptors/route-logger.interceptor';
+import { CacheModule } from './datasources/cache/cache.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RouteLoggerInterceptor } from './routes/common/interceptors/route-logge
       isGlobal: true,
       load: [configuration],
     }),
+    CacheModule,
     NetworkModule,
     // Module for storing and reading from the async local storage
     ClsModule.forRoot({
@@ -46,7 +48,7 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       // The ClsMiddleware needs to be applied before the LoggerMiddleware
-      .apply(ClsMiddleware, LoggerMiddleware)
+      .apply(ClsMiddleware, NotFoundLoggerMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

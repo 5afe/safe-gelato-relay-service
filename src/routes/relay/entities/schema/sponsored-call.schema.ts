@@ -4,7 +4,7 @@ import { AddressSchema } from '../../../common/schema/address.schema';
 import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
   isValidMultiSendCall,
-  isExecTransactionCalldata,
+  isValidExecTransactionCall,
   getSafeAddressFromMultiSend,
   isValidCreateProxyWithNonceCall,
   getOwnersFromCreateProxyWithNonce,
@@ -31,7 +31,7 @@ export const SponsoredCallSchema = z
     };
 
     // `execTransaction`
-    if (isExecTransactionCalldata(data)) {
+    if (isValidExecTransactionCall(to, data)) {
       return {
         ...values,
         limitAddresses: [to],
@@ -61,7 +61,7 @@ export const SponsoredCallSchema = z
     }
 
     setError(
-      'Only Safe creation or (batched) Safe transactions can be relayed',
+      'Only Safe creation or (batched) Safe transactions not to self can be relayed',
     );
     return z.NEVER;
   });
