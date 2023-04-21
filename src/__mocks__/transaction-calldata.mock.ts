@@ -30,7 +30,16 @@ function getPrevalidatedSignature(address: string): string {
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 }
 
-export async function getMockExecTransactionCalldata({
+function encodeSafeFunctionData(
+  ...args: Parameters<
+    InstanceType<typeof ethers.Interface>['encodeFunctionData']
+  >
+): string {
+  const safeInterface = getSafeSingletonInterface();
+  return safeInterface.encodeFunctionData(...args);
+}
+
+export function getMockExecTransactionCalldata({
   to,
   value,
   data = '0x',
@@ -52,10 +61,8 @@ export async function getMockExecTransactionCalldata({
   gasToken?: string;
   refundReceiver?: string;
   signatures?: string;
-}): Promise<string> {
-  const safeInterface = getSafeSingletonInterface();
-
-  return safeInterface.encodeFunctionData('execTransaction', [
+}): string {
+  return encodeSafeFunctionData('execTransaction', [
     to,
     value,
     data,
@@ -66,6 +73,56 @@ export async function getMockExecTransactionCalldata({
     gasToken,
     refundReceiver,
     signatures,
+  ]);
+}
+
+export function getMockAddOwnerWithThresholdCalldata() {
+  return encodeSafeFunctionData('addOwnerWithThreshold', [
+    faker.finance.ethereumAddress(),
+    faker.datatype.number(),
+  ]);
+}
+
+export function getMockChangeThresholdCalldata() {
+  return encodeSafeFunctionData('changeThreshold', [faker.datatype.number()]);
+}
+
+export function getMockDisableModuleCalldata() {
+  return encodeSafeFunctionData('disableModule', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockEnableModuleCalldata() {
+  return encodeSafeFunctionData('enableModule', [
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockRemoveOwnerCallData() {
+  return encodeSafeFunctionData('removeOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    1,
+  ]);
+}
+
+export function getMockSetFallbackHandlerCalldata() {
+  return encodeSafeFunctionData('setFallbackHandler', [
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockSetGuardCalldata() {
+  return encodeSafeFunctionData('setGuard', [faker.finance.ethereumAddress()]);
+}
+
+export function getMockSwapOwnerCallData() {
+  return encodeSafeFunctionData('swapOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
   ]);
 }
 
@@ -81,13 +138,13 @@ function getMultiSendCallOnlyInterface(
   return new ethers.Interface(multiSendDeployment.abi);
 }
 
-export async function getMockMultiSendCalldata(
+export function getMockMultiSendCalldata(
   transactions: Array<{
     to: string;
     value: number;
     data: string;
   }>,
-): Promise<string> {
+): string {
   // MultiSendCallOnly
   const OPERATION = 0;
 
@@ -105,7 +162,7 @@ export async function getMockMultiSendCalldata(
   ]);
 }
 
-async function getMockSetupCalldata({
+function getMockSetupCalldata({
   owners,
   threshold,
   to = faker.finance.ethereumAddress(),
@@ -123,10 +180,8 @@ async function getMockSetupCalldata({
   paymentToken?: string;
   payment?: number;
   paymentReceiver?: string;
-}): Promise<string> {
-  const safeInterface = getSafeSingletonInterface();
-
-  return safeInterface.encodeFunctionData('setup', [
+}): string {
+  return encodeSafeFunctionData('setup', [
     owners,
     threshold,
     to,
@@ -148,7 +203,7 @@ function getProxyFactoryInterface(filter?: DeploymentFilter): ethers.Interface {
   return new ethers.Interface(deployment.abi);
 }
 
-export async function getMockCreateProxyWithNonceCalldata({
+export function getMockCreateProxyWithNonceCalldata({
   owners,
   threshold,
   singleton,
@@ -158,10 +213,10 @@ export async function getMockCreateProxyWithNonceCalldata({
   threshold: number;
   singleton: string;
   saltNonce?: number;
-}): Promise<string> {
+}): string {
   const proxyFactoryInterface = getProxyFactoryInterface();
 
-  const initializer = await getMockSetupCalldata({ owners, threshold });
+  const initializer = getMockSetupCalldata({ owners, threshold });
 
   return proxyFactoryInterface.encodeFunctionData('createProxyWithNonce', [
     singleton,

@@ -1,10 +1,11 @@
+import { ethers } from 'ethers';
 import {
   getMultiSendCallOnlyDeployment,
   getProxyFactoryDeployment,
   getSafeL2SingletonDeployment,
   getSafeSingletonDeployment,
 } from '@safe-global/safe-deployments';
-import { ethers } from 'ethers';
+import type { SingletonDeployment } from '@safe-global/safe-deployments';
 
 // ======================== General ========================
 
@@ -17,6 +18,45 @@ const isCalldata = (data: string, signature: string): boolean => {
   const signatureId = ethers.id(signature).slice(0, 10);
 
   return data.startsWith(signatureId);
+};
+
+/**
+ * Checks whether data is a call to any method in the specified singleton
+ * @param singletonDeployment singleton deployment
+ * @param data call data
+ * @returns boolean
+ */
+const isSingletonCalldata = (
+  singletonDeployment: SingletonDeployment,
+  data: string,
+): boolean => {
+  const deploymentInterface = new ethers.Interface(singletonDeployment.abi);
+
+  return deploymentInterface.fragments.some((fragment) => {
+    if (ethers.FunctionFragment.isFunction(fragment)) {
+      const signature = fragment.format();
+      return isCalldata(data, signature);
+    }
+  });
+};
+
+/**
+ * Checks whether data is a call to any method in the Safe singleton
+ * @param data call data
+ * @returns boolean
+ */
+export const isSafeCalldata = (data: string): boolean => {
+  const safeL1Deployment = getSafeSingletonDeployment();
+  const safeL2Deployment = getSafeL2SingletonDeployment();
+
+  if (!safeL1Deployment || !safeL2Deployment) {
+    return false;
+  }
+
+  return (
+    isSingletonCalldata(safeL1Deployment, data) ||
+    isSingletonCalldata(safeL2Deployment, data)
+  );
 };
 
 // ==================== execTransaction ====================
@@ -34,7 +74,8 @@ const isExecTransactionCalldata = (data: string): boolean => {
 };
 
 /**
- * Validates that the call `data` is `execTransaction` and the `to` address is not self, other than rejections
+ * Validates that the call `data` is `execTransaction` and the `to` address is not self
+ * other than Safe-specific ones such as owner management or setting the fallback handler
  *
  * @param to recipient address
  * @param data execTransaction call data
@@ -58,10 +99,21 @@ export const isValidExecTransactionCall = (
     data,
   );
 
+  // Transaction to another party
   const toSelf = to === txTo;
-  const isRejectionTx = toSelf && Number(txValue) === 0 && txData === '0x';
+  if (!toSelf) {
+    return true;
+  }
 
-  return !toSelf || isRejectionTx;
+  // `execTransaction` to self
+  const hasValue = Number(txValue) > 0;
+  if (hasValue) {
+    return false;
+  }
+
+  // Safe-specific transaction, e.g. `setFallbackHandler`
+  const isCancellation = txData === '0x';
+  return isCancellation || isSafeCalldata(txData);
 };
 
 // ======================= multiSend =======================
