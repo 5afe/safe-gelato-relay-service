@@ -15,9 +15,17 @@ import { ethers } from 'ethers';
 import { RelayModule } from './relay.module';
 import { SupportedChainId } from '../../config/constants';
 import {
+  getMockAddOwnerWithThresholdCalldata,
+  getMockChangeThresholdCalldata,
+  getMockDisableModuleCalldata,
+  getMockEnableModuleCalldata,
   getMockCreateProxyWithNonceCalldata,
   getMockExecTransactionCalldata,
   getMockMultiSendCalldata,
+  getMockSetFallbackHandlerCalldata,
+  getMockRemoveOwnerCallData,
+  getMockSetGuardCalldata,
+  getMockSwapOwnerCallData,
   MOCK_UNSUPPORTED_CALLDATA,
 } from '../../__mocks__/transaction-calldata.mock';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
@@ -114,7 +122,7 @@ describe('RelayController', () => {
 
   describe('/v1/relay (POST)', () => {
     describe('Relayer', () => {
-      it('should return a 201 when the body is a valid execTransaction call', async () => {
+      async function testSuccessfulSafeTx(to: string, data: string) {
         (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
           true,
         );
@@ -122,44 +130,6 @@ describe('RelayController', () => {
         (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
           Promise.resolve({ taskId: '123' }),
         );
-
-        const data = await getMockExecTransactionCalldata({
-          to: faker.finance.ethereumAddress(),
-          value: 1,
-        });
-
-        const body = {
-          chainId: '5',
-          to: faker.finance.ethereumAddress(),
-          data,
-          gasLimit: '123',
-        };
-
-        await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201, {
-            taskId: '123',
-          });
-      });
-
-      it('should return a 201 when the body is a rejection execTransaction call', async () => {
-        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
-          true,
-        );
-
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.resolve({ taskId: '123' }),
-        );
-
-        const to = faker.finance.ethereumAddress();
-
-        // Rejection
-        const data = await getMockExecTransactionCalldata({
-          to,
-          value: 0,
-          data: '0x',
-        });
 
         const body = {
           chainId: '5',
@@ -174,154 +144,461 @@ describe('RelayController', () => {
           .expect(201, {
             taskId: '123',
           });
+      }
+
+      describe('execTransaction', () => {
+        it('should return a 201 when the body is a valid execTransaction call', async () => {
+          const data = await getMockExecTransactionCalldata({
+            // execTransaction to different party of value
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+            data: '0x',
+          });
+
+          await testSuccessfulSafeTx(faker.finance.ethereumAddress(), data);
+        });
+
+        it('should return a 201 when the body is a cancellation execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // Cancellation transactions have a value of 0 and empty data
+            value: 0,
+            data: '0x',
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an addOwnerWithThreshold execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // addOwnerWithThreshold transactions have a value of 0
+            value: 0,
+            data: getMockAddOwnerWithThresholdCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an changeThreshold execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // changeThreshold transactions have a value of 0
+            value: 0,
+            data: getMockChangeThresholdCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an disableModule execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // disableModule transactions have a value of 0
+            value: 0,
+            data: getMockDisableModuleCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an enableModule execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // enableModule transactions have a value of 0
+            value: 0,
+            data: getMockEnableModuleCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an removeOwner execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // removeOwner transactions have a value of 0
+            value: 0,
+            data: getMockRemoveOwnerCallData(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an setFallbackHandler execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            // setFallbackHandler transactions have a value of 0
+            value: 0,
+            data: getMockSetFallbackHandlerCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an setGuard execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // setGuard transactions have a value of 0
+            value: 0,
+            data: getMockSetGuardCalldata(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
+
+        it('should return a 201 when the body is an swapOwner execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = await getMockExecTransactionCalldata({
+            to: safe,
+            // swapOwner transactions have a value of 0
+            value: 0,
+            data: getMockSwapOwnerCallData(),
+          });
+
+          await testSuccessfulSafeTx(safe, data);
+        });
       });
 
-      it('should return a 201 when the body is a valid multiSend call', async () => {
-        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
-          true,
-        );
-
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.resolve({ taskId: '123' }),
-        );
-
-        const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
-          to: faker.finance.ethereumAddress(),
-          value: 1,
-        });
-
-        const value2 = 1;
-        const execTransaction2 = await getMockExecTransactionCalldata({
-          to: faker.finance.ethereumAddress(),
-          value: value2,
-        });
-
-        const safe = faker.finance.ethereumAddress();
-
-        // 2 x `execTransaction` calls of the same Safe
-        const data = await getMockMultiSendCalldata([
-          { to: safe, data: execTransaction1, value: value1 },
-          { to: safe, data: execTransaction2, value: value2 },
-        ]);
-
-        const body = {
-          chainId: '5',
-          to: GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS,
-          data,
-          gasLimit: '123',
-        };
-
-        await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201, {
-            taskId: '123',
+      describe('multiSend', () => {
+        it('should return a 201 when the body is a valid multiSend call, containing execTransactions', async () => {
+          // execTransactions to different parties of value
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
           });
+
+          const value2 = 1;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a cancellation execTransaction call', async () => {
+          // execTransaction to different party of value
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // Cancellation transactions have a value of 0 and empty data
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: '0x',
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing an addOwnerWithThreshold execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // addOwnerWithThreshold transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockAddOwnerWithThresholdCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a changeThreshold execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // changeThreshold transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockChangeThresholdCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a disableModule execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // disableModule transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockDisableModuleCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a enableModule execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // enableModule transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockEnableModuleCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a removeOwner execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // removeOwner transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockRemoveOwnerCallData(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a setFallbackHandler execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // setFallbackHandler transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockSetFallbackHandlerCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a setGuard execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // setGuard transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockSetGuardCalldata(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing a swapOwner execTransaction call', async () => {
+          const value1 = 1;
+          const execTransaction1 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // swapOwner transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = await getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockSwapOwnerCallData(),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
       });
 
-      it('should return a 201 when the body is a valid multiSend call (including a rejection execTransaction call)', async () => {
-        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
-          true,
-        );
+      describe('createProxyWithNonce', () => {
+        // We do not use test201Transaction in these tests as isSafeContract should
+        // not be mocked as it is never called in the createProxyWithNonce flow
 
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.resolve({ taskId: '123' }),
-        );
+        it('should return a 201 when the body is a valid L1 createProxyWithNonce call', async () => {
+          (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(
+            () => Promise.resolve({ taskId: '123' }),
+          );
 
-        const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
-          to: faker.finance.ethereumAddress(),
-          value: value1,
-        });
-
-        // Rejection
-        const value2 = 0;
-        const execTransaction2 = await getMockExecTransactionCalldata({
-          to: faker.finance.ethereumAddress(),
-          value: value2,
-          data: '0x',
-        });
-
-        const safe = faker.finance.ethereumAddress();
-
-        // 2 x `execTransaction` calls of the same Safe
-        const data = await getMockMultiSendCalldata([
-          { to: safe, data: execTransaction1, value: value1 },
-          { to: safe, data: execTransaction2, value: value2 },
-        ]);
-
-        const body = {
-          chainId: '5',
-          to: GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS,
-          data,
-          gasLimit: '123',
-        };
-
-        await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201, {
-            taskId: '123',
+          const data = await getMockCreateProxyWithNonceCalldata({
+            owners: [
+              faker.finance.ethereumAddress(),
+              faker.finance.ethereumAddress(),
+            ],
+            threshold: 1,
+            singleton: GOERLI_L1_SINGLETON_DEPLOYMENT_ADDRESS,
           });
-      });
 
-      it('should return a 201 when the body is a valid L1 createProxyWithNonce call', async () => {
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.resolve({ taskId: '123' }),
-        );
+          const body = {
+            chainId: '5',
+            to: GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS,
+            data,
+            gasLimit: '123',
+          };
 
-        const data = await getMockCreateProxyWithNonceCalldata({
-          owners: [
-            faker.finance.ethereumAddress(),
-            faker.finance.ethereumAddress(),
-          ],
-          threshold: 1,
-          singleton: GOERLI_L1_SINGLETON_DEPLOYMENT_ADDRESS,
+          await request(app.getHttpServer())
+            .post('/v1/relay')
+            .send(body)
+            .expect(201, {
+              taskId: '123',
+            });
         });
 
-        const body = {
-          chainId: '5',
-          to: GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS,
-          data,
-          gasLimit: '123',
-        };
+        it('should return a 201 when the body is a valid L2 createProxyWithNonce call', async () => {
+          (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(
+            () => Promise.resolve({ taskId: '123' }),
+          );
 
-        await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201, {
-            taskId: '123',
+          const data = await getMockCreateProxyWithNonceCalldata({
+            owners: [
+              faker.finance.ethereumAddress(),
+              faker.finance.ethereumAddress(),
+            ],
+            threshold: 1,
+            singleton: GOERLI_L2_SINGLETON_DEPLOYMENT_ADDRESS,
           });
-      });
 
-      it('should return a 201 when the body is a valid L2 createProxyWithNonce call', async () => {
-        (mockSponsorService.sponsoredCall as jest.Mock).mockImplementation(() =>
-          Promise.resolve({ taskId: '123' }),
-        );
+          const body = {
+            chainId: '5',
+            to: GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS,
+            data,
+            gasLimit: '123',
+          };
 
-        const data = await getMockCreateProxyWithNonceCalldata({
-          owners: [
-            faker.finance.ethereumAddress(),
-            faker.finance.ethereumAddress(),
-          ],
-          threshold: 1,
-          singleton: GOERLI_L2_SINGLETON_DEPLOYMENT_ADDRESS,
+          await request(app.getHttpServer())
+            .post('/v1/relay')
+            .send(body)
+            .expect(201, {
+              taskId: '123',
+            });
         });
-
-        const body = {
-          chainId: '5',
-          to: GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS,
-          data,
-          gasLimit: '123',
-        };
-
-        await request(app.getHttpServer())
-          .post('/v1/relay')
-          .send(body)
-          .expect(201, {
-            taskId: '123',
-          });
       });
 
       it('should return a 500 if the relayer throws', async () => {
@@ -478,7 +755,6 @@ describe('RelayController', () => {
           false,
         );
 
-        // 2 x unknown calls
         const data = await getMockMultiSendCalldata([]);
 
         const body = {

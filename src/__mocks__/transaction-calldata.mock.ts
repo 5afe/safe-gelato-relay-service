@@ -30,6 +30,15 @@ function getPrevalidatedSignature(address: string): string {
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 }
 
+function encodeSafeFunctionData(
+  ...args: Parameters<
+    InstanceType<typeof ethers.Interface>['encodeFunctionData']
+  >
+): string {
+  const safeInterface = getSafeSingletonInterface();
+  return safeInterface.encodeFunctionData(...args);
+}
+
 export async function getMockExecTransactionCalldata({
   to,
   value,
@@ -53,9 +62,7 @@ export async function getMockExecTransactionCalldata({
   refundReceiver?: string;
   signatures?: string;
 }): Promise<string> {
-  const safeInterface = getSafeSingletonInterface();
-
-  return safeInterface.encodeFunctionData('execTransaction', [
+  return encodeSafeFunctionData('execTransaction', [
     to,
     value,
     data,
@@ -66,6 +73,56 @@ export async function getMockExecTransactionCalldata({
     gasToken,
     refundReceiver,
     signatures,
+  ]);
+}
+
+export function getMockAddOwnerWithThresholdCalldata() {
+  return encodeSafeFunctionData('addOwnerWithThreshold', [
+    faker.finance.ethereumAddress(),
+    faker.datatype.number(),
+  ]);
+}
+
+export function getMockChangeThresholdCalldata() {
+  return encodeSafeFunctionData('changeThreshold', [faker.datatype.number()]);
+}
+
+export function getMockDisableModuleCalldata() {
+  return encodeSafeFunctionData('disableModule', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockEnableModuleCalldata() {
+  return encodeSafeFunctionData('enableModule', [
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockRemoveOwnerCallData() {
+  return encodeSafeFunctionData('removeOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    1,
+  ]);
+}
+
+export function getMockSetFallbackHandlerCalldata() {
+  return encodeSafeFunctionData('setFallbackHandler', [
+    faker.finance.ethereumAddress(),
+  ]);
+}
+
+export function getMockSetGuardCalldata() {
+  return encodeSafeFunctionData('setGuard', [faker.finance.ethereumAddress()]);
+}
+
+export function getMockSwapOwnerCallData() {
+  return encodeSafeFunctionData('swapOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
   ]);
 }
 
