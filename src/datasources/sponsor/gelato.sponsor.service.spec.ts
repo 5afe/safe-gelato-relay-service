@@ -5,7 +5,11 @@ import { SupportedChainId } from '../../config/constants';
 import { getMockExecTransactionCalldata } from '../../__mocks__/transaction-calldata.mock';
 import { GelatoSponsorService } from './gelato.sponsor.service';
 
-const mockGelatoRelay: GelatoRelay = {
+// Omit private properties/methods from the mock to remain type safe
+const mockGelatoRelay: Omit<GelatoRelay, '#private' | '_getConfiguration'> = {
+  configure: jest.fn(),
+  callWithSyncFeeERC2771: jest.fn(),
+  callWithSyncFeeERC2771WithSignature: jest.fn(),
   callWithSyncFee: jest.fn(),
   sponsoredCall: jest.fn(),
   sponsoredCallERC2771: jest.fn(),
@@ -20,6 +24,13 @@ const mockGelatoRelay: GelatoRelay = {
   getTaskStatus: jest.fn(),
 };
 
+// Mock all GelayRelay instantiations
+jest.mock('@gelatonetwork/relay-sdk', () => {
+  return {
+    GelatoRelay: jest.fn().mockImplementation(() => mockGelatoRelay),
+  };
+});
+
 describe('GelatoSponsorService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -33,7 +44,7 @@ describe('GelatoSponsorService', () => {
     },
   });
 
-  const mockRelayer = jest.mocked(mockGelatoRelay);
+  const mockRelayer = new GelatoRelay();
 
   const relayService = new GelatoSponsorService(mockConfigService, mockRelayer);
 
