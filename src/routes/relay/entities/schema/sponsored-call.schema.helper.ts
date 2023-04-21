@@ -99,7 +99,7 @@ export const isValidExecTransactionCall = (
     data,
   );
 
-  // Transaction to another another party
+  // Transaction to another party
   const toSelf = to === txTo;
   if (!toSelf) {
     return true;
