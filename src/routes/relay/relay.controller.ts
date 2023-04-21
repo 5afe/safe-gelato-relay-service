@@ -33,10 +33,10 @@ export class RelayController {
     chainId: string,
     @Param('address', new ZodValidationPipe(AddressSchema))
     address: string,
-  ): {
+  ): Promise<{
     remaining: number;
-    expiresAt?: number;
-  } {
+    limit: number;
+  }> {
     return this.relayLimitService.getRelayLimit(chainId, address);
   }
 

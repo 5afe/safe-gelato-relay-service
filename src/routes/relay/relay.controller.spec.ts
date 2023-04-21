@@ -32,6 +32,7 @@ import {
   SafeInfoService,
 } from '../../datasources/safe-info/safe-info.service.interface';
 import { TestAppProvider } from '../../app.provider';
+import { TestCacheModule } from '../../datasources/cache/__tests__/test.cache.module';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
@@ -89,6 +90,7 @@ describe('RelayController', () => {
             }),
           ],
         }),
+        TestCacheModule,
         // Register the ClsModule and automatically mount the ClsMiddleware
         ClsModule.forRoot({
           global: true,
@@ -906,7 +908,6 @@ describe('RelayController', () => {
             expect(res.body).toStrictEqual({
               limit: 5,
               remaining: 4,
-              expiresAt: expect.any(Number),
             });
           });
       });
@@ -936,7 +937,6 @@ describe('RelayController', () => {
             expect(res.body).toStrictEqual({
               limit: 5,
               remaining: 4,
-              expiresAt: expect.any(Number),
             });
           });
       });
@@ -973,7 +973,6 @@ describe('RelayController', () => {
                 expect(res.body).toStrictEqual({
                   limit: 5,
                   remaining: 4,
-                  expiresAt: expect.any(Number),
                 });
               });
           }),
@@ -1013,7 +1012,6 @@ describe('RelayController', () => {
             expect(res.body).toStrictEqual({
               limit: 5,
               remaining: 0,
-              expiresAt: expect.any(Number),
             });
           });
       });
