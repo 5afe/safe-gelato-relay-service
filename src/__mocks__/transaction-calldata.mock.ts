@@ -224,3 +224,18 @@ export function getMockCreateProxyWithNonceCalldata({
     saltNonce,
   ]);
 }
+
+export function getMockErc20TransferCalldata({
+  to,
+  value,
+}: {
+  to: string;
+  value: number;
+}): string {
+  const ERC20_TRANFER_FRAGMENT = 'function transfer(address,uint256)';
+
+  return new ethers.Interface([ERC20_TRANFER_FRAGMENT]).encodeFunctionData(
+    'transfer',
+    [to, value],
+  );
+}
