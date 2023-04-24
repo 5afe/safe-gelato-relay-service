@@ -1,10 +1,4 @@
-import {
-  PipeTransform,
-  Injectable,
-  HttpException,
-  HttpStatus,
-  Inject,
-} from '@nestjs/common';
+import { Inject, Injectable, PipeTransform } from '@nestjs/common';
 
 import {
   ISafeInfoService,
@@ -13,6 +7,12 @@ import {
 import { SponsoredCallSchema } from '../entities/schema/sponsored-call.schema';
 import { isCreateProxyWithNonceCalldata } from '../entities/schema/sponsored-call.schema.helper';
 import { SponsoredCallDto } from '../entities/sponsored-call.entity';
+
+export class SponsoredCallValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
 
 @Injectable()
 export class SponsoredCallDtoValidatorPipe implements PipeTransform {
@@ -26,10 +26,7 @@ export class SponsoredCallDtoValidatorPipe implements PipeTransform {
     const result = await this.schema.safeParseAsync(value);
 
     if (!result.success) {
-      throw new HttpException(
-        'Validation failed',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new SponsoredCallValidationError('Validation failed');
     }
 
     if (!isCreateProxyWithNonceCalldata(result.data.data)) {
@@ -40,9 +37,8 @@ export class SponsoredCallDtoValidatorPipe implements PipeTransform {
       );
 
       if (!isSafeContract) {
-        throw new HttpException(
+        throw new SponsoredCallValidationError(
           'Safe address is not a valid Safe contract',
-          HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
     }

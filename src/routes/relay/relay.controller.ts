@@ -1,5 +1,5 @@
 import { RelayResponse } from '@gelatonetwork/relay-sdk';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseFilters } from '@nestjs/common';
 
 import { ZodValidationPipe } from '../../pipes/zod/zod-validation.pipe';
 import { AddressSchema } from '../common/schema/address.schema';
@@ -8,6 +8,7 @@ import { SponsoredCallDto } from './entities/sponsored-call.entity';
 import { RelayService } from './relay.service';
 import { ChainIdSchema } from '../common/schema/chain-id.schema';
 import { RelayLimitService } from './services/relay-limit.service';
+import { SponsoredCallValidationExceptionFilter } from './filters/sponsored-call-validation.exception-filter';
 
 @Controller({
   version: '1',
@@ -20,6 +21,7 @@ export class RelayController {
   ) {}
 
   @Post()
+  @UseFilters(SponsoredCallValidationExceptionFilter)
   sponsoredCall(
     @Body(SponsoredCallDtoValidatorPipe)
     sponsoredCallDto: SponsoredCallDto,
