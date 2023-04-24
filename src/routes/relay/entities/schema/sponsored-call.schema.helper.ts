@@ -20,6 +20,26 @@ const isCalldata = (data: string, signature: string): boolean => {
   return data.startsWith(signatureId);
 };
 
+// ======================== ERC-20 =========================
+
+const isErc20TransferCalldata = (data: string): boolean => {
+  const ERC20_TRANSFER_SIGNATURE = 'transfer(address,uint256)';
+
+  return isCalldata(data, ERC20_TRANSFER_SIGNATURE);
+};
+
+const getErc20TransferTo = (data: string): string => {
+  const ERC20_TRANFER_FRAGMENT = 'function transfer(address,uint256)';
+
+  const erc20Interface = new ethers.Interface([ERC20_TRANFER_FRAGMENT]);
+
+  const [to] = erc20Interface.decodeFunctionData(ERC20_TRANFER_FRAGMENT, data);
+
+  return to;
+};
+
+// ========================= Safe ==========================
+
 /**
  * Checks whether data is a call to any method in the specified singleton
  * @param singletonDeployment singleton deployment
@@ -98,6 +118,12 @@ export const isValidExecTransactionCall = (
     EXEC_TX_FRAGMENT,
     data,
   );
+
+  // ERC-20 transfer
+  if (isErc20TransferCalldata(txData)) {
+    const recipient = getErc20TransferTo(txData);
+    return recipient !== to;
+  }
 
   // Transaction to another party
   const toSelf = to === txTo;
