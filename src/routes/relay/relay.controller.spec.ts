@@ -162,19 +162,20 @@ describe('RelayController', () => {
         });
 
         it('should return a 201 when the body is an ERC-20 tranfer execTransaction call', async () => {
+          const token = faker.finance.ethereumAddress();
           const safe = faker.finance.ethereumAddress();
 
           const data = getMockExecTransactionCalldata({
-            to: safe,
+            to: token,
             // ERC-20 transfer transactions have a value of 0
             value: 0,
             data: getMockErc20TransferCalldata({
-              to: faker.finance.ethereumAddress(),
+              to: safe,
               value: 1,
             }),
           });
 
-          await testSuccessfulSafeTx(faker.finance.ethereumAddress(), data);
+          await testSuccessfulSafeTx(safe, data);
         });
 
         it('should return a 201 when the body is a cancellation execTransaction call', async () => {
@@ -779,20 +780,20 @@ describe('RelayController', () => {
           true,
         );
 
-        const to = faker.finance.ethereumAddress();
+        const safe = faker.finance.ethereumAddress();
         const data = getMockExecTransactionCalldata({
-          to,
+          to: faker.finance.ethereumAddress(),
           // ERC-20 transfer transactions have a value of 0
           value: 0,
           data: getMockErc20TransferCalldata({
-            to,
+            to: safe,
             value: 1,
           }),
         });
 
         const body = {
           chainId: '5',
-          to,
+          to: safe,
           data,
         };
 
