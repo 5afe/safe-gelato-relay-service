@@ -27,6 +27,7 @@ import {
   getMockSetGuardCalldata,
   getMockSwapOwnerCallData,
   MOCK_UNSUPPORTED_CALLDATA,
+  getMockErc20TransferCalldata,
 } from '../../__mocks__/transaction-calldata.mock';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
@@ -155,6 +156,22 @@ describe('RelayController', () => {
             to: faker.finance.ethereumAddress(),
             value: 1,
             data: '0x',
+          });
+
+          await testSuccessfulSafeTx(faker.finance.ethereumAddress(), data);
+        });
+
+        it('should return a 201 when the body is an ERC-20 tranfer execTransaction call', async () => {
+          const safe = faker.finance.ethereumAddress();
+
+          const data = getMockExecTransactionCalldata({
+            to: safe,
+            // ERC-20 transfer transactions have a value of 0
+            value: 0,
+            data: getMockErc20TransferCalldata({
+              to: faker.finance.ethereumAddress(),
+              value: 1,
+            }),
           });
 
           await testSuccessfulSafeTx(faker.finance.ethereumAddress(), data);
@@ -297,6 +314,36 @@ describe('RelayController', () => {
 
           // 2 x `execTransaction` calls of the same Safe
           const data = await getMockMultiSendCalldata([
+            { to: safe, data: execTransaction1, value: value1 },
+            { to: safe, data: execTransaction2, value: value2 },
+          ]);
+
+          await testSuccessfulSafeTx(GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS, data);
+        });
+
+        it('should return a 201 when the body is a valid multiSend call, containing an ERC-20 transfer execTransaction call', async () => {
+          // execTransactions to different parties of value
+          const value1 = 1;
+          const execTransaction1 = getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: 1,
+          });
+
+          // ERC-20 transfer transactions have a value of 0
+          const value2 = 0;
+          const execTransaction2 = getMockExecTransactionCalldata({
+            to: faker.finance.ethereumAddress(),
+            value: value2,
+            data: getMockErc20TransferCalldata({
+              to: faker.finance.ethereumAddress(),
+              value: 1,
+            }),
+          });
+
+          const safe = faker.finance.ethereumAddress();
+
+          // 2 x `execTransaction` calls of the same Safe
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -711,6 +758,37 @@ describe('RelayController', () => {
 
         const to = faker.finance.ethereumAddress();
         const data = await getMockExecTransactionCalldata({ to, value: 1 });
+
+        const body = {
+          chainId: '5',
+          to,
+          data,
+        };
+
+        await request(app.getHttpServer())
+          .post('/v1/relay')
+          .send(body)
+          .expect(422, {
+            statusCode: 422,
+            message: 'Validation failed',
+          });
+      });
+
+      it('should return a 422 error when the data is an ERC-20 transfer execTransaction to self', async () => {
+        (mockSafeInfoService.isSafeContract as jest.Mock).mockResolvedValue(
+          true,
+        );
+
+        const to = faker.finance.ethereumAddress();
+        const data = getMockExecTransactionCalldata({
+          to,
+          // ERC-20 transfer transactions have a value of 0
+          value: 0,
+          data: getMockErc20TransferCalldata({
+            to,
+            value: 1,
+          }),
+        });
 
         const body = {
           chainId: '5',
