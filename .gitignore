@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Contract types
+/contracts
+
 # Logs
 logs
 *.log

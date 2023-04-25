@@ -7,33 +7,53 @@ import {
 } from '@safe-global/safe-deployments';
 import type { SingletonDeployment } from '@safe-global/safe-deployments';
 
+import { ERC20__factory } from '../../../../../contracts/openzeppelin';
+import {
+  Gnosis_safe__factory,
+  Multi_send__factory,
+  Proxy_factory__factory,
+} from '../../../../../contracts/safe/factories/v1.3.0';
+
 // ======================== General ========================
 
 /**
  * Checks the method selector of the call data to determine if it is the specified call
  * @param data call data
+ * @param fragment function fragment
  * @returns boolean
  */
-const isCalldata = (data: string, signature: string): boolean => {
-  const signatureId = ethers.id(signature).slice(0, 10);
-
-  return data.startsWith(signatureId);
+const isCalldata = (
+  data: string,
+  fragment: ethers.FunctionFragment,
+): boolean => {
+  return data.startsWith(fragment.selector);
 };
 
 // ======================== ERC-20 =========================
 
+/**
+ * Checks the method selector of the call data to determine if it is a transfer call
+ * @param data call data
+ * @returns boolean
+ */
 const isErc20TransferCalldata = (data: string): boolean => {
-  const ERC20_TRANSFER_SIGNATURE = 'transfer(address,uint256)';
+  const erc20Interface = ERC20__factory.createInterface();
+  const transferFragment = erc20Interface.getFunction('transfer');
 
-  return isCalldata(data, ERC20_TRANSFER_SIGNATURE);
+  return isCalldata(data, transferFragment);
 };
 
+/**
+ * Extracts the `to` address from an ERC-20 transfer call
+ *
+ * @param data transfer call data
+ * @returns the `to` address of an ERC-20 transfer
+ */
 const getErc20TransferTo = (data: string): string => {
-  const ERC20_TRANFER_FRAGMENT = 'function transfer(address,uint256)';
+  const erc20Interface = ERC20__factory.createInterface();
+  const transferFragment = erc20Interface.getFunction('transfer');
 
-  const erc20Interface = new ethers.Interface([ERC20_TRANFER_FRAGMENT]);
-
-  const [to] = erc20Interface.decodeFunctionData(ERC20_TRANFER_FRAGMENT, data);
+  const [to] = erc20Interface.decodeFunctionData(transferFragment, data);
 
   return to;
 };
@@ -50,12 +70,12 @@ const isSingletonCalldata = (
   singletonDeployment: SingletonDeployment,
   data: string,
 ): boolean => {
+  // Prefer official ABI over TypeChain
   const deploymentInterface = new ethers.Interface(singletonDeployment.abi);
 
   return deploymentInterface.fragments.some((fragment) => {
     if (ethers.FunctionFragment.isFunction(fragment)) {
-      const signature = fragment.format();
-      return isCalldata(data, signature);
+      return isCalldata(data, fragment);
     }
   });
 };
@@ -87,10 +107,10 @@ export const isSafeCalldata = (data: string): boolean => {
  * @returns boolean
  */
 const isExecTransactionCalldata = (data: string): boolean => {
-  const EXEC_TX_SIGNATURE =
-    'execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)';
+  const safeInterface = Gnosis_safe__factory.createInterface();
+  const execTransactionFragment = safeInterface.getFunction('execTransaction');
 
-  return isCalldata(data, EXEC_TX_SIGNATURE);
+  return isCalldata(data, execTransactionFragment);
 };
 
 /**
@@ -105,17 +125,15 @@ export const isValidExecTransactionCall = (
   to: string,
   data: string,
 ): boolean => {
-  const EXEC_TX_FRAGMENT =
-    'function execTransaction(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes memory signatures)';
-
   if (!isExecTransactionCalldata(data)) {
     return false;
   }
 
-  const execTxInterface = new ethers.Interface([EXEC_TX_FRAGMENT]);
+  const safeInterface = Gnosis_safe__factory.createInterface();
+  const execTransactionFragment = safeInterface.getFunction('execTransaction');
 
-  const [txTo, txValue, txData] = execTxInterface.decodeFunctionData(
-    EXEC_TX_FRAGMENT,
+  const [txTo, txValue, txData] = safeInterface.decodeFunctionData(
+    execTransactionFragment,
     data,
   );
 
@@ -150,9 +168,10 @@ export const isValidExecTransactionCall = (
  * @returns boolean
  */
 const isMultiSendCalldata = (data: string): boolean => {
-  const MULTISEND_TX_SIGNATURE = 'multiSend(bytes)';
+  const multiSendInterface = Multi_send__factory.createInterface();
+  const multiSendFragment = multiSendInterface.getFunction('multiSend');
 
-  return isCalldata(data, MULTISEND_TX_SIGNATURE);
+  return isCalldata(data, multiSendFragment);
 };
 
 interface MultiSendTransactionData {
@@ -172,13 +191,11 @@ const decodeMultiSendTxs = (
   // uint8 operation, address to, uint256 value, uint256 dataLength
   const INDIVIDUAL_TX_DATA_LENGTH = 2 + 40 + 64 + 64;
 
-  const MULTISEND_FRAGMENT =
-    'function multiSend(bytes memory transactions) public payable';
-
-  const multiSendInterface = new ethers.Interface([MULTISEND_FRAGMENT]);
+  const multiSendInterface = Multi_send__factory.createInterface();
+  const multiSendFragment = multiSendInterface.getFunction('multiSend');
 
   const [decodedMultiSendData] = multiSendInterface.decodeFunctionData(
-    MULTISEND_FRAGMENT,
+    multiSendFragment,
     encodedMultiSendData,
   );
 
@@ -284,9 +301,12 @@ export const isValidMultiSendCall = (
 // ===================== createProxyWithNonce ======================
 
 export const isCreateProxyWithNonceCalldata = (data: string): boolean => {
-  const SETUP_TX_SIGNATURE = 'createProxyWithNonce(address,bytes,uint256)';
+  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
+  const createProxyWithNonceFragment = proxyFactoryInterface.getFunction(
+    'createProxyWithNonce',
+  );
 
-  return isCalldata(data, SETUP_TX_SIGNATURE);
+  return isCalldata(data, createProxyWithNonceFragment);
 };
 
 interface CreateProxyWithNonceTransactionData {
@@ -298,16 +318,14 @@ interface CreateProxyWithNonceTransactionData {
 const decodeCreateProxyWithNonce = (
   encodedData: string,
 ): CreateProxyWithNonceTransactionData => {
-  const CREATE_PROXY_WITH_NONCE_FRAGMENT =
-    'function createProxyWithNonce(address _singleton, bytes memory initializer, uint256 saltNonce)';
-
-  const createProxyWithNonceInterface = new ethers.Interface([
-    CREATE_PROXY_WITH_NONCE_FRAGMENT,
-  ]);
+  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
+  const createProxyWithNonceFragment = proxyFactoryInterface.getFunction(
+    'createProxyWithNonce',
+  );
 
   const [singleton, initializer, saltNonce] =
-    createProxyWithNonceInterface.decodeFunctionData(
-      CREATE_PROXY_WITH_NONCE_FRAGMENT,
+    proxyFactoryInterface.decodeFunctionData(
+      createProxyWithNonceFragment,
       encodedData,
     );
 
@@ -353,17 +371,12 @@ export const isValidCreateProxyWithNonceCall = (
 export const getOwnersFromCreateProxyWithNonce = (
   encodedData: string,
 ): string[] => {
-  const SETUP_FRAGMENT =
-    'function setup(address[] calldata _owners, uint256 _threshold, address to, bytes calldata data, address fallbackHandler, address paymentToken, uint256 payment, address payable paymentReceiver) external';
-
   const { initializer } = decodeCreateProxyWithNonce(encodedData);
 
-  const setupInterface = new ethers.Interface([SETUP_FRAGMENT]);
+  const safeInterface = Gnosis_safe__factory.createInterface();
+  const setupFragment = safeInterface.getFunction('setup');
 
-  const [owners] = setupInterface.decodeFunctionData(
-    SETUP_FRAGMENT,
-    initializer,
-  );
+  const [owners] = safeInterface.decodeFunctionData(setupFragment, initializer);
 
   return owners.map(ethers.getAddress);
 };
