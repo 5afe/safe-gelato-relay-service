@@ -60,7 +60,6 @@ const getErc20TransferTo = (data: string): string => {
 
 const safeInterface = Gnosis_safe__factory.createInterface();
 
-const setupFragment = safeInterface.getFunction('setup');
 const execTransactionFragment = safeInterface.getFunction('execTransaction');
 
 /**
@@ -364,6 +363,7 @@ export const getOwnersFromCreateProxyWithNonce = (
 ): string[] => {
   const { initializer } = decodeCreateProxyWithNonce(encodedData);
 
+  const setupFragment = safeInterface.getFunction('setup');
   const [owners] = safeInterface.decodeFunctionData(setupFragment, initializer);
 
   return owners.map(ethers.getAddress);

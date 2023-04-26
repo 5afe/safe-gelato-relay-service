@@ -143,8 +143,6 @@ export function getMockSwapOwnerCallData() {
   ]);
 }
 
-const multiSendInterface = Multi_send__factory.createInterface();
-
 export function getMockMultiSendCalldata(
   transactions: Array<{
     to: string;
@@ -162,12 +160,11 @@ export function getMockMultiSendCalldata(
     );
   });
 
+  const multiSendInterface = Multi_send__factory.createInterface();
   return multiSendInterface.encodeFunctionData('multiSend', [
     ethers.concat(internalTransactions),
   ]);
 }
-
-const proxyFactoryInterface = Proxy_factory__factory.createInterface();
 
 export function getMockCreateProxyWithNonceCalldata({
   owners,
@@ -182,14 +179,13 @@ export function getMockCreateProxyWithNonceCalldata({
 }): string {
   const initializer = getMockSetupCalldata({ owners, threshold });
 
+  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
   return proxyFactoryInterface.encodeFunctionData('createProxyWithNonce', [
     singleton,
     initializer,
     saltNonce,
   ]);
 }
-
-const erc20Interface = ERC20__factory.createInterface();
 
 export function getMockErc20TransferCalldata({
   to,
@@ -198,5 +194,6 @@ export function getMockErc20TransferCalldata({
   to: string;
   value: number;
 }): string {
+  const erc20Interface = ERC20__factory.createInterface();
   return erc20Interface.encodeFunctionData('transfer', [to, value]);
 }
