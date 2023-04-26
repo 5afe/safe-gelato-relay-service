@@ -7,7 +7,6 @@ import {
   Proxy_factory__factory,
 } from '../../contracts/safe/factories/v1.3.0';
 import { ERC20__factory } from '../../contracts/openzeppelin';
-import type { Gnosis_safeInterface } from '../../contracts/safe/v1.3.0/Gnosis_safe';
 
 export const MOCK_UNSUPPORTED_CALLDATA = new ethers.Interface([
   'function unsupported()',
@@ -20,12 +19,37 @@ function getPrevalidatedSignature(address: string): string {
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 }
 
-function withSafeInterface(
-  encodeFunctionData: (safeInterface: Gnosis_safeInterface) => string,
-): string {
-  const safeInterface = Gnosis_safe__factory.createInterface();
+const safeInterface = Gnosis_safe__factory.createInterface();
 
-  return encodeFunctionData(safeInterface);
+function getMockSetupCalldata({
+  owners,
+  threshold,
+  to = faker.finance.ethereumAddress(),
+  data = '0x',
+  fallbackHandler = faker.finance.ethereumAddress(),
+  paymentToken = faker.finance.ethereumAddress(),
+  payment = 0,
+  paymentReceiver = faker.finance.ethereumAddress(),
+}: {
+  owners: string[];
+  threshold: number;
+  to?: string;
+  data?: string;
+  fallbackHandler?: string;
+  paymentToken?: string;
+  payment?: number;
+  paymentReceiver?: string;
+}): string {
+  return safeInterface.encodeFunctionData('setup', [
+    owners,
+    threshold,
+    to,
+    data,
+    fallbackHandler,
+    paymentToken,
+    payment,
+    paymentReceiver,
+  ]);
 }
 
 export function getMockExecTransactionCalldata({
@@ -51,91 +75,75 @@ export function getMockExecTransactionCalldata({
   refundReceiver?: string;
   signatures?: string;
 }): string {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('execTransaction', [
-      to,
-      value,
-      data,
-      operation,
-      safeTxGas,
-      baseGas,
-      gasPrice,
-      gasToken,
-      refundReceiver,
-      signatures,
-    ]);
-  });
+  return safeInterface.encodeFunctionData('execTransaction', [
+    to,
+    value,
+    data,
+    operation,
+    safeTxGas,
+    baseGas,
+    gasPrice,
+    gasToken,
+    refundReceiver,
+    signatures,
+  ]);
 }
 
 export function getMockAddOwnerWithThresholdCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
-      faker.finance.ethereumAddress(),
-      faker.datatype.number(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
+    faker.finance.ethereumAddress(),
+    faker.datatype.number(),
+  ]);
 }
 
 export function getMockChangeThresholdCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('changeThreshold', [
-      faker.datatype.number(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('changeThreshold', [
+    faker.datatype.number(),
+  ]);
 }
 
 export function getMockDisableModuleCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('disableModule', [
-      faker.finance.ethereumAddress(),
-      faker.finance.ethereumAddress(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('disableModule', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+  ]);
 }
 
 export function getMockEnableModuleCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('enableModule', [
-      faker.finance.ethereumAddress(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('enableModule', [
+    faker.finance.ethereumAddress(),
+  ]);
 }
 
 export function getMockRemoveOwnerCallData() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('removeOwner', [
-      faker.finance.ethereumAddress(),
-      faker.finance.ethereumAddress(),
-      1,
-    ]);
-  });
+  return safeInterface.encodeFunctionData('removeOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    1,
+  ]);
 }
 
 export function getMockSetFallbackHandlerCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('setFallbackHandler', [
-      faker.finance.ethereumAddress(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('setFallbackHandler', [
+    faker.finance.ethereumAddress(),
+  ]);
 }
 
 export function getMockSetGuardCalldata() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('setGuard', [
-      faker.finance.ethereumAddress(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('setGuard', [
+    faker.finance.ethereumAddress(),
+  ]);
 }
 
 export function getMockSwapOwnerCallData() {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('swapOwner', [
-      faker.finance.ethereumAddress(),
-      faker.finance.ethereumAddress(),
-      faker.finance.ethereumAddress(),
-    ]);
-  });
+  return safeInterface.encodeFunctionData('swapOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+  ]);
 }
+
+const multiSendInterface = Multi_send__factory.createInterface();
 
 export function getMockMultiSendCalldata(
   transactions: Array<{
@@ -154,45 +162,12 @@ export function getMockMultiSendCalldata(
     );
   });
 
-  const multiSendInterface = Multi_send__factory.createInterface();
-
   return multiSendInterface.encodeFunctionData('multiSend', [
     ethers.concat(internalTransactions),
   ]);
 }
 
-function getMockSetupCalldata({
-  owners,
-  threshold,
-  to = faker.finance.ethereumAddress(),
-  data = '0x',
-  fallbackHandler = faker.finance.ethereumAddress(),
-  paymentToken = faker.finance.ethereumAddress(),
-  payment = 0,
-  paymentReceiver = faker.finance.ethereumAddress(),
-}: {
-  owners: string[];
-  threshold: number;
-  to?: string;
-  data?: string;
-  fallbackHandler?: string;
-  paymentToken?: string;
-  payment?: number;
-  paymentReceiver?: string;
-}): string {
-  return withSafeInterface((safeInterface) => {
-    return safeInterface.encodeFunctionData('setup', [
-      owners,
-      threshold,
-      to,
-      data,
-      fallbackHandler,
-      paymentToken,
-      payment,
-      paymentReceiver,
-    ]);
-  });
-}
+const proxyFactoryInterface = Proxy_factory__factory.createInterface();
 
 export function getMockCreateProxyWithNonceCalldata({
   owners,
@@ -207,14 +182,14 @@ export function getMockCreateProxyWithNonceCalldata({
 }): string {
   const initializer = getMockSetupCalldata({ owners, threshold });
 
-  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
-
   return proxyFactoryInterface.encodeFunctionData('createProxyWithNonce', [
     singleton,
     initializer,
     saltNonce,
   ]);
 }
+
+const erc20Interface = ERC20__factory.createInterface();
 
 export function getMockErc20TransferCalldata({
   to,
@@ -223,7 +198,5 @@ export function getMockErc20TransferCalldata({
   to: string;
   value: number;
 }): string {
-  const erc20Interface = ERC20__factory.createInterface();
-
   return erc20Interface.encodeFunctionData('transfer', [to, value]);
 }

@@ -31,16 +31,17 @@ const isCalldata = (
 
 // ======================== ERC-20 =========================
 
+const erc20Interface = ERC20__factory.createInterface();
+
+const ransferFragment = erc20Interface.getFunction('transfer');
+
 /**
  * Checks the method selector of the call data to determine if it is a transfer call
  * @param data call data
  * @returns boolean
  */
 const isErc20TransferCalldata = (data: string): boolean => {
-  const erc20Interface = ERC20__factory.createInterface();
-  const transferFragment = erc20Interface.getFunction('transfer');
-
-  return isCalldata(data, transferFragment);
+  return isCalldata(data, ransferFragment);
 };
 
 /**
@@ -50,15 +51,17 @@ const isErc20TransferCalldata = (data: string): boolean => {
  * @returns the `to` address of an ERC-20 transfer
  */
 const getErc20TransferTo = (data: string): string => {
-  const erc20Interface = ERC20__factory.createInterface();
-  const transferFragment = erc20Interface.getFunction('transfer');
-
-  const [to] = erc20Interface.decodeFunctionData(transferFragment, data);
+  const [to] = erc20Interface.decodeFunctionData(ransferFragment, data);
 
   return to;
 };
 
 // ========================= Safe ==========================
+
+const safeInterface = Gnosis_safe__factory.createInterface();
+
+const setupFragment = safeInterface.getFunction('setup');
+const execTransactionFragment = safeInterface.getFunction('execTransaction');
 
 /**
  * Checks whether data is a call to any method in the specified singleton
@@ -107,9 +110,6 @@ export const isSafeCalldata = (data: string): boolean => {
  * @returns boolean
  */
 const isExecTransactionCalldata = (data: string): boolean => {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-  const execTransactionFragment = safeInterface.getFunction('execTransaction');
-
   return isCalldata(data, execTransactionFragment);
 };
 
@@ -128,9 +128,6 @@ export const isValidExecTransactionCall = (
   if (!isExecTransactionCalldata(data)) {
     return false;
   }
-
-  const safeInterface = Gnosis_safe__factory.createInterface();
-  const execTransactionFragment = safeInterface.getFunction('execTransaction');
 
   const [txTo, txValue, txData] = safeInterface.decodeFunctionData(
     execTransactionFragment,
@@ -162,15 +159,16 @@ export const isValidExecTransactionCall = (
 
 // ======================= multiSend =======================
 
+const multiSendInterface = Multi_send__factory.createInterface();
+
+const multiSendFragment = multiSendInterface.getFunction('multiSend');
+
 /**
  * Checks the method selector of the call data to determine if it is an multiSend call
  * @param data call data
  * @returns boolean
  */
 const isMultiSendCalldata = (data: string): boolean => {
-  const multiSendInterface = Multi_send__factory.createInterface();
-  const multiSendFragment = multiSendInterface.getFunction('multiSend');
-
   return isCalldata(data, multiSendFragment);
 };
 
@@ -190,9 +188,6 @@ const decodeMultiSendTxs = (
 ): MultiSendTransactionData[] => {
   // uint8 operation, address to, uint256 value, uint256 dataLength
   const INDIVIDUAL_TX_DATA_LENGTH = 2 + 40 + 64 + 64;
-
-  const multiSendInterface = Multi_send__factory.createInterface();
-  const multiSendFragment = multiSendInterface.getFunction('multiSend');
 
   const [decodedMultiSendData] = multiSendInterface.decodeFunctionData(
     multiSendFragment,
@@ -300,12 +295,13 @@ export const isValidMultiSendCall = (
 
 // ===================== createProxyWithNonce ======================
 
-export const isCreateProxyWithNonceCalldata = (data: string): boolean => {
-  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
-  const createProxyWithNonceFragment = proxyFactoryInterface.getFunction(
-    'createProxyWithNonce',
-  );
+const proxyFactoryInterface = Proxy_factory__factory.createInterface();
 
+const createProxyWithNonceFragment = proxyFactoryInterface.getFunction(
+  'createProxyWithNonce',
+);
+
+export const isCreateProxyWithNonceCalldata = (data: string): boolean => {
   return isCalldata(data, createProxyWithNonceFragment);
 };
 
@@ -318,11 +314,6 @@ interface CreateProxyWithNonceTransactionData {
 const decodeCreateProxyWithNonce = (
   encodedData: string,
 ): CreateProxyWithNonceTransactionData => {
-  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
-  const createProxyWithNonceFragment = proxyFactoryInterface.getFunction(
-    'createProxyWithNonce',
-  );
-
   const [singleton, initializer, saltNonce] =
     proxyFactoryInterface.decodeFunctionData(
       createProxyWithNonceFragment,
@@ -372,9 +363,6 @@ export const getOwnersFromCreateProxyWithNonce = (
   encodedData: string,
 ): string[] => {
   const { initializer } = decodeCreateProxyWithNonce(encodedData);
-
-  const safeInterface = Gnosis_safe__factory.createInterface();
-  const setupFragment = safeInterface.getFunction('setup');
 
   const [owners] = safeInterface.decodeFunctionData(setupFragment, initializer);
 
