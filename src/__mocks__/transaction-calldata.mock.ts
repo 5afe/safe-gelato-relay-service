@@ -7,6 +7,7 @@ import {
   Proxy_factory__factory,
 } from '../../contracts/safe/factories/v1.3.0';
 import { ERC20__factory } from '../../contracts/openzeppelin';
+import type { Gnosis_safeInterface } from '../../contracts/safe/v1.3.0/Gnosis_safe';
 
 export const MOCK_UNSUPPORTED_CALLDATA = new ethers.Interface([
   'function unsupported()',
@@ -17,6 +18,14 @@ function getPrevalidatedSignature(address: string): string {
     address,
     32,
   )}000000000000000000000000000000000000000000000000000000000000000001`;
+}
+
+function withSafeInterface(
+  encodeFunctionData: (safeInterface: Gnosis_safeInterface) => string,
+): string {
+  const safeInterface = Gnosis_safe__factory.createInterface();
+
+  return encodeFunctionData(safeInterface);
 }
 
 export function getMockExecTransactionCalldata({
@@ -42,90 +51,90 @@ export function getMockExecTransactionCalldata({
   refundReceiver?: string;
   signatures?: string;
 }): string {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('execTransaction', [
-    to,
-    value,
-    data,
-    operation,
-    safeTxGas,
-    baseGas,
-    gasPrice,
-    gasToken,
-    refundReceiver,
-    signatures,
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('execTransaction', [
+      to,
+      value,
+      data,
+      operation,
+      safeTxGas,
+      baseGas,
+      gasPrice,
+      gasToken,
+      refundReceiver,
+      signatures,
+    ]);
+  });
 }
 
 export function getMockAddOwnerWithThresholdCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
-    faker.finance.ethereumAddress(),
-    faker.datatype.number(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
+      faker.finance.ethereumAddress(),
+      faker.datatype.number(),
+    ]);
+  });
 }
 
 export function getMockChangeThresholdCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('changeThreshold', [
-    faker.datatype.number(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('changeThreshold', [
+      faker.datatype.number(),
+    ]);
+  });
 }
 
 export function getMockDisableModuleCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('disableModule', [
-    faker.finance.ethereumAddress(),
-    faker.finance.ethereumAddress(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('disableModule', [
+      faker.finance.ethereumAddress(),
+      faker.finance.ethereumAddress(),
+    ]);
+  });
 }
 
 export function getMockEnableModuleCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('enableModule', [
-    faker.finance.ethereumAddress(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('enableModule', [
+      faker.finance.ethereumAddress(),
+    ]);
+  });
 }
 
 export function getMockRemoveOwnerCallData() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('removeOwner', [
-    faker.finance.ethereumAddress(),
-    faker.finance.ethereumAddress(),
-    1,
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('removeOwner', [
+      faker.finance.ethereumAddress(),
+      faker.finance.ethereumAddress(),
+      1,
+    ]);
+  });
 }
 
 export function getMockSetFallbackHandlerCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('setFallbackHandler', [
-    faker.finance.ethereumAddress(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('setFallbackHandler', [
+      faker.finance.ethereumAddress(),
+    ]);
+  });
 }
 
 export function getMockSetGuardCalldata() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('setGuard', [
-    faker.finance.ethereumAddress(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('setGuard', [
+      faker.finance.ethereumAddress(),
+    ]);
+  });
 }
 
 export function getMockSwapOwnerCallData() {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('swapOwner', [
-    faker.finance.ethereumAddress(),
-    faker.finance.ethereumAddress(),
-    faker.finance.ethereumAddress(),
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('swapOwner', [
+      faker.finance.ethereumAddress(),
+      faker.finance.ethereumAddress(),
+      faker.finance.ethereumAddress(),
+    ]);
+  });
 }
 
 export function getMockMultiSendCalldata(
@@ -171,18 +180,18 @@ function getMockSetupCalldata({
   payment?: number;
   paymentReceiver?: string;
 }): string {
-  const safeInterface = Gnosis_safe__factory.createInterface();
-
-  return safeInterface.encodeFunctionData('setup', [
-    owners,
-    threshold,
-    to,
-    data,
-    fallbackHandler,
-    paymentToken,
-    payment,
-    paymentReceiver,
-  ]);
+  return withSafeInterface((safeInterface) => {
+    return safeInterface.encodeFunctionData('setup', [
+      owners,
+      threshold,
+      to,
+      data,
+      fallbackHandler,
+      paymentToken,
+      payment,
+      paymentReceiver,
+    ]);
+  });
 }
 
 export function getMockCreateProxyWithNonceCalldata({
