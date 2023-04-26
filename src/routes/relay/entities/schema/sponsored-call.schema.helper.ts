@@ -33,7 +33,7 @@ const isCalldata = (
 
 const erc20Interface = ERC20__factory.createInterface();
 
-const ransferFragment = erc20Interface.getFunction('transfer');
+const transferFragment = erc20Interface.getFunction('transfer');
 
 /**
  * Checks the method selector of the call data to determine if it is a transfer call
@@ -41,7 +41,7 @@ const ransferFragment = erc20Interface.getFunction('transfer');
  * @returns boolean
  */
 const isErc20TransferCalldata = (data: string): boolean => {
-  return isCalldata(data, ransferFragment);
+  return isCalldata(data, transferFragment);
 };
 
 /**
@@ -51,7 +51,7 @@ const isErc20TransferCalldata = (data: string): boolean => {
  * @returns the `to` address of an ERC-20 transfer
  */
 const getErc20TransferTo = (data: string): string => {
-  const [to] = erc20Interface.decodeFunctionData(ransferFragment, data);
+  const [to] = erc20Interface.decodeFunctionData(transferFragment, data);
 
   return to;
 };
