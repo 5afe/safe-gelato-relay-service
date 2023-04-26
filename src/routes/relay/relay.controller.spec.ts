@@ -151,7 +151,7 @@ describe('RelayController', () => {
 
       describe('execTransaction', () => {
         it('should return a 201 when the body is a valid execTransaction call', async () => {
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             // execTransaction to different party of value
             to: faker.finance.ethereumAddress(),
             value: 1,
@@ -178,7 +178,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is a cancellation execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // Cancellation transactions have a value of 0 and empty data
             value: 0,
@@ -191,7 +191,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an addOwnerWithThreshold execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // addOwnerWithThreshold transactions have a value of 0
             value: 0,
@@ -204,7 +204,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an changeThreshold execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // changeThreshold transactions have a value of 0
             value: 0,
@@ -217,7 +217,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an disableModule execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // disableModule transactions have a value of 0
             value: 0,
@@ -230,7 +230,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an enableModule execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // enableModule transactions have a value of 0
             value: 0,
@@ -243,7 +243,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an removeOwner execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // removeOwner transactions have a value of 0
             value: 0,
@@ -256,7 +256,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an setFallbackHandler execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             // setFallbackHandler transactions have a value of 0
             value: 0,
@@ -269,7 +269,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an setGuard execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // setGuard transactions have a value of 0
             value: 0,
@@ -282,7 +282,7 @@ describe('RelayController', () => {
         it('should return a 201 when the body is an swapOwner execTransaction call', async () => {
           const safe = faker.finance.ethereumAddress();
 
-          const data = await getMockExecTransactionCalldata({
+          const data = getMockExecTransactionCalldata({
             to: safe,
             // swapOwner transactions have a value of 0
             value: 0,
@@ -297,13 +297,13 @@ describe('RelayController', () => {
         it('should return a 201 when the body is a valid multiSend call, containing execTransactions', async () => {
           // execTransactions to different parties of value
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           const value2 = 1;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
           });
@@ -311,7 +311,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -352,14 +352,14 @@ describe('RelayController', () => {
         it('should return a 201 when the body is a valid multiSend call, containing a cancellation execTransaction call', async () => {
           // execTransaction to different party of value
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // Cancellation transactions have a value of 0 and empty data
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: '0x',
@@ -368,7 +368,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -378,14 +378,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing an addOwnerWithThreshold execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // addOwnerWithThreshold transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockAddOwnerWithThresholdCalldata(),
@@ -394,7 +394,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -404,14 +404,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a changeThreshold execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // changeThreshold transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockChangeThresholdCalldata(),
@@ -420,7 +420,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -430,14 +430,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a disableModule execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // disableModule transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockDisableModuleCalldata(),
@@ -446,7 +446,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -456,14 +456,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a enableModule execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // enableModule transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockEnableModuleCalldata(),
@@ -472,7 +472,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -482,14 +482,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a removeOwner execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // removeOwner transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockRemoveOwnerCallData(),
@@ -498,7 +498,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -508,14 +508,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a setFallbackHandler execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // setFallbackHandler transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockSetFallbackHandlerCalldata(),
@@ -524,7 +524,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -534,14 +534,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a setGuard execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // setGuard transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockSetGuardCalldata(),
@@ -550,7 +550,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -560,14 +560,14 @@ describe('RelayController', () => {
 
         it('should return a 201 when the body is a valid multiSend call, containing a swapOwner execTransaction call', async () => {
           const value1 = 1;
-          const execTransaction1 = await getMockExecTransactionCalldata({
+          const execTransaction1 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: 1,
           });
 
           // swapOwner transactions have a value of 0
           const value2 = 0;
-          const execTransaction2 = await getMockExecTransactionCalldata({
+          const execTransaction2 = getMockExecTransactionCalldata({
             to: faker.finance.ethereumAddress(),
             value: value2,
             data: getMockSwapOwnerCallData(),
@@ -576,7 +576,7 @@ describe('RelayController', () => {
           const safe = faker.finance.ethereumAddress();
 
           // 2 x `execTransaction` calls of the same Safe
-          const data = await getMockMultiSendCalldata([
+          const data = getMockMultiSendCalldata([
             { to: safe, data: execTransaction1, value: value1 },
             { to: safe, data: execTransaction2, value: value2 },
           ]);
@@ -594,7 +594,7 @@ describe('RelayController', () => {
             () => Promise.resolve({ taskId: '123' }),
           );
 
-          const data = await getMockCreateProxyWithNonceCalldata({
+          const data = getMockCreateProxyWithNonceCalldata({
             owners: [
               faker.finance.ethereumAddress(),
               faker.finance.ethereumAddress(),
@@ -623,7 +623,7 @@ describe('RelayController', () => {
             () => Promise.resolve({ taskId: '123' }),
           );
 
-          const data = await getMockCreateProxyWithNonceCalldata({
+          const data = getMockCreateProxyWithNonceCalldata({
             owners: [
               faker.finance.ethereumAddress(),
               faker.finance.ethereumAddress(),
@@ -657,7 +657,7 @@ describe('RelayController', () => {
           Promise.reject(),
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -684,7 +684,7 @@ describe('RelayController', () => {
           false,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -709,7 +709,7 @@ describe('RelayController', () => {
           false,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -755,7 +755,7 @@ describe('RelayController', () => {
         );
 
         const to = faker.finance.ethereumAddress();
-        const data = await getMockExecTransactionCalldata({ to, value: 1 });
+        const data = getMockExecTransactionCalldata({ to, value: 1 });
 
         const body = {
           chainId: '5',
@@ -808,7 +808,7 @@ describe('RelayController', () => {
           false, // Not a Safe
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -833,7 +833,7 @@ describe('RelayController', () => {
           false,
         );
 
-        const data = await getMockMultiSendCalldata([]);
+        const data = getMockMultiSendCalldata([]);
 
         const body = {
           chainId: '5',
@@ -858,7 +858,7 @@ describe('RelayController', () => {
         const contract = faker.finance.ethereumAddress();
 
         // 2 x unknown calls
-        const data = await getMockMultiSendCalldata([
+        const data = getMockMultiSendCalldata([
           {
             to: contract,
             value: 1,
@@ -894,26 +894,26 @@ describe('RelayController', () => {
         const selfSafe = faker.finance.ethereumAddress(); // Safe address
 
         const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
+        const execTransaction1 = getMockExecTransactionCalldata({
           to: selfSafe,
           value: value1,
         });
 
         const value2 = 1;
-        const execTransaction2 = await getMockExecTransactionCalldata({
+        const execTransaction2 = getMockExecTransactionCalldata({
           to: selfSafe,
           value: value2,
         });
 
         // 2 x `execTransaction` calls of same Safes
-        const data = await getMockMultiSendCalldata([
+        const data = getMockMultiSendCalldata([
           {
             to: selfSafe,
             data: execTransaction1,
             value: value1,
           },
           {
-            to: selfSafe, // Safe address
+            to: selfSafe,
             data: execTransaction2,
             value: value2,
           },
@@ -940,26 +940,26 @@ describe('RelayController', () => {
         );
 
         const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
+        const execTransaction1 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value1,
         });
 
         const value2 = 1;
-        const execTransaction2 = await getMockExecTransactionCalldata({
+        const execTransaction2 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value2,
         });
 
         // 2 x `execTransaction` calls of different Safes
-        const data = await getMockMultiSendCalldata([
+        const data = getMockMultiSendCalldata([
           {
-            to: faker.finance.ethereumAddress(), // Safe address
+            to: faker.finance.ethereumAddress(),
             data: execTransaction1,
             value: value1,
           },
           {
-            to: faker.finance.ethereumAddress(), // Safe address
+            to: faker.finance.ethereumAddress(),
             data: execTransaction2,
             value: value2,
           },
@@ -986,13 +986,13 @@ describe('RelayController', () => {
         );
 
         const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
+        const execTransaction1 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value1,
         });
 
         const value2 = 1;
-        const execTransaction2 = await getMockExecTransactionCalldata({
+        const execTransaction2 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value2,
         });
@@ -1000,7 +1000,7 @@ describe('RelayController', () => {
         const safe = faker.finance.ethereumAddress();
 
         // 2 x `execTransaction` calls of the same Safe
-        const data = await getMockMultiSendCalldata([
+        const data = getMockMultiSendCalldata([
           { to: safe, data: execTransaction1, value: value1 },
           { to: safe, data: execTransaction2, value: value2 },
         ]);
@@ -1026,13 +1026,13 @@ describe('RelayController', () => {
         );
 
         const value1 = 1;
-        const execTransaction1 = await getMockExecTransactionCalldata({
+        const execTransaction1 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value1,
         });
 
         const value2 = 1;
-        const execTransaction2 = await getMockExecTransactionCalldata({
+        const execTransaction2 = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: value2,
         });
@@ -1040,7 +1040,7 @@ describe('RelayController', () => {
         const contract = faker.finance.ethereumAddress();
 
         // 2 x `execTransaction` calls of the same contract
-        const data = await getMockMultiSendCalldata([
+        const data = getMockMultiSendCalldata([
           { to: contract, data: execTransaction1, value: value1 },
           { to: contract, data: execTransaction2, value: value2 },
         ]);
@@ -1065,7 +1065,7 @@ describe('RelayController', () => {
           Promise.resolve({ taskId: '123' }),
         );
 
-        const data = await getMockCreateProxyWithNonceCalldata({
+        const data = getMockCreateProxyWithNonceCalldata({
           owners: [
             faker.finance.ethereumAddress(),
             faker.finance.ethereumAddress(),
@@ -1094,7 +1094,7 @@ describe('RelayController', () => {
           Promise.resolve({ taskId: '123' }),
         );
 
-        const data = await getMockCreateProxyWithNonceCalldata({
+        const data = getMockCreateProxyWithNonceCalldata({
           owners: [
             faker.finance.ethereumAddress(),
             faker.finance.ethereumAddress(),
@@ -1123,7 +1123,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -1151,7 +1151,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -1189,7 +1189,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -1240,7 +1240,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -1269,7 +1269,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
@@ -1299,7 +1299,7 @@ describe('RelayController', () => {
           faker.finance.ethereumAddress(),
         ];
 
-        const data = await getMockCreateProxyWithNonceCalldata({
+        const data = getMockCreateProxyWithNonceCalldata({
           owners,
           threshold: 1,
           singleton: GOERLI_L1_SINGLETON_DEPLOYMENT_ADDRESS,
@@ -1336,7 +1336,7 @@ describe('RelayController', () => {
           true,
         );
 
-        const data = await getMockExecTransactionCalldata({
+        const data = getMockExecTransactionCalldata({
           to: faker.finance.ethereumAddress(),
           value: 1,
         });
