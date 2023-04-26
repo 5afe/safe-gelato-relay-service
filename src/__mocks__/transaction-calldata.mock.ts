@@ -1,27 +1,16 @@
 import { faker } from '@faker-js/faker';
 import { ethers } from 'ethers';
+
 import {
-  getMultiSendCallOnlyDeployment,
-  getProxyFactoryDeployment,
-  getSafeSingletonDeployment,
-} from '@safe-global/safe-deployments';
-import type { DeploymentFilter } from '@safe-global/safe-deployments';
+  Gnosis_safe__factory,
+  Multi_send__factory,
+  Proxy_factory__factory,
+} from '../../contracts/safe/factories/v1.3.0';
+import { ERC20__factory } from '../../contracts/openzeppelin';
 
 export const MOCK_UNSUPPORTED_CALLDATA = new ethers.Interface([
   'function unsupported()',
 ]).encodeFunctionData('unsupported');
-
-function getSafeSingletonInterface(
-  filter?: DeploymentFilter,
-): ethers.Interface {
-  const safeDeployment = getSafeSingletonDeployment(filter);
-
-  if (!safeDeployment) {
-    throw new Error('Safe deployment not found');
-  }
-
-  return new ethers.Interface(safeDeployment.abi);
-}
 
 function getPrevalidatedSignature(address: string): string {
   return `${ethers.zeroPadValue(
@@ -30,13 +19,37 @@ function getPrevalidatedSignature(address: string): string {
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 }
 
-function encodeSafeFunctionData(
-  ...args: Parameters<
-    InstanceType<typeof ethers.Interface>['encodeFunctionData']
-  >
-): string {
-  const safeInterface = getSafeSingletonInterface();
-  return safeInterface.encodeFunctionData(...args);
+const safeInterface = Gnosis_safe__factory.createInterface();
+
+function getMockSetupCalldata({
+  owners,
+  threshold,
+  to = faker.finance.ethereumAddress(),
+  data = '0x',
+  fallbackHandler = faker.finance.ethereumAddress(),
+  paymentToken = faker.finance.ethereumAddress(),
+  payment = 0,
+  paymentReceiver = faker.finance.ethereumAddress(),
+}: {
+  owners: string[];
+  threshold: number;
+  to?: string;
+  data?: string;
+  fallbackHandler?: string;
+  paymentToken?: string;
+  payment?: number;
+  paymentReceiver?: string;
+}): string {
+  return safeInterface.encodeFunctionData('setup', [
+    owners,
+    threshold,
+    to,
+    data,
+    fallbackHandler,
+    paymentToken,
+    payment,
+    paymentReceiver,
+  ]);
 }
 
 export function getMockExecTransactionCalldata({
@@ -62,7 +75,7 @@ export function getMockExecTransactionCalldata({
   refundReceiver?: string;
   signatures?: string;
 }): string {
-  return encodeSafeFunctionData('execTransaction', [
+  return safeInterface.encodeFunctionData('execTransaction', [
     to,
     value,
     data,
@@ -77,31 +90,33 @@ export function getMockExecTransactionCalldata({
 }
 
 export function getMockAddOwnerWithThresholdCalldata() {
-  return encodeSafeFunctionData('addOwnerWithThreshold', [
+  return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
     faker.finance.ethereumAddress(),
     faker.datatype.number(),
   ]);
 }
 
 export function getMockChangeThresholdCalldata() {
-  return encodeSafeFunctionData('changeThreshold', [faker.datatype.number()]);
+  return safeInterface.encodeFunctionData('changeThreshold', [
+    faker.datatype.number(),
+  ]);
 }
 
 export function getMockDisableModuleCalldata() {
-  return encodeSafeFunctionData('disableModule', [
+  return safeInterface.encodeFunctionData('disableModule', [
     faker.finance.ethereumAddress(),
     faker.finance.ethereumAddress(),
   ]);
 }
 
 export function getMockEnableModuleCalldata() {
-  return encodeSafeFunctionData('enableModule', [
+  return safeInterface.encodeFunctionData('enableModule', [
     faker.finance.ethereumAddress(),
   ]);
 }
 
 export function getMockRemoveOwnerCallData() {
-  return encodeSafeFunctionData('removeOwner', [
+  return safeInterface.encodeFunctionData('removeOwner', [
     faker.finance.ethereumAddress(),
     faker.finance.ethereumAddress(),
     1,
@@ -109,33 +124,23 @@ export function getMockRemoveOwnerCallData() {
 }
 
 export function getMockSetFallbackHandlerCalldata() {
-  return encodeSafeFunctionData('setFallbackHandler', [
+  return safeInterface.encodeFunctionData('setFallbackHandler', [
     faker.finance.ethereumAddress(),
   ]);
 }
 
 export function getMockSetGuardCalldata() {
-  return encodeSafeFunctionData('setGuard', [faker.finance.ethereumAddress()]);
-}
-
-export function getMockSwapOwnerCallData() {
-  return encodeSafeFunctionData('swapOwner', [
-    faker.finance.ethereumAddress(),
-    faker.finance.ethereumAddress(),
+  return safeInterface.encodeFunctionData('setGuard', [
     faker.finance.ethereumAddress(),
   ]);
 }
 
-function getMultiSendCallOnlyInterface(
-  filter?: DeploymentFilter,
-): ethers.Interface {
-  const multiSendDeployment = getMultiSendCallOnlyDeployment(filter);
-
-  if (!multiSendDeployment) {
-    throw new Error('MultiSendCallOnly deployment not found');
-  }
-
-  return new ethers.Interface(multiSendDeployment.abi);
+export function getMockSwapOwnerCallData() {
+  return safeInterface.encodeFunctionData('swapOwner', [
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+    faker.finance.ethereumAddress(),
+  ]);
 }
 
 export function getMockMultiSendCalldata(
@@ -148,8 +153,6 @@ export function getMockMultiSendCalldata(
   // MultiSendCallOnly
   const OPERATION = 0;
 
-  const multiSendInterface = getMultiSendCallOnlyInterface();
-
   const internalTransactions = transactions.map(({ to, value, data }) => {
     return ethers.solidityPacked(
       ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
@@ -157,50 +160,10 @@ export function getMockMultiSendCalldata(
     );
   });
 
+  const multiSendInterface = Multi_send__factory.createInterface();
   return multiSendInterface.encodeFunctionData('multiSend', [
     ethers.concat(internalTransactions),
   ]);
-}
-
-function getMockSetupCalldata({
-  owners,
-  threshold,
-  to = faker.finance.ethereumAddress(),
-  data = '0x',
-  fallbackHandler = faker.finance.ethereumAddress(),
-  paymentToken = faker.finance.ethereumAddress(),
-  payment = 0,
-  paymentReceiver = faker.finance.ethereumAddress(),
-}: {
-  owners: string[];
-  threshold: number;
-  to?: string;
-  data?: string;
-  fallbackHandler?: string;
-  paymentToken?: string;
-  payment?: number;
-  paymentReceiver?: string;
-}): string {
-  return encodeSafeFunctionData('setup', [
-    owners,
-    threshold,
-    to,
-    data,
-    fallbackHandler,
-    paymentToken,
-    payment,
-    paymentReceiver,
-  ]);
-}
-
-function getProxyFactoryInterface(filter?: DeploymentFilter): ethers.Interface {
-  const deployment = getProxyFactoryDeployment(filter);
-
-  if (!deployment) {
-    throw new Error('SafeProxyFactory not found');
-  }
-
-  return new ethers.Interface(deployment.abi);
 }
 
 export function getMockCreateProxyWithNonceCalldata({
@@ -214,10 +177,9 @@ export function getMockCreateProxyWithNonceCalldata({
   singleton: string;
   saltNonce?: number;
 }): string {
-  const proxyFactoryInterface = getProxyFactoryInterface();
-
   const initializer = getMockSetupCalldata({ owners, threshold });
 
+  const proxyFactoryInterface = Proxy_factory__factory.createInterface();
   return proxyFactoryInterface.encodeFunctionData('createProxyWithNonce', [
     singleton,
     initializer,
@@ -232,10 +194,6 @@ export function getMockErc20TransferCalldata({
   to: string;
   value: number;
 }): string {
-  const ERC20_TRANFER_FRAGMENT = 'function transfer(address,uint256)';
-
-  return new ethers.Interface([ERC20_TRANFER_FRAGMENT]).encodeFunctionData(
-    'transfer',
-    [to, value],
-  );
+  const erc20Interface = ERC20__factory.createInterface();
+  return erc20Interface.encodeFunctionData('transfer', [to, value]);
 }
