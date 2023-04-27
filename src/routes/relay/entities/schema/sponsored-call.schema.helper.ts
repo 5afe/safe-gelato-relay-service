@@ -7,12 +7,12 @@ import {
 } from '@safe-global/safe-deployments';
 import type { SingletonDeployment } from '@safe-global/safe-deployments';
 
-import { ERC20__factory } from '../../../../../contracts/openzeppelin';
+import { ERC20__factory } from '../../../../contracts/openzeppelin';
 import {
   Gnosis_safe__factory,
   Multi_send__factory,
   Proxy_factory__factory,
-} from '../../../../../contracts/safe/factories/v1.3.0';
+} from '../../../../contracts/safe/factories/v1.3.0';
 
 // ======================== General ========================
 

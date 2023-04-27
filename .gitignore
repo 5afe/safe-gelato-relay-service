@@ -3,7 +3,7 @@
 /node_modules
 
 # Contract types
-/contracts
+/src/contracts
 
 # Logs
 logs

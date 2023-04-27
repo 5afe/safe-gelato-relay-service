@@ -5,8 +5,8 @@ import {
   Gnosis_safe__factory,
   Multi_send__factory,
   Proxy_factory__factory,
-} from '../../contracts/safe/factories/v1.3.0';
-import { ERC20__factory } from '../../contracts/openzeppelin';
+} from '../contracts/safe/factories/v1.3.0';
+import { ERC20__factory } from '../contracts/openzeppelin';
 
 export const MOCK_UNSUPPORTED_CALLDATA = new ethers.Interface([
   'function unsupported()',
