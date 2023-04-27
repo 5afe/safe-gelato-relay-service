@@ -22,8 +22,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typechain": "typechain --target=ethers-v6",
-    "types:openzeppelin": "yarn typechain --out-dir contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json",
-    "types:safe": "yarn typechain --out-dir contracts/safe ./node_modules/@safe-global/safe-deployments/dist/assets/**/*.json",
+    "types:openzeppelin": "yarn typechain --out-dir src/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json",
+    "types:safe": "yarn typechain --out-dir src/contracts/safe ./node_modules/@safe-global/safe-deployments/dist/assets/**/*.json",
     "postinstall": "husky install && yarn types:openzeppelin && yarn types:safe"
   },
   "dependencies": {
