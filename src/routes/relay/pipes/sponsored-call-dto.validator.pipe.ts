@@ -5,7 +5,7 @@ import {
   SafeInfoService,
 } from '../../../datasources/safe-info/safe-info.service.interface';
 import { SponsoredCallSchema } from '../entities/schema/sponsored-call.schema';
-import { isCreateProxyWithNonceCalldata } from '../entities/schema/sponsored-call.schema.helper';
+import { isCreateProxyWithNonceCalldata } from '../entities/schema/transactions/createProxyWithNonce';
 import { SponsoredCallDto } from '../entities/sponsored-call.entity';
 
 export class SponsoredCallValidationError extends Error {

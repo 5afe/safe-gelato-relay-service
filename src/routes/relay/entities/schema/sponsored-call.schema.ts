@@ -3,12 +3,14 @@ import { z } from 'zod';
 import { AddressSchema } from '../../../common/schema/address.schema';
 import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
-  isValidMultiSendCall,
-  isValidExecTransactionCall,
-  getSafeAddressFromMultiSend,
   isValidCreateProxyWithNonceCall,
   getOwnersFromCreateProxyWithNonce,
-} from './sponsored-call.schema.helper';
+} from './transactions/createProxyWithNonce';
+import { isValidExecTransactionCall } from './transactions/execTransaction';
+import {
+  isValidMultiSendCall,
+  getSafeAddressFromMultiSend,
+} from './transactions/multiSend';
 
 export const SponsoredCallSchema = z
   .object({
