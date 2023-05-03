@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AppModule } from './app.module';
-import { TestAppProvider } from './app.provider';
+import { TestAppProvider } from './__tests__/test-app.provider';
 
 describe('Application bootstrap', () => {
   it('Should init the app', async () => {
