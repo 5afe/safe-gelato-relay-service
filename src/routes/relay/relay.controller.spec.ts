@@ -40,8 +40,8 @@ import {
   ISafeInfoService,
   SafeInfoService,
 } from '../../datasources/safe-info/safe-info.service.interface';
-import { TestAppProvider } from '../../app.provider';
 import { TestCacheModule } from '../../datasources/cache/__tests__/test.cache.module';
+import { TestAppProvider } from '../../__tests__/test-app.provider';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
