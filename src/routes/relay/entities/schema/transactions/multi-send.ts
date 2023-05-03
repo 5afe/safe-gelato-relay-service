@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 
 import { Multi_send__factory } from '../../../../../contracts/safe/factories/v1.3.0';
-import { isValidExecTransactionCall } from './execTransaction';
+import { isValidExecTransactionCall } from './exec-transaction';
 
 const multiSendInterface = Multi_send__factory.createInterface();
 

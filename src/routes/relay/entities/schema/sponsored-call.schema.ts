@@ -5,12 +5,12 @@ import { ChainIdSchema } from '../../../common/schema/chain-id.schema';
 import {
   isValidCreateProxyWithNonceCall,
   getOwnersFromCreateProxyWithNonce,
-} from './transactions/createProxyWithNonce';
-import { isValidExecTransactionCall } from './transactions/execTransaction';
+} from './transactions/create-proxy-with-nonce';
+import { isValidExecTransactionCall } from './transactions/exec-transaction';
 import {
   isValidMultiSendCall,
   getSafeAddressFromMultiSend,
-} from './transactions/multiSend';
+} from './transactions/multi-send';
 
 export const SponsoredCallSchema = z
   .object({

@@ -1,5 +1,5 @@
 import { Gnosis_safe__factory } from '../../../../../contracts/safe/factories/v1.3.0';
-import { isErc20TransferCalldata, getErc20TransferTo } from './erc20';
+import { isErc20TransferCalldata, getErc20TransferTo } from './erc-20';
 import { isSafeCalldata } from './safe';
 
 const safeInterface = Gnosis_safe__factory.createInterface();
