@@ -88,4 +88,8 @@ By default, the coverage results will be under `<PROJ_FOLDER>/coverage/`.
 We use [ESLint](https://eslint.org/) as a linter and [Prettier](https://prettier.io/) as a code formatter.
 You can run `yarn run lint` to execute ESLint and `yarn run format` to execute Prettier.
 
-These checks are automatically executed using Git hooks (automatically installed with the project).
+These checks can be automatically executed using Git hooks. If you wish to install the provided git hooks:
+```shell
+yarn install
+yarn husky install
+```
