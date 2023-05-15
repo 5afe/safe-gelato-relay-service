@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@gelatonetwork/relay-sdk": "^3.5.0",
-    "@nestjs/cli": "^9.4.0",
+    "@nestjs/cli": "^9.4.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
