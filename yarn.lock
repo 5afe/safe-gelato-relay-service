@@ -1434,12 +1434,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:^9.4.1":
-  version: 9.4.1
-  resolution: "@nestjs/common@npm:9.4.1"
+"@nestjs/common@npm:^9.4.2":
+  version: 9.4.2
+  resolution: "@nestjs/common@npm:9.4.2"
   dependencies:
     iterare: 1.2.1
-    tslib: 2.5.0
+    tslib: 2.5.2
     uid: 2.0.2
   peerDependencies:
     cache-manager: <=5
@@ -1454,7 +1454,7 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: cafe8a29d8ade0876c6397662197dedb6143c1632995ca00d42b34c13cc578b8b36bded7c8f8f266ad08c4263b11fae8fb0cba6ffef0b8cbc4fb81b9054bc90c
+  checksum: d4f0b32da2499af46947c84073b863ff20358be0e093975208958dcebd8d459121ec582bae2f2f9f2caa90897df36173d11b6760053e644a8bca76a26f9d45fd
   languageName: node
   linkType: hard
 
@@ -7113,7 +7113,7 @@ __metadata:
     "@faker-js/faker": ^8.0.0
     "@gelatonetwork/relay-sdk": ^3.5.0
     "@nestjs/cli": ^9.4.2
-    "@nestjs/common": ^9.4.1
+    "@nestjs/common": ^9.4.2
     "@nestjs/config": ^2.3.2
     "@nestjs/core": ^9.4.1
     "@nestjs/platform-express": ^9.0.0
