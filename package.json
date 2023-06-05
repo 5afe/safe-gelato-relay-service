@@ -41,7 +41,7 @@
     "nestjs-cls": "^3.2.1",
     "redis": "^4.6.6",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "^5.0.0",
+    "rimraf": "^5.0.1",
     "rxjs": "^7.8.1",
     "typechain": "^8.2.0",
     "uuid": "^9.0.0",
