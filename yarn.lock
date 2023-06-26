@@ -5,10 +5,10 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@adraffy/ens-normalize@npm:1.9.0":
-  version: 1.9.0
-  resolution: "@adraffy/ens-normalize@npm:1.9.0"
-  checksum: a8d47f85db7a0bba01227fae8781a3245a4517875503d6848a47ca29e7f7da271742a2f93b55afc1b9201e74eda1fd1f1e6e79e70f967359fd7f6ec3d45bf243
+"@adraffy/ens-normalize@npm:1.9.2":
+  version: 1.9.2
+  resolution: "@adraffy/ens-normalize@npm:1.9.2"
+  checksum: a9fdeb9e080774c19e4b7f9f60aa5b37cf23fe0e8fe80284bf8221f7396e9f78642bfd39a09a94a4dc3fb8e70f2ac81545204bdcaf222d93f4c4c2ae1f0dca0b
   languageName: node
   linkType: hard
 
@@ -1933,7 +1933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:18.15.13":
   version: 18.15.13
   resolution: "@types/node@npm:18.15.13"
   checksum: 79cc5a2b5f98e8973061a4260a781425efd39161a0e117a69cd089603964816c1a14025e1387b4590c8e82d05133b7b4154fa53a7dffb3877890a66145e76515
@@ -2430,10 +2430,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aes-js@npm:4.0.0-beta.3":
-  version: 4.0.0-beta.3
-  resolution: "aes-js@npm:4.0.0-beta.3"
-  checksum: 2336feee1e4a7722f5b6ede192b0a22881fd6f9310b36ec10e62b6f015f9fddf812c1d8a61b9743ab710811fd0b0d7aad844178f11e7cb1439bbc14246c6c93e
+"aes-js@npm:4.0.0-beta.5":
+  version: 4.0.0-beta.5
+  resolution: "aes-js@npm:4.0.0-beta.5"
+  checksum: cc2ea969d77df939c32057f7e361b6530aa6cb93cb10617a17a45cd164e6d761002f031ff6330af3e67e58b1f0a3a8fd0b63a720afd591a653b02f649470e15b
   languageName: node
   linkType: hard
 
@@ -3986,17 +3986,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "ethers@npm:6.3.0"
+"ethers@npm:^6.6.1":
+  version: 6.6.1
+  resolution: "ethers@npm:6.6.1"
   dependencies:
-    "@adraffy/ens-normalize": 1.9.0
+    "@adraffy/ens-normalize": 1.9.2
     "@noble/hashes": 1.1.2
     "@noble/secp256k1": 1.7.1
-    aes-js: 4.0.0-beta.3
+    "@types/node": 18.15.13
+    aes-js: 4.0.0-beta.5
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: 4248d8c5d02382b6e2ced896c9b3f62b8d33b5121127ac5597eeec6e49acb15753f5d4a7e0d403b3131bf092417f9686384af28f9285544c184ccce502bca96d
+  checksum: 4e1ddd2cc62de739e1a320dcdc2780cd2caaf4d1c7b4ca77b48a33d2a682395f8e8bde35ad319cd5c87581b26c902209c63c1373ba02cf5a96d8801c4e37ee4b
   languageName: node
   linkType: hard
 
@@ -7105,7 +7106,7 @@ __metadata:
     eslint: ^8.41.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^4.0.0
-    ethers: ^6.3.0
+    ethers: ^6.6.1
     husky: ^8.0.0
     jest: 28.1.2
     nestjs-cls: ^3.4.0
