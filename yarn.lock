@@ -1440,21 +1440,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^9.4.2":
-  version: 9.4.2
-  resolution: "@nestjs/core@npm:9.4.2"
+"@nestjs/core@npm:^10.0.3":
+  version: 10.0.3
+  resolution: "@nestjs/core@npm:10.0.3"
   dependencies:
     "@nuxtjs/opencollective": 0.3.2
     fast-safe-stringify: 2.1.1
     iterare: 1.2.1
     path-to-regexp: 3.2.0
-    tslib: 2.5.2
+    tslib: 2.5.3
     uid: 2.0.2
   peerDependencies:
-    "@nestjs/common": ^9.0.0
-    "@nestjs/microservices": ^9.0.0
-    "@nestjs/platform-express": ^9.0.0
-    "@nestjs/websockets": ^9.0.0
+    "@nestjs/common": ^10.0.0
+    "@nestjs/microservices": ^10.0.0
+    "@nestjs/platform-express": ^10.0.0
+    "@nestjs/websockets": ^10.0.0
     reflect-metadata: ^0.1.12
     rxjs: ^7.1.0
   peerDependenciesMeta:
@@ -1464,7 +1464,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 2e8e62828c7dc8bd32574e59f2174458b534c4a9228d8a760ab629dd7f27cd0c8edd0fe21922aa63f07266b40ea49a090e59590a47f114213ed753066c0eb5b3
+  checksum: 981c73a77d697773220da92e30645931c2090248187f5a993353eb5bf55cec09f97c5a9c585a88c5f7d7f92634bb16ba0fb767434d4bf8fd6051c399b7335db8
   languageName: node
   linkType: hard
 
@@ -7088,7 +7088,7 @@ __metadata:
     "@nestjs/cli": ^9.5.0
     "@nestjs/common": ^10.0.1
     "@nestjs/config": ^2.3.2
-    "@nestjs/core": ^9.4.2
+    "@nestjs/core": ^10.0.3
     "@nestjs/platform-express": ^9.0.0
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.2
