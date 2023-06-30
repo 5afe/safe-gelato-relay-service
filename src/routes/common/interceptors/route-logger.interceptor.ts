@@ -10,6 +10,7 @@ import { ILoggingService, LoggingService } from '../logging/logging.interface';
 import { Inject } from '@nestjs/common/decorators';
 import { Observable, tap } from 'rxjs';
 import { formatRouteLogMessage } from '../logging/utils';
+import { SponsoredCallValidationError } from '../../relay/pipes/sponsored-call-dto.validator.pipe';
 
 /**
  * The {@link RouteLoggerInterceptor} is an interceptor that logs the requests
@@ -60,10 +61,14 @@ export class RouteLoggerInterceptor implements NestInterceptor {
    * @private
    */
   private onError(request: any, error: Error, startTimeMs: number) {
-    const statusCode =
-      error instanceof HttpException
-        ? error.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode;
+    if (error instanceof HttpException) {
+      statusCode = error.getStatus();
+    } else if (error instanceof SponsoredCallValidationError) {
+      statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
+    } else {
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    }
 
     const message = formatRouteLogMessage(
       statusCode,
