@@ -7,8 +7,11 @@ import {
   HttpException,
   HttpStatus,
   INestApplication,
+  UseFilters,
 } from '@nestjs/common';
 import * as request from 'supertest';
+import { SponsoredCallValidationError } from '../../relay/pipes/sponsored-call-dto.validator.pipe';
+import { SponsoredCallValidationExceptionFilter } from '../../relay/filters/sponsored-call-validation.exception-filter';
 
 const mockLoggingService = {
   info: jest.fn(),
@@ -32,6 +35,12 @@ class TestController {
   @Get('client-error')
   getClientError() {
     throw new HttpException('Some 400 error', HttpStatus.METHOD_NOT_ALLOWED);
+  }
+
+  @UseFilters(SponsoredCallValidationExceptionFilter)
+  @Get('validation-error')
+  getValidationError() {
+    throw new SponsoredCallValidationError('Some validation error');
   }
 
   @Get('success')
@@ -107,6 +116,26 @@ describe('RouteLoggerInterceptor tests', () => {
       response_time_ms: expect.any(Number),
       route: '/test/success',
       status_code: 200,
+    });
+    expect(mockLoggingService.error).not.toBeCalled();
+    expect(mockLoggingService.debug).not.toBeCalled();
+    expect(mockLoggingService.warn).not.toBeCalled();
+  });
+
+  it('SponsoredCallValidationError triggers info level', async () => {
+    await request(app.getHttpServer())
+      .get('/test/validation-error')
+      .expect(422);
+
+    expect(mockLoggingService.info).toBeCalledTimes(1);
+    expect(mockLoggingService.info).toBeCalledWith({
+      client_ip: null,
+      detail: 'Some validation error',
+      method: 'GET',
+      path: '/test/validation-error',
+      response_time_ms: expect.any(Number),
+      route: '/test/validation-error',
+      status_code: 422,
     });
     expect(mockLoggingService.error).not.toBeCalled();
     expect(mockLoggingService.debug).not.toBeCalled();
