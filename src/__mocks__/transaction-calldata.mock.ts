@@ -92,13 +92,13 @@ export function getMockExecTransactionCalldata({
 export function getMockAddOwnerWithThresholdCalldata() {
   return safeInterface.encodeFunctionData('addOwnerWithThreshold', [
     faker.finance.ethereumAddress(),
-    faker.datatype.number(),
+    faker.number.int(),
   ]);
 }
 
 export function getMockChangeThresholdCalldata() {
   return safeInterface.encodeFunctionData('changeThreshold', [
-    faker.datatype.number(),
+    faker.number.int(),
   ]);
 }
 
@@ -170,7 +170,7 @@ export function getMockCreateProxyWithNonceCalldata({
   owners,
   threshold,
   singleton,
-  saltNonce = faker.datatype.number(),
+  saltNonce = faker.number.int(),
 }: {
   owners: string[];
   threshold: number;

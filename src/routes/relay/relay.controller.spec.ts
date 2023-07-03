@@ -92,8 +92,8 @@ describe('RelayController', () => {
               },
               gelato: {
                 apiKey: {
-                  [SupportedChainId.GOERLI]: faker.random.word(),
-                  [SupportedChainId.GNOSIS_CHAIN]: faker.random.word(),
+                  [SupportedChainId.GOERLI]: faker.word.sample(),
+                  [SupportedChainId.GNOSIS_CHAIN]: faker.word.sample(),
                 },
               },
             }),

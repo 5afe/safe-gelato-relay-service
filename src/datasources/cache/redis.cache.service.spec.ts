@@ -22,7 +22,7 @@ describe('RedisCacheService', () => {
 
   it('sets keys', async () => {
     const address = faker.finance.ethereumAddress();
-    const value = faker.random.alphaNumeric();
+    const value = faker.string.alphanumeric();
 
     await redisCacheService.set(address, value);
 
@@ -34,7 +34,7 @@ describe('RedisCacheService', () => {
 
   it('sets keys with expiration', async () => {
     const address = faker.finance.ethereumAddress();
-    const value = faker.random.alphaNumeric();
+    const value = faker.string.alphanumeric();
     const ttl = faker.datatype.number();
 
     await redisCacheService.set(address, value, ttl);
@@ -44,7 +44,7 @@ describe('RedisCacheService', () => {
   });
 
   it('gets keys via get', async () => {
-    const key = faker.random.alphaNumeric();
+    const key = faker.string.alphanumeric();
 
     await redisCacheService.get(key);
 
