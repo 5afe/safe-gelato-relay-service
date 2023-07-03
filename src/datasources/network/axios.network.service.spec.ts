@@ -19,7 +19,7 @@ describe('AxiosNetworkService', () => {
 
   describe('GET requests', () => {
     it('get calls axios get', async () => {
-      const url = faker.internet.url();
+      const url = faker.internet.url({ appendSlash: false });
 
       await target.get(url);
 
@@ -30,8 +30,8 @@ describe('AxiosNetworkService', () => {
 
   describe('POST requests', () => {
     it('post calls axios post', async () => {
-      const url = faker.internet.url();
-      const data = { [faker.random.word()]: faker.random.alphaNumeric() };
+      const url = faker.internet.url({ appendSlash: false });
+      const data = { [faker.word.sample()]: faker.string.alphanumeric() };
 
       await target.post(url, data);
 

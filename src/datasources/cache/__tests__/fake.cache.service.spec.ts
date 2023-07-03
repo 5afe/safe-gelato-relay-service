@@ -10,8 +10,8 @@ describe('FakeCacheService', () => {
   });
 
   it('sets and gets keys', async () => {
-    const key = faker.random.alphaNumeric();
-    const value = faker.random.alphaNumeric();
+    const key = faker.string.alphanumeric();
+    const value = faker.string.alphanumeric();
 
     await cache.set(key, value);
     expect(cache.keyCount()).toBe(1);
@@ -22,8 +22,8 @@ describe('FakeCacheService', () => {
   it('sets keys with expiration', async () => {
     jest.useFakeTimers();
 
-    const key = faker.random.alphaNumeric();
-    const value = faker.random.alphaNumeric();
+    const key = faker.string.alphanumeric();
+    const value = faker.string.alphanumeric();
     const ttl = faker.datatype.number();
 
     await cache.set(key, value, ttl);

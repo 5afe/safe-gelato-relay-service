@@ -10,7 +10,7 @@ describe('GatewaySafeInfoService', () => {
   });
 
   const mockConfigService = new ConfigService({
-    gatewayUrl: faker.internet.url(),
+    gatewayUrl: faker.internet.url({ appendSlash: false }),
   });
 
   const safeInfoService = new GatewaySafeInfoService(
