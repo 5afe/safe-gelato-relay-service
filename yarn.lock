@@ -987,13 +987,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gelatonetwork/relay-sdk@npm:^3.5.0":
-  version: 3.5.0
-  resolution: "@gelatonetwork/relay-sdk@npm:3.5.0"
+"@gelatonetwork/relay-sdk@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@gelatonetwork/relay-sdk@npm:4.0.0"
   dependencies:
-    axios: 0.24.0
+    axios: 1.4.0
     ethers: 5.7.2
-  checksum: 1826e9caeaa5b7642b113dc2e29e6304543a3f45fdd14451d1090a5959a69bfc48aee2cbe2b65ce83c4a235a73b29423271287ca8f3173f1ff78dcc3e6102808
+  checksum: 681ed177d55557c28cef6926a9acb309d6cc91e37fb5f7c0e59451d59a7ca2fa46fe8f4cd34401f54b488c8b198a0112e2e9b0cf6e6ca7d8227fef4333fdcaa7
   languageName: node
   linkType: hard
 
@@ -2739,16 +2739,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:0.24.0":
-  version: 0.24.0
-  resolution: "axios@npm:0.24.0"
-  dependencies:
-    follow-redirects: ^1.14.4
-  checksum: 468cf496c08a6aadfb7e699bebdac02851e3043d4e7d282350804ea8900e30d368daa6e3cd4ab83b8ddb5a3b1e17a5a21ada13fc9cebd27b74828f47a4236316
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.4.0":
+"axios@npm:1.4.0, axios@npm:^1.4.0":
   version: 1.4.0
   resolution: "axios@npm:1.4.0"
   dependencies:
@@ -4371,7 +4362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.4, follow-redirects@npm:^1.15.0":
+"follow-redirects@npm:^1.15.0":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
   peerDependenciesMeta:
@@ -7254,7 +7245,7 @@ __metadata:
   resolution: "safe-gelato-relay-service@workspace:."
   dependencies:
     "@faker-js/faker": ^8.0.2
-    "@gelatonetwork/relay-sdk": ^3.5.0
+    "@gelatonetwork/relay-sdk": ^4.0.0
     "@nestjs/cli": ^10.1.7
     "@nestjs/common": ^10.0.3
     "@nestjs/config": ^3.0.0
