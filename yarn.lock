@@ -1555,9 +1555,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/testing@npm:^10.0.4":
-  version: 10.0.4
-  resolution: "@nestjs/testing@npm:10.0.4"
+"@nestjs/testing@npm:^10.1.1":
+  version: 10.1.1
+  resolution: "@nestjs/testing@npm:10.1.1"
   dependencies:
     tslib: 2.6.0
   peerDependencies:
@@ -1570,7 +1570,7 @@ __metadata:
       optional: true
     "@nestjs/platform-express":
       optional: true
-  checksum: ddfcc704f8ba68df62897852616dde47ddf036cc0b525a8f004da753c4f36982721498575cf501bd3ba4f8bcc6d68ee8a63750df07fdafb714bed9c6bfd8511f
+  checksum: 72ec032aac6f04bbba25cff6ac452954719fe81042122d88ecf8281ed3fe1b40c638ff9a7c7f45182397b7cb30b45a57c459d1f3585938a5b5719475d6c8db9e
   languageName: node
   linkType: hard
 
@@ -7460,7 +7460,7 @@ __metadata:
     "@nestjs/core": ^10.1.0
     "@nestjs/platform-express": ^10.0.5
     "@nestjs/schematics": ^10.0.1
-    "@nestjs/testing": ^10.0.4
+    "@nestjs/testing": ^10.1.1
     "@openzeppelin/contracts": ^4.9.2
     "@safe-global/safe-deployments": ^1.25.0
     "@typechain/ethers-v6": ^0.4.0
