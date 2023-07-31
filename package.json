@@ -37,7 +37,7 @@
     "@safe-global/safe-deployments": "^1.25.0",
     "@typechain/ethers-v6": "^0.4.3",
     "axios": "^1.4.0",
-    "ethers": "^6.6.5",
+    "ethers": "^6.6.7",
     "nestjs-cls": "^3.5.0",
     "redis": "^4.6.7",
     "reflect-metadata": "^0.1.13",
