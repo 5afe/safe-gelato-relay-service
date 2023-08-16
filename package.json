@@ -27,7 +27,7 @@
     "postinstall": "yarn types:openzeppelin && yarn types:safe"
   },
   "dependencies": {
-    "@gelatonetwork/relay-sdk": "^4.0.0",
+    "@gelatonetwork/relay-sdk": "^5.0.0",
     "@nestjs/cli": "^10.1.7",
     "@nestjs/common": "^10.1.3",
     "@nestjs/config": "^3.0.0",
