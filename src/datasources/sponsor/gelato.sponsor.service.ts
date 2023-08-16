@@ -38,8 +38,12 @@ export class GelatoSponsorService implements ISponsorService {
       ? this.getRelayGasLimit(sponsoredCallDto.gasLimit)
       : undefined;
 
-    return this.relayer.sponsoredCall({ chainId: BigInt(chainId), data, target: to }, apiKey, {
-      gasLimit,
-    });
+    return this.relayer.sponsoredCall(
+      { chainId: BigInt(chainId), data, target: to },
+      apiKey,
+      {
+        gasLimit,
+      },
+    );
   }
 }
