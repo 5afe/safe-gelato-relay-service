@@ -66,6 +66,8 @@ describe('GelatoSponsorService', () => {
     });
 
     it('should add a gas buffer to the relay', async () => {
+      const GAS_LIMIT_BUFFER = BigInt(150_000);
+
       const to = faker.finance.ethereumAddress();
       const data = await getMockExecTransactionCalldata({ to, value: 0 });
 
@@ -80,10 +82,10 @@ describe('GelatoSponsorService', () => {
       await relayService.sponsoredCall(body);
 
       expect(mockRelayer.sponsoredCall).toHaveBeenCalledWith(
-        { chainId: body.chainId, target: body.to, data: body.data },
+        { chainId: BigInt(body.chainId), target: body.to, data: body.data },
         expect.any(String),
         {
-          gasLimit: '150123',
+          gasLimit: body.gasLimit + GAS_LIMIT_BUFFER,
         },
       );
     });

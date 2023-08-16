@@ -35,10 +35,10 @@ export class GelatoSponsorService implements ISponsorService {
     const apiKey = this.configService.getOrThrow(`gelato.apiKey.${chainId}`);
 
     const gasLimit = sponsoredCallDto.gasLimit
-      ? this.getRelayGasLimit(sponsoredCallDto.gasLimit).toString()
+      ? this.getRelayGasLimit(sponsoredCallDto.gasLimit)
       : undefined;
 
-    return this.relayer.sponsoredCall({ chainId, data, target: to }, apiKey, {
+    return this.relayer.sponsoredCall({ chainId: BigInt(chainId), data, target: to }, apiKey, {
       gasLimit,
     });
   }
