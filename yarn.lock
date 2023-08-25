@@ -1785,12 +1785,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@safe-global/safe-deployments@npm:^1.25.0":
-  version: 1.25.0
-  resolution: "@safe-global/safe-deployments@npm:1.25.0"
+"@safe-global/safe-deployments@npm:^1.26.0":
+  version: 1.26.0
+  resolution: "@safe-global/safe-deployments@npm:1.26.0"
   dependencies:
     semver: ^7.3.7
-  checksum: c775f514055f1201c0f9e18c04aeae55595755e5253e71a27ed5fd0e15dd5f103af5eb6bc78afd7264ccb23d29a9dc0181d8866289d721662c67e3e25a750609
+  checksum: ea36c04c42f33f679248b4be9477a608b3ad2b4ac87da7c943bac2720ad556fc4d1f87b9ba43b0737fc0a9217bfc232c27042c3720a02cbf7cd90af286d5cb62
   languageName: node
   linkType: hard
 
@@ -7534,7 +7534,7 @@ __metadata:
     "@nestjs/schematics": ^10.0.2
     "@nestjs/testing": ^10.1.1
     "@openzeppelin/contracts": ^4.9.2
-    "@safe-global/safe-deployments": ^1.25.0
+    "@safe-global/safe-deployments": ^1.26.0
     "@typechain/ethers-v6": ^0.4.3
     "@types/express": ^4.17.13
     "@types/jest": 29.5.3
