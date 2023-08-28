@@ -1861,9 +1861,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/ethers-v6@npm:^0.4.3":
-  version: 0.4.3
-  resolution: "@typechain/ethers-v6@npm:0.4.3"
+"@typechain/ethers-v6@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@typechain/ethers-v6@npm:0.5.0"
   dependencies:
     lodash: ^4.17.15
     ts-essentials: ^7.0.1
@@ -1871,7 +1871,7 @@ __metadata:
     ethers: 6.x
     typechain: ^8.3.1
     typescript: ">=4.7.0"
-  checksum: 8c2b0cb65712d410892d4b2a78afb2f586d0081e580d1b147bea7b3a1b1f5403328cf648fd2386cb01cd34d03411c13e4cddd22404a980f2efbd087ac2ad8dea
+  checksum: 98ad8785b26bf750e2eac31989b0ec8b5bb2f4d2f567358ce9e05180c63c72ddde89d7b8caf79f0c36003e95475e524c1a7b98c40fa3eabcee1a8e1174a4015a
   languageName: node
   linkType: hard
 
@@ -7563,7 +7563,7 @@ __metadata:
     "@nestjs/testing": ^10.2.1
     "@openzeppelin/contracts": ^4.9.2
     "@safe-global/safe-deployments": ^1.26.0
-    "@typechain/ethers-v6": ^0.4.3
+    "@typechain/ethers-v6": ^0.5.0
     "@types/express": ^4.17.13
     "@types/jest": 29.5.4
     "@types/node": ^20.5.1

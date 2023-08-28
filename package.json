@@ -35,7 +35,7 @@
     "@nestjs/platform-express": "^10.1.2",
     "@openzeppelin/contracts": "^4.9.2",
     "@safe-global/safe-deployments": "^1.26.0",
-    "@typechain/ethers-v6": "^0.4.3",
+    "@typechain/ethers-v6": "^0.5.0",
     "axios": "^1.4.0",
     "ethers": "^6.7.1",
     "nestjs-cls": "^3.5.0",
