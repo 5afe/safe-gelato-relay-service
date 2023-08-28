@@ -3,6 +3,7 @@ import { getMultiSendCallOnlyDeployment } from '@safe-global/safe-deployments';
 
 import { Multi_send__factory } from '../../../../../contracts/safe/factories/v1.3.0';
 import { isValidExecTransactionCall } from './exec-transaction';
+import { SUPPORTED_SAFE_VERSION } from '../../../constants';
 
 const multiSendInterface = Multi_send__factory.createInterface();
 
@@ -36,6 +37,7 @@ export const isValidMultiSendCall = (
   }
 
   const multiSendLib = getMultiSendCallOnlyDeployment({
+    version: SUPPORTED_SAFE_VERSION,
     network: chainId,
   });
 

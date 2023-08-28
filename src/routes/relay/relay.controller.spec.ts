@@ -17,17 +17,17 @@ import { SupportedChainId } from '../../config/constants';
 import {
   getMockAddOwnerWithThresholdCalldata,
   getMockChangeThresholdCalldata,
+  getMockCreateProxyWithNonceCalldata,
   getMockDisableModuleCalldata,
   getMockEnableModuleCalldata,
-  getMockCreateProxyWithNonceCalldata,
+  getMockErc20TransferCalldata,
   getMockExecTransactionCalldata,
   getMockMultiSendCalldata,
-  getMockSetFallbackHandlerCalldata,
   getMockRemoveOwnerCallData,
+  getMockSetFallbackHandlerCalldata,
   getMockSetGuardCalldata,
   getMockSwapOwnerCallData,
   MOCK_UNSUPPORTED_CALLDATA,
-  getMockErc20TransferCalldata,
 } from '../../__mocks__/transaction-calldata.mock';
 import { TestLoggingModule } from '../common/logging/__tests__/test.logging.module';
 import { TestSponsorModule } from '../../datasources/sponsor/__tests__/test.sponsor.module';
@@ -42,24 +42,29 @@ import {
 } from '../../datasources/safe-info/safe-info.service.interface';
 import { TestCacheModule } from '../../datasources/cache/__tests__/test.cache.module';
 import { TestAppProvider } from '../../__tests__/test-app.provider';
+import { SUPPORTED_SAFE_VERSION } from './constants';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
+  version: SUPPORTED_SAFE_VERSION,
   network: '5',
 })!.defaultAddress;
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_L1_SINGLETON_DEPLOYMENT_ADDRESS = getSafeSingletonDeployment({
+  version: SUPPORTED_SAFE_VERSION,
   network: '5',
 })!.defaultAddress;
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_L2_SINGLETON_DEPLOYMENT_ADDRESS = getSafeL2SingletonDeployment({
+  version: SUPPORTED_SAFE_VERSION,
   network: '5',
 })!.defaultAddress;
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS = getProxyFactoryDeployment({
+  version: SUPPORTED_SAFE_VERSION,
   network: '5',
 })!.defaultAddress;
 

@@ -9,6 +9,7 @@ import {
   Gnosis_safe__factory,
   Proxy_factory__factory,
 } from '../../../../../contracts/safe/factories/v1.3.0';
+import { SUPPORTED_SAFE_VERSION } from '../../../constants';
 
 const proxyFactoryInterface = Proxy_factory__factory.createInterface();
 
@@ -72,6 +73,7 @@ export const isValidCreateProxyWithNonceCall = (
   }
 
   const proxyFactoryDeployment = getProxyFactoryDeployment({
+    version: SUPPORTED_SAFE_VERSION,
     network: chainId,
   });
 
@@ -85,9 +87,11 @@ export const isValidCreateProxyWithNonceCall = (
   );
 
   const safeL1Deployment = getSafeSingletonDeployment({
+    version: SUPPORTED_SAFE_VERSION,
     network: chainId,
   });
   const safeL2Deployment = getSafeL2SingletonDeployment({
+    version: SUPPORTED_SAFE_VERSION,
     network: chainId,
   });
 
