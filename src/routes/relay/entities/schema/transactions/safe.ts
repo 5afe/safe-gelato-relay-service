@@ -1,9 +1,10 @@
 import { ethers } from 'ethers';
 import {
-  SingletonDeployment,
   getSafeL2SingletonDeployment,
   getSafeSingletonDeployment,
+  SingletonDeployment,
 } from '@safe-global/safe-deployments';
+import { SUPPORTED_SAFE_VERSION } from '../../../constants';
 
 /**
  * Checks whether data is a call to any method in the specified singleton
@@ -33,8 +34,12 @@ const isSingletonCalldata = (
  * @returns boolean
  */
 export const isSafeCalldata = (data: string): boolean => {
-  const safeL1Deployment = getSafeSingletonDeployment();
-  const safeL2Deployment = getSafeL2SingletonDeployment();
+  const safeL1Deployment = getSafeSingletonDeployment({
+    version: SUPPORTED_SAFE_VERSION,
+  });
+  const safeL2Deployment = getSafeL2SingletonDeployment({
+    version: SUPPORTED_SAFE_VERSION,
+  });
 
   if (!safeL1Deployment || !safeL2Deployment) {
     return false;
