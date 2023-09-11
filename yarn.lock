@@ -1562,19 +1562,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/platform-express@npm:^10.1.2":
-  version: 10.1.2
-  resolution: "@nestjs/platform-express@npm:10.1.2"
+"@nestjs/platform-express@npm:^10.2.4":
+  version: 10.2.4
+  resolution: "@nestjs/platform-express@npm:10.2.4"
   dependencies:
     body-parser: 1.20.2
     cors: 2.8.5
     express: 4.18.2
     multer: 1.4.4-lts.1
-    tslib: 2.6.1
+    tslib: 2.6.2
   peerDependencies:
     "@nestjs/common": ^10.0.0
     "@nestjs/core": ^10.0.0
-  checksum: c2a713b2b43a836060d9b4e29fd05f5c251a2cf9d8d4c0f9db8b3c753773eab40f0e37caf75e60d8ce140dbea0596eaf2494c09c6f2133a31e342b33c5d1f6e3
+  checksum: ba49bbd1593f1153b30546af3c9955427c48b5d814ca4896e55904a5b21a9cb1b5e79a9559886aecbc1f9ff4a44ed27c9f4eb9dc822aa944c86ffec76320deef
   languageName: node
   linkType: hard
 
@@ -7571,7 +7571,7 @@ __metadata:
     "@nestjs/common": ^10.1.3
     "@nestjs/config": ^3.0.0
     "@nestjs/core": ^10.1.3
-    "@nestjs/platform-express": ^10.1.2
+    "@nestjs/platform-express": ^10.2.4
     "@nestjs/schematics": ^10.0.2
     "@nestjs/testing": ^10.2.1
     "@openzeppelin/contracts": ^4.9.3
@@ -8447,6 +8447,13 @@ __metadata:
   version: 2.6.1
   resolution: "tslib@npm:2.6.1"
   checksum: b0d176d176487905b66ae4d5856647df50e37beea7571c53b8d10ba9222c074b81f1410fb91da13debaf2cbc970663609068bdebafa844ea9d69b146527c38fe
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.6.2":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
   languageName: node
   linkType: hard
 
