@@ -17,6 +17,7 @@ export default () => ({
     apiKey: {
       [SupportedChainId.GOERLI]: process.env.GELATO_GOERLI_API_KEY,
       [SupportedChainId.GNOSIS_CHAIN]: process.env.GELATO_GNOSIS_CHAIN_API_KEY,
+      [SupportedChainId.SEPOLIA]: process.env.GELATO_SEPOLIA_API_KEY,
     },
   },
   gatewayUrl: process.env.GATEWAY_URL || 'https://safe-client.safe.global',
