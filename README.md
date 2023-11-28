@@ -18,7 +18,7 @@ Development images are currently being published to [Docker Hub](https://hub.doc
 
 ## Requirements
 
-- Node 18 (LTS) – https://nodejs.org/en/
+- Node 20.10 (LTS) – https://nodejs.org/en/
 - Gelato's 1Balance API key – https://docs.gelato.network/developer-services/relay/payment-and-fees/1balance#production 
 
 ## Installation
