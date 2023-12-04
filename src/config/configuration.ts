@@ -9,6 +9,8 @@ const API_KEYS: Record<SupportedChainId, string | undefined> = {
 export default () => ({
   about: {
     name: 'safe-gelato-relay-service',
+    version: process.env.APPLICATION_VERSION,
+    buildNumber: process.env.APPLICATION_BUILD_NUMBER,
   },
   applicationPort: process.env.APPLICATION_PORT || '3000',
   redis: {
