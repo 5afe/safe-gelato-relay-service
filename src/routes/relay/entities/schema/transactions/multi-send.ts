@@ -41,7 +41,7 @@ export const isValidMultiSendCall = (
     network: chainId,
   });
 
-  if (!multiSendLib || multiSendLib.defaultAddress !== to) {
+  if (!multiSendLib || to !== multiSendLib.networkAddresses[chainId]) {
     return false;
   }
 
