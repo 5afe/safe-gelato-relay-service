@@ -47,26 +47,26 @@ import { SUPPORTED_SAFE_VERSION } from './constants';
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_MULTI_SEND_CALL_ONLY_ADDRESS = getMultiSendCallOnlyDeployment({
   version: SUPPORTED_SAFE_VERSION,
-  network: '5',
-})!.defaultAddress;
+  network: SupportedChainId.GOERLI,
+})!.networkAddresses[SupportedChainId.GOERLI];
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_L1_SINGLETON_DEPLOYMENT_ADDRESS = getSafeSingletonDeployment({
   version: SUPPORTED_SAFE_VERSION,
-  network: '5',
-})!.defaultAddress;
+  network: SupportedChainId.GOERLI,
+})!.networkAddresses[SupportedChainId.GOERLI];
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_L2_SINGLETON_DEPLOYMENT_ADDRESS = getSafeL2SingletonDeployment({
   version: SUPPORTED_SAFE_VERSION,
-  network: '5',
-})!.defaultAddress;
+  network: SupportedChainId.GOERLI,
+})!.networkAddresses[SupportedChainId.GOERLI];
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const GOERLI_PROXY_FACTORY_DEPLOYMENT_ADDRESS = getProxyFactoryDeployment({
   version: SUPPORTED_SAFE_VERSION,
-  network: '5',
-})!.defaultAddress;
+  network: SupportedChainId.GOERLI,
+})!.networkAddresses[SupportedChainId.GOERLI];
 
 describe('RelayController', () => {
   const THROTTLE_TTL = 60 * 60;

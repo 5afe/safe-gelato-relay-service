@@ -77,7 +77,10 @@ export const isValidCreateProxyWithNonceCall = (
     network: chainId,
   });
 
-  if (!proxyFactoryDeployment || to !== proxyFactoryDeployment.defaultAddress) {
+  if (
+    !proxyFactoryDeployment ||
+    to !== proxyFactoryDeployment.networkAddresses[chainId]
+  ) {
     return false;
   }
 
@@ -95,8 +98,10 @@ export const isValidCreateProxyWithNonceCall = (
     network: chainId,
   });
 
-  const isL1Singleton = safeL1Deployment?.defaultAddress === singleton;
-  const isL2Singleton = safeL2Deployment?.defaultAddress === singleton;
+  const isL1Singleton =
+    safeL1Deployment?.networkAddresses[chainId] === singleton;
+  const isL2Singleton =
+    safeL2Deployment?.networkAddresses[chainId] === singleton;
 
   return isL1Singleton || isL2Singleton;
 };
