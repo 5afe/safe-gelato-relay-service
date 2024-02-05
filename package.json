@@ -29,7 +29,7 @@
     "@gelatonetwork/relay-sdk": "^4.0.0",
     "@nestjs/cli": "^10.2.1",
     "@nestjs/common": "^10.2.10",
-    "@nestjs/config": "^3.0.0",
+    "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.3.0",
     "@nestjs/platform-express": "^10.3.1",
     "@openzeppelin/contracts": "^4.9.3",
