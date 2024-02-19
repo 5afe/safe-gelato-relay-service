@@ -1684,9 +1684,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/platform-express@npm:^10.3.1":
-  version: 10.3.1
-  resolution: "@nestjs/platform-express@npm:10.3.1"
+"@nestjs/platform-express@npm:^10.3.3":
+  version: 10.3.3
+  resolution: "@nestjs/platform-express@npm:10.3.3"
   dependencies:
     body-parser: 1.20.2
     cors: 2.8.5
@@ -1696,7 +1696,7 @@ __metadata:
   peerDependencies:
     "@nestjs/common": ^10.0.0
     "@nestjs/core": ^10.0.0
-  checksum: 1d22110df5c2a0fb4b19fe1095e231da6eb7b30f7d1265548bc4b762fe690b631eeaaa6b8bf6dc8654525dcf6a8d7815a82d592a5ee67f86c6ea9b05a21c4141
+  checksum: 20f1e52867fe4863698640dc51d9292231c2d0549b8e031520e56f67e04ac1731efb59f36f0175038d67d049a85b2de61993baa134e054163b8ab178a3b3d8f5
   languageName: node
   linkType: hard
 
@@ -7891,7 +7891,7 @@ __metadata:
     "@nestjs/common": ^10.2.10
     "@nestjs/config": ^3.1.1
     "@nestjs/core": ^10.3.1
-    "@nestjs/platform-express": ^10.3.1
+    "@nestjs/platform-express": ^10.3.3
     "@nestjs/schematics": ^10.1.0
     "@nestjs/testing": ^10.3.3
     "@openzeppelin/contracts": ^4.9.3
