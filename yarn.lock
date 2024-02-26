@@ -1624,9 +1624,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^10.3.1":
-  version: 10.3.1
-  resolution: "@nestjs/core@npm:10.3.1"
+"@nestjs/core@npm:^10.3.3":
+  version: 10.3.3
+  resolution: "@nestjs/core@npm:10.3.3"
   dependencies:
     "@nuxtjs/opencollective": 0.3.2
     fast-safe-stringify: 2.1.1
@@ -1639,7 +1639,7 @@ __metadata:
     "@nestjs/microservices": ^10.0.0
     "@nestjs/platform-express": ^10.0.0
     "@nestjs/websockets": ^10.0.0
-    reflect-metadata: ^0.1.12
+    reflect-metadata: ^0.1.12 || ^0.2.0
     rxjs: ^7.1.0
   peerDependenciesMeta:
     "@nestjs/microservices":
@@ -1648,7 +1648,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 3bf4b81e89127971cb5ed4b5dd89209207b5189869c61cf7a19b449b537d48bb89e77e4f41b84e8f2759b4599e268a606a7009e60350193d73f930e2412c6731
+  checksum: 145d36ae241e9a7a07ae47d20877d31f9425863e131f95f465970708501d69fe4372a1023cb51b72e8c6d00bbda49029aa9948e41c2bd82b68a9ce62b13d34b8
   languageName: node
   linkType: hard
 
@@ -7875,7 +7875,7 @@ __metadata:
     "@nestjs/cli": ^10.3.2
     "@nestjs/common": ^10.3.3
     "@nestjs/config": ^3.1.1
-    "@nestjs/core": ^10.3.1
+    "@nestjs/core": ^10.3.3
     "@nestjs/platform-express": ^10.3.3
     "@nestjs/schematics": ^10.1.1
     "@nestjs/testing": ^10.3.3
