@@ -35,7 +35,7 @@
     "@openzeppelin/contracts": "^4.9.3",
     "@safe-global/safe-deployments": "^1.32.0",
     "@typechain/ethers-v6": "^0.5.1",
-    "axios": "^1.5.0",
+    "axios": "^1.6.8",
     "ethers": "^6.11.1",
     "nestjs-cls": "^3.6.0",
     "redis": "^4.6.11",
